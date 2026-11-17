@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
+import { Analytics } from '@vercel/analytics/react';
 
 // Layout
 import Navbar from './components/layout/Navbar.jsx';
@@ -116,6 +117,7 @@ export default function App() {
           {/* Catch-all 404 */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        <Analytics />
       </Router>
     </AuthProvider>
   );
