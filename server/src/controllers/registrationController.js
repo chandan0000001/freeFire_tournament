@@ -1,7 +1,7 @@
 import { Registration } from '../models/Registration.js';
 import { Tournament } from '../models/Tournament.js';
 import { SiteSetting } from '../models/SiteSetting.js';
-import { reserveSlot, releaseSlot } from '../services/slotService.js';
+import { reserveSlot, releaseSlot, checkAvailableCapacity, syncTournamentSlots } from '../services/slotService.js';
 import { generateRegistrationRef } from '../utils/refGenerator.js';
 import { sendRegistrationEmail, sendPaymentVerifiedEmail } from '../services/emailService.js';
 import { logAudit } from '../services/auditService.js';
@@ -108,8 +108,8 @@ export const registerSquad = async (req, res, next) => {
       });
     }
 
-    // 1. Atomically reserve slot
-    reservedTournament = await reserveSlot(tournamentId);
+    // 1. Verify capacity (only admin-verified registrations occupy filled slots)
+    reservedTournament = await checkAvailableCapacity(tournamentId);
 
     // 2. Generate unique reference ID
     const referenceId = generateRegistrationRef('squad');
@@ -219,8 +219,8 @@ export const registerSolo = async (req, res, next) => {
       });
     }
 
-    // 1. Atomically reserve slot
-    reservedTournament = await reserveSlot(tournamentId);
+    // 1. Verify capacity (only admin-verified registrations occupy filled slots)
+    reservedTournament = await checkAvailableCapacity(tournamentId);
 
     // 2. Generate unique reference ID
     const referenceId = generateRegistrationRef('solo');
@@ -376,6 +376,13 @@ export const submitCaptainEvidence = async (req, res, next) => {
 // Admin Endpoints
 export const getAdminRegistrations = async (req, res, next) => {
   try {
+    // Auto-cleanup: remove rejected registrations older than 5 hours (as well as unacted pending older than 5 hours)
+    const fiveHoursAgo = new Date(Date.now() - 5 * 60 * 60 * 1000);
+    await Registration.deleteMany({
+      paymentStatus: PAYMENT_STATUS.REJECTED,
+      updatedAt: { $lt: fiveHoursAgo },
+    });
+
     const { tournamentId, paymentStatus, search, page = 1, limit = 50 } = req.query;
     const query = {};
 
@@ -443,12 +450,14 @@ export const updatePaymentStatus = async (req, res, next) => {
     } else if (status === PAYMENT_STATUS.REJECTED) {
       registration.isApproved = false;
       registration.paymentDetails.rejectionReason = rejectionReason || 'Payment could not be verified.';
-      // Release slot back to tournament on rejection!
-      await releaseSlot(registration.tournamentId._id);
     }
 
     await registration.save();
-    await cache.delPattern('tournaments:*');
+
+    // Synchronize tournament filled slots (only verified registrations occupy slots)
+    if (registration.tournamentId?._id) {
+      await syncTournamentSlots(registration.tournamentId._id);
+    }
 
     await logAudit({
       action: `PAYMENT_${status.toUpperCase()}`,
@@ -463,6 +472,46 @@ export const updatePaymentStatus = async (req, res, next) => {
       success: true,
       message: `Registration payment status updated to ${status}`,
       registration,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * Permanently delete a registration record (e.g. rejected application or manual cleanup)
+ */
+export const deleteRegistration = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const registration = await Registration.findById(id).populate('tournamentId');
+    if (!registration) {
+      return res.status(404).json({ success: false, message: 'Registration record not found' });
+    }
+
+    const tournamentId = registration.tournamentId?._id;
+    const refId = registration.referenceId;
+    const displayName = registration.teamName || registration.players?.[0]?.inGameName || 'Participant';
+
+    await Registration.findByIdAndDelete(id);
+
+    // Resynchronize slots for the tournament
+    if (tournamentId) {
+      await syncTournamentSlots(tournamentId);
+    }
+
+    await logAudit({
+      action: 'REGISTRATION_DELETED',
+      performedBy: req.user,
+      targetEntity: 'Registration',
+      targetId: id,
+      details: `Admin deleted registration ${refId} (${displayName})`,
+      ipAddress: req.ip,
+    });
+
+    res.json({
+      success: true,
+      message: `Registration ${refId} removed successfully`,
     });
   } catch (error) {
     next(error);

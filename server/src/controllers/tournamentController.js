@@ -44,11 +44,32 @@ export const getTournaments = async (req, res, next) => {
 
     const tournaments = await tournamentQuery.lean();
 
-    // Attach remainingSlots virtual to each
-    const formatted = tournaments.map((t) => ({
-      ...t,
-      remainingSlots: t.status === TOURNAMENT_STATUS.FULL ? 0 : Math.max(0, t.maxSlots - t.registeredSlots),
-    }));
+    // Attach accurate verified-only registration slots count to each
+    const tournamentIds = tournaments.map((t) => t._id);
+    const verifiedCounts = await Registration.aggregate([
+      {
+        $match: {
+          tournamentId: { $in: tournamentIds },
+          paymentStatus: 'verified',
+        },
+      },
+      {
+        $group: {
+          _id: '$tournamentId',
+          count: { $sum: 1 },
+        },
+      },
+    ]);
+    const verifiedMap = new Map(verifiedCounts.map((v) => [v._id.toString(), v.count]));
+
+    const formatted = tournaments.map((t) => {
+      const verified = verifiedMap.get(t._id.toString()) ?? 0;
+      return {
+        ...t,
+        registeredSlots: verified,
+        remainingSlots: t.status === TOURNAMENT_STATUS.FULL ? 0 : Math.max(0, t.maxSlots - verified),
+      };
+    });
 
     const responsePayload = {
       success: true,
@@ -79,9 +100,15 @@ export const getTournamentBySlug = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Tournament not found' });
     }
 
+    const verifiedCount = await Registration.countDocuments({
+      tournamentId: tournament._id,
+      paymentStatus: 'verified',
+    });
+
     const result = {
       ...tournament,
-      remainingSlots: tournament.status === TOURNAMENT_STATUS.FULL ? 0 : Math.max(0, tournament.maxSlots - tournament.registeredSlots),
+      registeredSlots: verifiedCount,
+      remainingSlots: tournament.status === TOURNAMENT_STATUS.FULL ? 0 : Math.max(0, tournament.maxSlots - verifiedCount),
     };
 
     await cache.set(cacheKey, result, 60); // 60s cache

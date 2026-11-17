@@ -1,13 +1,72 @@
 import { Tournament } from '../models/Tournament.js';
-import { TOURNAMENT_STATUS } from '../constants/statuses.js';
+import { Registration } from '../models/Registration.js';
+import { TOURNAMENT_STATUS, PAYMENT_STATUS } from '../constants/statuses.js';
 import { cache } from '../config/redis.js';
 
 /**
+ * Recalculate and synchronize tournament registeredSlots based on verified registrations
+ */
+export const syncTournamentSlots = async (tournamentId) => {
+  const tournament = await Tournament.findById(tournamentId);
+  if (!tournament) return null;
+
+  const verifiedCount = await Registration.countDocuments({
+    tournamentId: tournament._id,
+    paymentStatus: PAYMENT_STATUS.VERIFIED,
+  });
+
+  const isFull = verifiedCount >= tournament.maxSlots;
+  let nextStatus = tournament.status;
+
+  if (isFull && tournament.status === TOURNAMENT_STATUS.REGISTRATION_OPEN) {
+    nextStatus = TOURNAMENT_STATUS.FULL;
+  } else if (!isFull && tournament.status === TOURNAMENT_STATUS.FULL) {
+    nextStatus = TOURNAMENT_STATUS.REGISTRATION_OPEN;
+  }
+
+  tournament.registeredSlots = verifiedCount;
+  tournament.status = nextStatus;
+  await tournament.save();
+
+  // Invalidate Redis caches
+  await cache.delPattern('tournaments:*');
+  await cache.del(`tournament:slug:${tournament.slug}`);
+
+  return tournament;
+};
+
+/**
+ * Check if a tournament has available capacity for a new registration request
+ */
+export const checkAvailableCapacity = async (tournamentId) => {
+  const tournament = await Tournament.findById(tournamentId);
+  if (!tournament) {
+    throw new Error('Tournament not found');
+  }
+  if (tournament.status !== TOURNAMENT_STATUS.REGISTRATION_OPEN) {
+    throw new Error(`Tournament registration is ${tournament.status.replace('_', ' ')}`);
+  }
+
+  const verifiedCount = await Registration.countDocuments({
+    tournamentId: tournament._id,
+    paymentStatus: PAYMENT_STATUS.VERIFIED,
+  });
+
+  if (verifiedCount >= tournament.maxSlots) {
+    tournament.registeredSlots = verifiedCount;
+    tournament.status = TOURNAMENT_STATUS.FULL;
+    await tournament.save();
+    await cache.delPattern('tournaments:*');
+    throw new Error('Tournament is completely full. No remaining slots.');
+  }
+
+  return tournament;
+};
+
+/**
  * Atomically reserve a slot in a tournament.
- * Guarantees no race-condition overbooking.
  */
 export const reserveSlot = async (tournamentId) => {
-  // Find tournament that is open and has available capacity, and atomically increment registeredSlots
   const tournament = await Tournament.findOneAndUpdate(
     {
       _id: tournamentId,
@@ -24,7 +83,6 @@ export const reserveSlot = async (tournamentId) => {
   );
 
   if (!tournament) {
-    // Check why it failed
     const existing = await Tournament.findById(tournamentId);
     if (!existing) {
       throw new Error('Tournament not found');
@@ -33,7 +91,6 @@ export const reserveSlot = async (tournamentId) => {
       throw new Error(`Tournament registration is ${existing.status.replace('_', ' ')}`);
     }
     if (existing.registeredSlots >= existing.maxSlots) {
-      // Mark as full
       existing.status = TOURNAMENT_STATUS.FULL;
       await existing.save();
       throw new Error('Tournament is completely full. No remaining slots.');
@@ -41,13 +98,11 @@ export const reserveSlot = async (tournamentId) => {
     throw new Error('Could not reserve slot. Please try again.');
   }
 
-  // If this reservation filled the tournament, update status to full
   if (tournament.registeredSlots >= tournament.maxSlots) {
     tournament.status = TOURNAMENT_STATUS.FULL;
     await tournament.save();
   }
 
-  // Bust tournament list and detail cache so live slot counts update in real-time
   await cache.delPattern('tournaments:*');
   await cache.del(`tournament:slug:${tournament.slug}`);
 
@@ -55,7 +110,7 @@ export const reserveSlot = async (tournamentId) => {
 };
 
 /**
- * Release a previously reserved slot (e.g. if registration is cancelled or payment rejected)
+ * Release a previously reserved slot
  */
 export const releaseSlot = async (tournamentId) => {
   const tournament = await Tournament.findById(tournamentId);
@@ -63,12 +118,10 @@ export const releaseSlot = async (tournamentId) => {
 
   if (tournament.registeredSlots > 0) {
     tournament.registeredSlots -= 1;
-    // If it was full, re-open registration
     if (tournament.status === TOURNAMENT_STATUS.FULL && tournament.registeredSlots < tournament.maxSlots) {
       tournament.status = TOURNAMENT_STATUS.REGISTRATION_OPEN;
     }
     await tournament.save();
-    // Bust tournament list and detail cache
     await cache.delPattern('tournaments:*');
     await cache.del(`tournament:slug:${tournament.slug}`);
   }

@@ -10,6 +10,7 @@ import {
 import {
   getAdminRegistrations,
   updatePaymentStatus,
+  deleteRegistration,
 } from '../controllers/registrationController.js';
 import {
   setRoomCredentials,
@@ -49,6 +50,7 @@ router.delete('/tournaments/:id', deleteTournament);
 // Registrations & Manual Payments
 router.get('/registrations', getAdminRegistrations);
 router.patch('/registrations/:id/payment', updatePaymentStatus);
+router.delete('/registrations/:id', deleteRegistration);
 
 // Room Credentials Distribution
 router.post('/rooms/:tournamentId', setRoomCredentials);

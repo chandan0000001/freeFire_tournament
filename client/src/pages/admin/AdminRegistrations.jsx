@@ -11,7 +11,8 @@ import {
   Eye,
   Mail,
   Phone,
-  X
+  X,
+  Trash2
 } from 'lucide-react';
 
 export default function AdminRegistrations() {
@@ -103,6 +104,24 @@ export default function AdminRegistrations() {
       setActionError(err.message || 'Failed to update payment status');
     } finally {
       setSubmittingAction(false);
+    }
+  };
+
+  const handleRemoveRegistration = async (reg) => {
+    if (!reg) return;
+    const name = reg.teamName || reg.captain?.name || reg.referenceId;
+    if (!window.confirm(`Permanently remove registration ${reg.referenceId} (${name})? This cannot be undone.`)) {
+      return;
+    }
+
+    try {
+      const res = await api.delete(`/admin/registrations/${reg._id}`);
+      if (res.success) {
+        if (selectedReg?._id === reg._id) setSelectedReg(null);
+        fetchRegistrations();
+      }
+    } catch (err) {
+      alert(err.message || 'Failed to remove registration');
     }
   };
 
@@ -242,12 +261,22 @@ export default function AdminRegistrations() {
                       </span>
                     </td>
                     <td className="py-3 px-5 text-right">
-                      <button
-                        onClick={() => openVerifyModal(reg)}
-                        className="px-3 py-1.5 rounded-lg bg-[#1F293D] hover:bg-brand-orange hover:text-white text-slate-300 text-xs font-bold transition-colors"
-                      >
-                        Manage
-                      </button>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => openVerifyModal(reg)}
+                          className="px-3 py-1.5 rounded-lg bg-[#1F293D] hover:bg-brand-orange hover:text-white text-slate-300 text-xs font-bold transition-colors"
+                        >
+                          Manage
+                        </button>
+                        <button
+                          onClick={() => handleRemoveRegistration(reg)}
+                          className="px-2.5 py-1.5 rounded-lg bg-rose-950/60 hover:bg-rose-600 text-rose-300 hover:text-white border border-rose-500/40 text-xs font-bold transition-colors flex items-center gap-1"
+                          title="Permanently remove registration"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                          <span>Remove</span>
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))
@@ -340,24 +369,35 @@ export default function AdminRegistrations() {
             </div>
 
             {/* Action Buttons */}
-            <div className="flex items-center gap-3 pt-3 border-t border-[#1F293D]">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-[#1F293D]">
               <button
                 type="button"
                 disabled={submittingAction}
-                onClick={() => submitPaymentDecision('verified')}
-                className="flex-1 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold uppercase tracking-wider text-white text-xs transition-colors flex items-center justify-center gap-1.5"
+                onClick={() => handleRemoveRegistration(selectedReg)}
+                className="w-full sm:w-auto py-2.5 px-3 rounded-xl bg-slate-800 hover:bg-rose-950 text-rose-300 border border-rose-500/30 font-bold uppercase text-[11px] transition-colors flex items-center justify-center gap-1.5"
               >
-                <CheckCircle className="w-4 h-4" /> Verify Payment & Confirm Slot
+                <Trash2 className="w-3.5 h-3.5 text-rose-400" /> Remove Permanently
               </button>
 
-              <button
-                type="button"
-                disabled={submittingAction}
-                onClick={() => submitPaymentDecision('rejected')}
-                className="py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 font-bold uppercase tracking-wider text-white text-xs transition-colors flex items-center justify-center gap-1.5"
-              >
-                <XCircle className="w-4 h-4" /> Reject & Release Slot
-              </button>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <button
+                  type="button"
+                  disabled={submittingAction}
+                  onClick={() => submitPaymentDecision('rejected')}
+                  className="flex-1 sm:flex-initial py-2.5 px-4 rounded-xl bg-rose-600 hover:bg-rose-500 font-bold uppercase tracking-wider text-white text-xs transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <XCircle className="w-4 h-4" /> Reject
+                </button>
+
+                <button
+                  type="button"
+                  disabled={submittingAction}
+                  onClick={() => submitPaymentDecision('verified')}
+                  className="flex-1 sm:flex-initial py-2.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-bold uppercase tracking-wider text-white text-xs transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <CheckCircle className="w-4 h-4" /> Verify & Confirm Slot
+                </button>
+              </div>
             </div>
 
           </div>
