@@ -10,7 +10,6 @@ Allow: /privacy
 
 # Disallow staff portals from indexing
 Disallow: /admin/
-Disallow: /spectator/
 Disallow: /api/
 
 Sitemap: https://rittournament.vercel.app/sitemap.xml

@@ -102,7 +102,7 @@ export default function WinnersPage() {
                         ₹{podium.amount}
                       </p>
                       <span className="inline-block mt-1 text-[10px] uppercase font-bold text-emerald-500/80">
-                        {podium.payoutStatus === 'paid' ? '✅ Paid via UPI' : 'Pending Verification'}
+                        {podium.payoutStatus === 'paid' ? 'Paid via UPI' : 'Pending Verification'}
                       </span>
                     </div>
 

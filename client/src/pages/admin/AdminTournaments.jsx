@@ -26,17 +26,17 @@ export default function AdminTournaments() {
 
   // Curated high-res 16:9 widescreen Free Fire tournament banners
   const BANNER_OPTIONS = [
-    { label: '🎲 Random Auto-Select', value: '' },
-    { label: '🔥 Official Squad Battle (16:9)', value: '/images/ff-banner-squad.webp' },
-    { label: '⚡ Solo Firestorm Champion (16:9)', value: '/images/ff-banner-solo.webp' },
-    { label: '⚔️ Rampage Battleground (16:9)', value: '/images/ff-banner-rampage.webp' },
-    { label: '👑 Championship Hayato (16:9)', value: '/images/ff-banner-hayato.webp' },
-    { label: '🎯 Solo Gunslinger Kelly (16:9)', value: '/images/ff-banner-kelly.webp' },
-    { label: '🛡️ Chrono Time Turner (16:9)', value: '/images/ff-banner-chrono.webp' },
-    { label: '🌐 Cyber Paradox Clash (16:9)', value: '/images/ff-banner-paradox.webp' },
-    { label: '💥 High Octane Combat (16:9)', value: '/images/ff-banner-battle.webp' },
-    { label: '🏆 Booyah Flame Champion (16:9)', value: '/images/ff-banner-flame.webp' },
-    { label: '🏟️ Grand Arena Stage (16:9)', value: '/images/arena-stage.webp' },
+    { label: 'Auto-Select (Random)', value: '' },
+    { label: 'Official Squad Battle (16:9)', value: '/images/ff-banner-squad.webp' },
+    { label: 'Solo Firestorm Champion (16:9)', value: '/images/ff-banner-solo.webp' },
+    { label: 'Rampage Battleground (16:9)', value: '/images/ff-banner-rampage.webp' },
+    { label: 'Championship Hayato (16:9)', value: '/images/ff-banner-hayato.webp' },
+    { label: 'Solo Gunslinger Kelly (16:9)', value: '/images/ff-banner-kelly.webp' },
+    { label: 'Chrono Time Turner (16:9)', value: '/images/ff-banner-chrono.webp' },
+    { label: 'Cyber Paradox Clash (16:9)', value: '/images/ff-banner-paradox.webp' },
+    { label: 'High Octane Combat (16:9)', value: '/images/ff-banner-battle.webp' },
+    { label: 'Booyah Flame Champion (16:9)', value: '/images/ff-banner-flame.webp' },
+    { label: 'Grand Arena Stage (16:9)', value: '/images/arena-stage.webp' },
   ];
 
   const RANDOM_BANNERS = [
@@ -488,7 +488,7 @@ export default function AdminTournaments() {
                     onClick={rollRandomBanner}
                     className="px-2.5 py-1 rounded bg-brand-orange/20 text-brand-orange border border-brand-orange/40 hover:bg-brand-orange hover:text-white transition-all text-[11px] font-bold flex items-center gap-1"
                   >
-                    🎲 Roll Random Image
+                    Roll Random Image
                   </button>
                 </div>
 
@@ -509,12 +509,12 @@ export default function AdminTournaments() {
                     <span className="text-[10px] text-slate-400 mt-1 block">
                       {formData.bannerUrl
                         ? 'Selected specific Free Fire image'
-                        : '🎲 Random: will auto-pick a random Free Fire image upon saving'}
+                        : 'Random: will auto-pick a random Free Fire image upon saving'}
                     </span>
                   </div>
 
-                  {/* Live Preview */}
-                  <div className="relative h-28 rounded-xl overflow-hidden border border-[#1F293D] bg-slate-900 flex items-center justify-center shadow-inner">
+                  {/* Live Preview - 16:9 widescreen preview with no vertical distortion */}
+                  <div className="relative w-full aspect-[16/9] max-h-44 rounded-xl overflow-hidden border border-[#1F293D] bg-slate-900 flex items-center justify-center shadow-inner">
                     {formData.bannerUrl ? (
                       <img
                         src={formData.bannerUrl}
@@ -523,8 +523,8 @@ export default function AdminTournaments() {
                       />
                     ) : (
                       <div className="text-center p-2 text-slate-400 text-[11px]">
-                        🎲 <strong className="text-white">Random Mode Active</strong>
-                        <p className="text-[9px] text-slate-500">Auto-assigned from 9 high-res Free Fire 16:9 banners</p>
+                        <strong className="text-white">Random Mode Active</strong>
+                        <p className="text-[9px] text-slate-500">Auto-assigned from 10 high-res Free Fire 16:9 banners</p>
                       </div>
                     )}
                   </div>

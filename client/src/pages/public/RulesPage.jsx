@@ -34,7 +34,7 @@ export default function RulesPage() {
             Pure Skill. Zero Exploits.
           </h2>
           <p className="text-xs text-slate-300 leading-relaxed max-w-xl">
-            Every match is hosted in private custom rooms and monitored in real-time by official college spectators. Play with integrity, respect fellow gamers, and claim your Booyah on merit.
+            Every match is hosted in private custom rooms and monitored in real-time by official college referees. Play with integrity, respect fellow gamers, and claim your Booyah on merit.
           </p>
         </div>
       </div>
@@ -79,7 +79,7 @@ export default function RulesPage() {
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
-              <span><strong>Spectator Recording:</strong> All matches have assigned match observers watching in custom room spectator slots to record gameplay and flag suspicious behaviors.</span>
+              <span><strong>Referee Recording:</strong> All matches have assigned match referees in custom rooms to record gameplay, track kill counts, and verify final placements.</span>
             </li>
           </ul>
         </div>

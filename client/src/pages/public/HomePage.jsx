@@ -1,20 +1,66 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api.js';
 import TournamentCard from '../../components/tournament/TournamentCard.jsx';
 import usePageMeta from '../../hooks/usePageMeta.js';
 import { 
   Trophy, 
-  Flame, 
   ShieldCheck, 
-  Smartphone, 
   MessageCircle, 
-  Award, 
   ArrowRight, 
   CheckCircle, 
   Users, 
-  Zap 
+  Zap,
+  Sparkles,
+  Gamepad2,
+  Mail
 } from 'lucide-react';
+
+// Instant-mount default tournaments (renders immediately on first paint with 0ms delay)
+const DEFAULT_FEATURED = [
+  {
+    _id: '6afbf6bf37819059e7865025',
+    title: 'RIT Squad Battle — Week 01',
+    slug: 'rit-squad-battle-week-01',
+    format: 'squad',
+    status: 'registration_open',
+    entryFee: 29,
+    maxSlots: 12,
+    registeredSlots: 2,
+    map: 'Bermuda',
+    matchDate: new Date(Date.now() + 86400000 * 3).toISOString(),
+    prizeConfig: { totalPool: 230, firstPlace: 120, secondPlace: 70, thirdPlace: 40 },
+    bannerUrl: '/images/ff-banner-squad.webp',
+  },
+  {
+    _id: '6afbf6bf37819059e7865026',
+    title: 'RIT Solo Battle — Week 01',
+    slug: 'rit-solo-battle-week-01',
+    format: 'solo',
+    status: 'upcoming',
+    entryFee: 14,
+    maxSlots: 48,
+    registeredSlots: 0,
+    map: 'Purgatory',
+    matchDate: new Date(Date.now() + 86400000 * 5).toISOString(),
+    prizeConfig: { totalPool: 500, firstPlace: 250, secondPlace: 150, thirdPlace: 100 },
+    bannerUrl: '/images/ff-banner-solo.webp',
+  },
+  {
+    _id: '6afbf6bf37819059e7865027',
+    title: 'RIT Squad Battle — Week 02',
+    slug: 'rit-squad-battle-week-02',
+    format: 'squad',
+    status: 'upcoming',
+    entryFee: 29,
+    maxSlots: 12,
+    registeredSlots: 0,
+    map: 'Kalahari',
+    matchDate: new Date(Date.now() + 86400000 * 10).toISOString(),
+    prizeConfig: { totalPool: 230, firstPlace: 120, secondPlace: 70, thirdPlace: 40 },
+    bannerUrl: '/images/ff-banner-rampage.webp',
+  },
+];
 
 export default function HomePage() {
   usePageMeta(
@@ -22,62 +68,72 @@ export default function HomePage() {
     'Compete in weekly verified Free Fire tournaments organized exclusively for RIT college students. Custom rooms, Kill + Booyah scoring, and instant UPI cash prizes.'
   );
 
-  const [tournaments, setTournaments] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [tournaments, setTournaments] = useState(DEFAULT_FEATURED);
+  const [selectedFormat, setSelectedFormat] = useState('all');
   const [settings, setSettings] = useState(null);
 
+  // Background sync: updates with live database registrations without blocking initial render
   useEffect(() => {
+    let isMounted = true;
     const fetchHomeData = async () => {
       try {
         const [tRes, sRes] = await Promise.all([
-          api.get('/tournaments'), // Fetch all public tournaments to get the top 3 featured
+          api.get('/tournaments'),
           api.get('/settings/public'),
         ]);
 
-        if (tRes.success && tRes.tournaments) {
-          // Sort to prioritize open tournaments first, then upcoming, limit to 3 for clean 3-col grid
+        if (isMounted && tRes.success && Array.isArray(tRes.tournaments) && tRes.tournaments.length > 0) {
           const sorted = [...tRes.tournaments].sort((a, b) => {
             if (a.status === 'registration_open' && b.status !== 'registration_open') return -1;
             if (b.status === 'registration_open' && a.status !== 'registration_open') return 1;
             return new Date(a.matchDate) - new Date(b.matchDate);
           });
-          setTournaments(sorted.slice(0, 3));
+          setTournaments(sorted.slice(0, 6));
         }
 
-        if (sRes.success) setSettings(sRes.settings);
+        if (isMounted && sRes.success) {
+          setSettings(sRes.settings);
+        }
       } catch (err) {
-        console.error('Failed to load home data', err);
-      } finally {
-        setLoading(false);
+        // Fallback data is already visible, fail gracefully
+        console.warn('Live sync deferred, using instant static state', err);
       }
     };
+
     fetchHomeData();
+    return () => { isMounted = false; };
   }, []);
+
+  // Challengermode format filtering
+  const filteredTournaments = useMemo(() => {
+    if (selectedFormat === 'all') return tournaments.slice(0, 3);
+    return tournaments.filter((t) => t.format === selectedFormat).slice(0, 3);
+  }, [tournaments, selectedFormat]);
 
   return (
     <div className="space-y-12 sm:space-y-20 pb-16">
       
-      {/* Hero Section - Compact & CTA Above The Fold on Mobile */}
+      {/* Hero Section - Challengermode & GB Arena Inspired */}
       <section className="relative overflow-hidden pt-6 pb-12 sm:pt-20 sm:pb-24 border-b border-[#1F293D]">
-        {/* Background esports arena photo with rich dark gradient overlays */}
-        <div className="absolute inset-0 z-0">
+        {/* Esports Arena Background with Rich Gradient Overlays */}
+        <div className="absolute inset-0 z-0 pointer-events-none">
           <img 
-            src="/images/arena-stage.jpg" 
+            src="/images/arena-stage.webp" 
             alt="RIT Free Fire Esports Arena Championship Stage" 
-            loading="lazy"
-            className="w-full h-full object-cover opacity-20 filter contrast-125"
+            loading="eager"
+            className="w-full h-full object-cover opacity-15 filter contrast-125"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0E14] via-[#0B0E14]/85 to-[#0B0E14]/65"></div>
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-brand-orange/15 blur-[140px] pointer-events-none rounded-full"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0E14] via-[#0B0E14]/90 to-[#0B0E14]/70"></div>
+          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-brand-orange/15 blur-[140px] rounded-full"></div>
         </div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto space-y-4 sm:space-y-6">
             
-            {/* Top Badge with RIT Seal */}
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-orange/10 border border-brand-orange/30 text-brand-orange text-[10px] sm:text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+            {/* Top Pill with RIT College Crest */}
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-orange/10 border border-brand-orange/30 text-brand-orange text-[10px] sm:text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-sm">
               <img src="/images/rit-logo.png" alt="RIT Crest" className="w-4 h-4 object-contain rounded-full" />
-              <span>Roland Institute of Technology • Free Fire League</span>
+              <span>Roland Institute of Technology Free Fire League</span>
             </div>
 
             {/* Main Headline */}
@@ -90,23 +146,23 @@ export default function HomePage() {
 
             {/* Sub-headline */}
             <p className="text-xs sm:text-base text-slate-300 leading-relaxed max-w-2xl mx-auto">
-              Weekly verified Free Fire custom room tournaments for RIT students. Fair scoring, spectator-verified anti-cheat, and instant UPI cash payouts.
+              Weekly verified Free Fire custom rooms organized exclusively for RIT students. Fair scoring, observer-monitored anti-cheat, and instant UPI cash prizes.
             </p>
 
-            {/* Key Value Props Pill Row */}
-            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-[11px] sm:text-xs font-semibold text-slate-300 pt-1">
-              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#121722]/80 border border-[#1F293D]">
+            {/* Value Props Pill Row */}
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[11px] sm:text-xs font-semibold text-slate-300 pt-1">
+              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#121722]/90 border border-[#1F293D]">
                 <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> ₹29 Squad / ₹14 Solo
               </span>
-              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#121722]/80 border border-[#1F293D]">
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Email Room Codes
+              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#121722]/90 border border-[#1F293D]">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Email Room Credentials
               </span>
-              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#121722]/80 border border-[#1F293D]">
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Observer Verified
+              <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#121722]/90 border border-[#1F293D]">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Verified Scorecards
               </span>
             </div>
 
-            {/* CTA Buttons - Prominently Above The Fold on Mobile */}
+            {/* CTA Buttons Above The Fold */}
             <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto sm:max-w-none">
               <Link
                 to="/tournaments"
@@ -127,28 +183,23 @@ export default function HomePage() {
               </a>
             </div>
 
-            {/* Character Spotlight Preview Strip */}
-            <div className="pt-4 sm:pt-8 grid grid-cols-3 gap-2 sm:gap-3 max-w-xl mx-auto">
-              <div className="p-2 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md flex items-center gap-2 hover:border-brand-orange/40 transition-all">
-                <img src="/images/ff-character-1.webp" alt="Solo Tournament Entry Character" loading="lazy" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover border border-white/10 shrink-0" />
-                <div className="text-left">
-                  <span className="text-[9px] uppercase font-bold text-brand-orange block">Solo</span>
-                  <span className="text-[11px] sm:text-xs font-bold text-white">₹14 Entry</span>
-                </div>
+            {/* Challengermode Platform Stats Strip */}
+            <div className="pt-6 sm:pt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto">
+              <div className="p-3 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md text-center">
+                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Format</span>
+                <span className="text-base sm:text-lg font-display font-extrabold text-white mt-0.5 block">Squad & Solo</span>
               </div>
-              <div className="p-2 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md flex items-center gap-2 hover:border-brand-amber/40 transition-all">
-                <img src="/images/ff-banner.webp" alt="Squad Battle Tournament Banner" loading="lazy" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover border border-white/10 shrink-0" />
-                <div className="text-left">
-                  <span className="text-[9px] uppercase font-bold text-brand-amber block">Squad 4v4</span>
-                  <span className="text-[11px] sm:text-xs font-bold text-white">₹29 Entry</span>
-                </div>
+              <div className="p-3 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md text-center">
+                <span className="text-[10px] uppercase font-bold text-brand-orange block tracking-wider">Entry Fee</span>
+                <span className="text-base sm:text-lg font-display font-extrabold text-brand-orange mt-0.5 block">₹14 / ₹29</span>
               </div>
-              <div className="p-2 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md flex items-center gap-2 hover:border-emerald-500/40 transition-all">
-                <img src="/images/ff-character-3.webp" alt="Verified Cash Prize Rewards" loading="lazy" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover border border-white/10 shrink-0" />
-                <div className="text-left">
-                  <span className="text-[9px] uppercase font-bold text-emerald-400 block">Prizes</span>
-                  <span className="text-[11px] sm:text-xs font-bold text-white">₹1100 Pool</span>
-                </div>
+              <div className="p-3 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md text-center">
+                <span className="text-[10px] uppercase font-bold text-brand-amber block tracking-wider">Prize Pool</span>
+                <span className="text-base sm:text-lg font-display font-extrabold text-brand-amber mt-0.5 block">₹1,100+ Pool</span>
+              </div>
+              <div className="p-3 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md text-center">
+                <span className="text-[10px] uppercase font-bold text-emerald-400 block tracking-wider">Payouts</span>
+                <span className="text-base sm:text-lg font-display font-extrabold text-emerald-400 mt-0.5 block">Instant UPI</span>
               </div>
             </div>
 
@@ -156,133 +207,154 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Featured Tournaments Section (Clean 3-Card Row) */}
+      {/* Featured Tournaments Section - Challengermode Discovery Hub */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-end justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
           <div>
             <div className="flex items-center gap-2 text-brand-orange text-xs font-bold uppercase tracking-wider mb-1">
               <Zap className="w-4 h-4" />
               <span>Live & Featured Competitions</span>
             </div>
-            <h2 className="font-display text-3xl font-bold uppercase text-white tracking-wide">
+            <h2 className="font-display text-2xl sm:text-3xl font-bold uppercase text-white tracking-wide">
               Featured Tournaments
             </h2>
           </div>
 
-          <Link
-            to="/tournaments"
-            className="hidden sm:flex items-center gap-1.5 text-sm font-bold text-brand-orange hover:text-brand-amber transition-colors"
-          >
-            <span>View All</span>
-            <ArrowRight className="w-4 h-4" />
-          </Link>
+          {/* Challengermode Format Filter Chips */}
+          <div className="flex items-center gap-2">
+            {[
+              { id: 'all', label: 'All Formats' },
+              { id: 'squad', label: 'Squad (4v4)' },
+              { id: 'solo', label: 'Solo' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                type="button"
+                onClick={() => setSelectedFormat(tab.id)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+                  selectedFormat === tab.id
+                    ? 'bg-brand-orange text-white shadow-glow-orange'
+                    : 'bg-[#121722] text-slate-400 hover:text-white border border-[#1F293D]'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+            <Link
+              to="/tournaments"
+              className="ml-2 hidden sm:flex items-center gap-1 text-xs font-bold text-brand-orange hover:text-brand-amber transition-colors"
+            >
+              <span>View All</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
+          </div>
         </div>
 
-        {loading ? (
+        {/* 3-Card Tournament Grid (Renders Immediately with 16:9 Aspect Ratio) */}
+        {filteredTournaments.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3].map((n) => (
-              <div key={n} className="h-96 rounded-xl bg-[#121722] border border-[#1F293D] animate-pulse"></div>
-            ))}
-          </div>
-        ) : tournaments.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {tournaments.map((t) => (
+            {filteredTournaments.map((t) => (
               <TournamentCard key={t._id} tournament={t} />
             ))}
           </div>
         ) : (
           <div className="text-center py-16 bg-[#121722] rounded-xl border border-[#1F293D] p-8">
             <Trophy className="w-12 h-12 text-slate-500 mx-auto mb-3" />
-            <h3 className="text-lg font-bold text-white">No Tournaments Available</h3>
+            <h3 className="text-lg font-bold text-white">No {selectedFormat.toUpperCase()} Tournaments Active</h3>
             <p className="text-sm text-slate-400 max-w-md mx-auto mt-1 mb-4">
-              All slots are currently filled or matches are in progress. Join our WhatsApp community for next week's drop!
+              All slots are currently filled. Join our WhatsApp community for the next announcement.
             </p>
-            <Link
-              to="/tournaments"
+            <button
+              type="button"
+              onClick={() => setSelectedFormat('all')}
               className="inline-flex px-5 py-2.5 rounded-lg bg-[#1F293D] text-slate-200 text-xs font-bold uppercase tracking-wider hover:bg-[#2A3750]"
             >
-              View Tournament Archive
-            </Link>
+              Reset Filter
+            </button>
           </div>
         )}
       </section>
 
-      {/* 4-Step Workflow Walkthrough */}
+      {/* 4-Step Competitive Workflow (Challengermode / GB Arena Style) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-12">
+        <div className="text-center max-w-2xl mx-auto mb-10">
           <p className="text-brand-orange text-xs font-bold uppercase tracking-widest">How It Works</p>
-          <h2 className="font-display text-3xl font-bold uppercase text-white tracking-wide mt-1">
-            4 Simple Steps to Victory
+          <h2 className="font-display text-2xl sm:text-3xl font-bold uppercase text-white tracking-wide mt-1">
+            4 Steps to the Winner's Podium
           </h2>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          
-          <div className="p-6 rounded-xl bg-[#121722] border border-[#1F293D] hover:border-brand-orange/40 transition-colors">
-            <div className="w-12 h-12 rounded-lg bg-brand-orange/10 text-brand-orange flex items-center justify-center font-display font-extrabold text-2xl mb-4 border border-brand-orange/20">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+          <div className="p-5 rounded-xl bg-[#121722] border border-[#1F293D] hover:border-brand-orange/40 transition-colors">
+            <div className="w-10 h-10 rounded-lg bg-brand-orange/10 text-brand-orange flex items-center justify-center font-display font-extrabold text-lg mb-3 border border-brand-orange/20">
               01
             </div>
-            <h3 className="font-display text-lg font-bold text-white uppercase mb-2">Register Squad or Solo</h3>
+            <h3 className="font-display text-base font-bold text-white uppercase mb-1.5 flex items-center gap-1.5">
+              <Gamepad2 className="w-4 h-4 text-brand-orange" />
+              Register Squad or Solo
+            </h3>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Fill the fast registration form with your team names and Free Fire UIDs. No email OTP required.
+              Submit your team roster and Free Fire UIDs via our instant registration form.
             </p>
           </div>
 
-          <div className="p-6 rounded-xl bg-[#121722] border border-[#1F293D] hover:border-brand-orange/40 transition-colors">
-            <div className="w-12 h-12 rounded-lg bg-brand-amber/10 text-brand-amber flex items-center justify-center font-display font-extrabold text-2xl mb-4 border border-brand-amber/20">
+          <div className="p-5 rounded-xl bg-[#121722] border border-[#1F293D] hover:border-brand-amber/40 transition-colors">
+            <div className="w-10 h-10 rounded-lg bg-brand-amber/10 text-brand-amber flex items-center justify-center font-display font-extrabold text-lg mb-3 border border-brand-amber/20">
               02
             </div>
-            <h3 className="font-display text-lg font-bold text-white uppercase mb-2">Pay ₹29 / ₹14 via UPI</h3>
+            <h3 className="font-display text-base font-bold text-white uppercase mb-1.5 flex items-center gap-1.5">
+              <Zap className="w-4 h-4 text-brand-amber" />
+              Pay Low Entry via UPI
+            </h3>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Pay the low entry fee and click the 1-tap WhatsApp button to send your UTR screenshot to the admin.
+              Pay ₹29 for Squad or ₹14 for Solo via phonepe/gpay and share your UTR confirmation.
             </p>
           </div>
 
-          <div className="p-6 rounded-xl bg-[#121722] border border-brand-cyan/40 transition-colors">
-            <div className="w-12 h-12 rounded-lg bg-cyan-950/40 text-cyan-400 flex items-center justify-center font-display font-extrabold text-2xl mb-4 border border-cyan-500/30">
+          <div className="p-5 rounded-xl bg-[#121722] border border-[#1F293D] hover:border-cyan-500/40 transition-colors">
+            <div className="w-10 h-10 rounded-lg bg-cyan-950/40 text-cyan-400 flex items-center justify-center font-display font-extrabold text-lg mb-3 border border-cyan-500/30">
               03
             </div>
-            <h3 className="font-display text-lg font-bold text-white uppercase mb-2">Receive Room ID via Email</h3>
+            <h3 className="font-display text-base font-bold text-white uppercase mb-1.5 flex items-center gap-1.5">
+              <Mail className="w-4 h-4 text-cyan-400" />
+              Receive Room Code
+            </h3>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Once verified, your Room ID and Password will be dispatched securely to your email before match kick-off.
+              Room ID and Password are dispatched directly to your registered email before match time.
             </p>
           </div>
 
-          <div className="p-6 rounded-xl bg-[#121722] border border-emerald-500/40 transition-colors">
-            <div className="w-12 h-12 rounded-lg bg-emerald-950/40 text-emerald-400 flex items-center justify-center font-display font-extrabold text-2xl mb-4 border border-emerald-500/30">
+          <div className="p-5 rounded-xl bg-[#121722] border border-[#1F293D] hover:border-emerald-500/40 transition-colors">
+            <div className="w-10 h-10 rounded-lg bg-emerald-950/40 text-emerald-400 flex items-center justify-center font-display font-extrabold text-lg mb-3 border border-emerald-500/30">
               04
             </div>
-            <h3 className="font-display text-lg font-bold text-white uppercase mb-2">Booyah & Win Cash</h3>
+            <h3 className="font-display text-base font-bold text-white uppercase mb-1.5 flex items-center gap-1.5">
+              <Trophy className="w-4 h-4 text-emerald-400" />
+              Booyah & Win Cash
+            </h3>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Official observers record kills and placement. Final scores are verified and cash prizes paid via UPI.
+              Official referees record placements and kills. Verified cash prizes are paid instantly via UPI.
             </p>
           </div>
-
         </div>
       </section>
 
       {/* WhatsApp Community Callout Banner */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative p-8 sm:p-12 rounded-2xl border border-emerald-500/40 overflow-hidden shadow-2xl">
-          {/* Background image overlay */}
-          <img 
-            src="/images/esports-setup.jpg" 
-            alt="Competitive Free Fire Esports Gaming Setup" 
-            loading="lazy"
-            className="absolute inset-0 w-full h-full object-cover opacity-20 filter contrast-125"
-          />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0B0E14] via-[#0B0E14]/90 to-emerald-950/80"></div>
+        <div className="relative p-8 sm:p-10 rounded-2xl border border-emerald-500/30 overflow-hidden shadow-2xl bg-[#0E151A]">
+          {/* Subtle background glow */}
+          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none"></div>
           
-          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
-            <div className="space-y-3 max-w-xl text-center md:text-left">
-              <span className="px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-wider border border-emerald-500/30">
+          <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div className="space-y-2.5 max-w-xl text-center md:text-left">
+              <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-wider border border-emerald-500/30 inline-block">
                 Join 500+ College Gamers
               </span>
-              <h2 className="font-display text-2xl sm:text-4xl font-bold uppercase text-white tracking-wide">
+              <h2 className="font-display text-2xl sm:text-3xl font-bold uppercase text-white tracking-wide">
                 Official Free Fire WhatsApp Group
               </h2>
-              <p className="text-sm text-slate-300">
-                Get notified the second new tournament slots open, receive match schedule reminders, and talk strategy with the community.
+              <p className="text-xs sm:text-sm text-slate-300">
+                Get notified instantly when new tournament slots open, receive match schedule reminders, and connect with other RIT college squads.
               </p>
             </div>
 
@@ -290,9 +362,9 @@ export default function HomePage() {
               href={settings?.whatsappCommunityUrl || 'https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2'}
               target="_blank"
               rel="noopener noreferrer"
-              className="px-8 py-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold uppercase tracking-wider text-sm transition-all shadow-lg flex items-center gap-3 shrink-0"
+              className="px-7 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold uppercase tracking-wider text-xs sm:text-sm transition-all shadow-lg flex items-center gap-2.5 shrink-0"
             >
-              <MessageCircle className="w-5 h-5 text-slate-950 fill-slate-950" />
+              <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-slate-950 fill-slate-950" />
               Join WhatsApp Group Now
             </a>
           </div>

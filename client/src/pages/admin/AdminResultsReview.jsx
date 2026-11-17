@@ -124,7 +124,7 @@ export default function AdminResultsReview() {
           Match Result Review & Publishing
         </h1>
         <p className="text-xs text-slate-400 mt-1">
-          Review spectator recorded match scores, verify against captain screenshots, and officially publish tournament results.
+          Review recorded match scores, verify against captain screenshots, and officially publish tournament results.
         </p>
       </div>
 
@@ -321,7 +321,7 @@ export default function AdminResultsReview() {
               </label>
               <textarea
                 rows="2"
-                placeholder="e.g. Cross-checked with spectator scoreboard screenshot; kill counts matched."
+                placeholder="e.g. Cross-checked with scoreboard screenshot; kill counts matched."
                 value={adminNotes}
                 onChange={(e) => setAdminNotes(e.target.value)}
                 className="w-full px-3.5 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-xs text-white focus:outline-none focus:border-brand-orange"

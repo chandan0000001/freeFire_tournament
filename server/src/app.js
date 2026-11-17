@@ -64,7 +64,7 @@ app.use('/uploads', express.static(path.resolve('uploads')));
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
-    message: '🔥 RIT Esports Arena API Server is LIVE and healthy!',
+    message: 'RIT Esports Arena API Server is LIVE and healthy',
     version: '1.0.0',
     endpoints: {
       health: '/api/health',

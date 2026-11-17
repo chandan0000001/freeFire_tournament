@@ -396,10 +396,10 @@ export default function AdminRooms() {
                     </td>
                     <td className="py-2.5 px-4">
                       {log.deliveryStatus === 'sent' ? (
-                        <span className="text-emerald-400 font-bold">✅ Sent</span>
+                        <span className="text-emerald-400 font-bold">Sent</span>
                       ) : (
                         <div>
-                          <span className="text-rose-400 font-bold">❌ Failed</span>
+                          <span className="text-rose-400 font-bold">Failed</span>
                           {log.errorMessage && (
                             <p className="text-[10px] text-rose-300/80 mt-0.5 max-w-[220px] truncate" title={log.errorMessage}>
                               {log.errorMessage.includes('authorised_ips')

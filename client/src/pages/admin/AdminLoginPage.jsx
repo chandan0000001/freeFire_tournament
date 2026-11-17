@@ -89,18 +89,11 @@ export default function AdminLoginPage() {
             <button
               type="submit"
               disabled={submitting}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-purple-600 to-indigo-600 hover:brightness-110 font-display font-bold uppercase tracking-wider text-white text-sm shadow-md transition-all disabled:opacity-50"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber hover:brightness-110 font-display font-bold uppercase tracking-wider text-white text-sm shadow-glow-orange transition-all disabled:opacity-50"
             >
               {submitting ? 'Authenticating...' : 'Sign In to Dashboard'}
             </button>
           </form>
-
-          <div className="pt-2 text-center text-[11px] text-slate-400 border-t border-[#1F293D]">
-            Spectator login?{' '}
-            <Link to="/spectator/login" className="text-cyan-400 font-bold hover:underline">
-              Access Spectator Workspace
-            </Link>
-          </div>
 
         </div>
 

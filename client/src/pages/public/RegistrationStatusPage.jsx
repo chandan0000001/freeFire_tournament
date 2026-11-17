@@ -137,7 +137,7 @@ export default function RegistrationStatusPage() {
             <div className="p-3 rounded-lg bg-[#0B0E14] border border-[#1F293D]">
               <span className="text-slate-400 block text-[10px] uppercase font-bold">Room Credentials</span>
               <span className="text-white font-bold text-sm capitalize">
-                {data.roomCredentialStatus === 'sent' ? '✅ Dispatched to Email' : '⏳ Scheduled before match'}
+                {data.roomCredentialStatus === 'sent' ? 'Dispatched to Email' : 'Scheduled before match'}
               </span>
             </div>
           </div>

@@ -3,13 +3,15 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { Analytics } from '@vercel/analytics/react';
 
-// Layout (kept synchronous for instant header/footer frame)
+// Layout & Immediate Entry Frame
 import Navbar from './components/layout/Navbar.jsx';
 import Footer from './components/layout/Footer.jsx';
 import PageLoadingFallback from './components/common/PageLoadingFallback.jsx';
 
+// Direct synchronous import for Homepage (Zero initial loading spinner delay)
+import HomePage from './pages/public/HomePage.jsx';
+
 // Lazy-loaded Public Pages
-const HomePage = lazy(() => import('./pages/public/HomePage.jsx'));
 const TournamentsPage = lazy(() => import('./pages/public/TournamentsPage.jsx'));
 const TournamentDetailPage = lazy(() => import('./pages/public/TournamentDetailPage.jsx'));
 const SquadRegisterPage = lazy(() => import('./pages/public/SquadRegisterPage.jsx'));
@@ -34,23 +36,11 @@ const AdminPrizes = lazy(() => import('./pages/admin/AdminPrizes.jsx'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings.jsx'));
 const AdminAuditLogs = lazy(() => import('./pages/admin/AdminAuditLogs.jsx'));
 
-// Lazy-loaded Spectator Pages
-const SpectatorLoginPage = lazy(() => import('./pages/spectator/SpectatorLoginPage.jsx'));
-const SpectatorWorkspace = lazy(() => import('./pages/spectator/SpectatorWorkspace.jsx'));
-
 // Protected Admin Guard
 function ProtectedAdminRoute({ children }) {
   const { user, loading, isAdmin } = useAuth();
   if (loading) return <PageLoadingFallback />;
   if (!user || !isAdmin) return <Navigate to="/admin/login" replace />;
-  return children;
-}
-
-// Protected Spectator Guard
-function ProtectedSpectatorRoute({ children }) {
-  const { user, loading, isSpectator } = useAuth();
-  if (loading) return <PageLoadingFallback />;
-  if (!user || !isSpectator) return <Navigate to="/spectator/login" replace />;
   return children;
 }
 
@@ -69,60 +59,56 @@ export default function App() {
   return (
     <AuthProvider>
       <Router>
-        <Suspense fallback={<PageLoadingFallback />}>
-          <Routes>
-            {/* Public Website Routes */}
-            <Route path="/" element={<PublicShell><HomePage /></PublicShell>} />
-            <Route path="/tournaments" element={<PublicShell><TournamentsPage /></PublicShell>} />
-            <Route path="/tournaments/:slug" element={<PublicShell><TournamentDetailPage /></PublicShell>} />
-            <Route path="/join/squad/:tournamentId" element={<PublicShell><SquadRegisterPage /></PublicShell>} />
-            <Route path="/join/solo/:tournamentId" element={<PublicShell><SoloRegisterPage /></PublicShell>} />
-            <Route path="/status" element={<PublicShell><RegistrationStatusPage /></PublicShell>} />
-            <Route path="/leaderboard" element={<PublicShell><LeaderboardPage /></PublicShell>} />
-            <Route path="/results" element={<PublicShell><ResultsPage /></PublicShell>} />
-            <Route path="/winners" element={<PublicShell><WinnersPage /></PublicShell>} />
-            <Route path="/rules" element={<PublicShell><RulesPage /></PublicShell>} />
-            <Route path="/contact" element={<PublicShell><RulesPage /></PublicShell>} />
-            <Route path="/privacy" element={<PublicShell><PrivacyPolicyPage /></PublicShell>} />
+        <Routes>
+          {/* Immediate HomePage - NO full-page loading spinner */}
+          <Route path="/" element={<PublicShell><HomePage /></PublicShell>} />
 
-            {/* Auth Pages */}
-            <Route path="/admin/login" element={<PublicShell><AdminLoginPage /></PublicShell>} />
-            <Route path="/spectator/login" element={<SpectatorLoginPage />} />
+          {/* Lazy-loaded routes wrapped in suspense */}
+          <Route
+            path="/*"
+            element={
+              <Suspense fallback={<PageLoadingFallback />}>
+                <Routes>
+                  <Route path="/tournaments" element={<PublicShell><TournamentsPage /></PublicShell>} />
+                  <Route path="/tournaments/:slug" element={<PublicShell><TournamentDetailPage /></PublicShell>} />
+                  <Route path="/join/squad/:tournamentId" element={<PublicShell><SquadRegisterPage /></PublicShell>} />
+                  <Route path="/join/solo/:tournamentId" element={<PublicShell><SoloRegisterPage /></PublicShell>} />
+                  <Route path="/status" element={<PublicShell><RegistrationStatusPage /></PublicShell>} />
+                  <Route path="/leaderboard" element={<PublicShell><LeaderboardPage /></PublicShell>} />
+                  <Route path="/results" element={<PublicShell><ResultsPage /></PublicShell>} />
+                  <Route path="/winners" element={<PublicShell><WinnersPage /></PublicShell>} />
+                  <Route path="/rules" element={<PublicShell><RulesPage /></PublicShell>} />
+                  <Route path="/contact" element={<PublicShell><RulesPage /></PublicShell>} />
+                  <Route path="/privacy" element={<PublicShell><PrivacyPolicyPage /></PublicShell>} />
 
-            {/* Spectator Protected Workspace */}
-            <Route
-              path="/spectator/workspace"
-              element={
-                <ProtectedSpectatorRoute>
-                  <SpectatorWorkspace />
-                </ProtectedSpectatorRoute>
-              }
-            />
+                  {/* Admin Auth & Dashboard */}
+                  <Route path="/admin/login" element={<PublicShell><AdminLoginPage /></PublicShell>} />
+                  <Route
+                    path="/admin"
+                    element={
+                      <ProtectedAdminRoute>
+                        <AdminLayout />
+                      </ProtectedAdminRoute>
+                    }
+                  >
+                    <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                    <Route path="dashboard" element={<AdminDashboardOverview />} />
+                    <Route path="tournaments" element={<AdminTournaments />} />
+                    <Route path="registrations" element={<AdminRegistrations />} />
+                    <Route path="rooms" element={<AdminRooms />} />
+                    <Route path="results" element={<AdminResultsReview />} />
+                    <Route path="prizes" element={<AdminPrizes />} />
+                    <Route path="settings" element={<AdminSettings />} />
+                    <Route path="audit-logs" element={<AdminAuditLogs />} />
+                  </Route>
 
-            {/* Protected Admin Routes */}
-            <Route
-              path="/admin"
-              element={
-                <ProtectedAdminRoute>
-                  <AdminLayout />
-                </ProtectedAdminRoute>
-              }
-            >
-              <Route index element={<Navigate to="/admin/dashboard" replace />} />
-              <Route path="dashboard" element={<AdminDashboardOverview />} />
-              <Route path="tournaments" element={<AdminTournaments />} />
-              <Route path="registrations" element={<AdminRegistrations />} />
-              <Route path="rooms" element={<AdminRooms />} />
-              <Route path="results" element={<AdminResultsReview />} />
-              <Route path="prizes" element={<AdminPrizes />} />
-              <Route path="settings" element={<AdminSettings />} />
-              <Route path="audit-logs" element={<AdminAuditLogs />} />
-            </Route>
-
-            {/* Custom 404 Page */}
-            <Route path="*" element={<PublicShell><NotFoundPage /></PublicShell>} />
-          </Routes>
-        </Suspense>
+                  {/* Custom 404 Catch-All */}
+                  <Route path="*" element={<PublicShell><NotFoundPage /></PublicShell>} />
+                </Routes>
+              </Suspense>
+            }
+          />
+        </Routes>
         <Analytics />
       </Router>
     </AuthProvider>

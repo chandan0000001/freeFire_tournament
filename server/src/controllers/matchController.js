@@ -25,7 +25,7 @@ export const getMatches = async (req, res, next) => {
 
 export const createMatch = async (req, res, next) => {
   try {
-    const { tournamentId, matchNumber, roundNumber, scheduledAt, map, assignedSpectator } = req.body;
+    const { tournamentId, matchNumber, roundNumber, scheduledAt, map } = req.body;
 
     const match = await Match.create({
       tournamentId,
@@ -33,7 +33,6 @@ export const createMatch = async (req, res, next) => {
       roundNumber: roundNumber || 1,
       scheduledAt,
       map: map || 'Bermuda',
-      assignedSpectator: assignedSpectator || req.user._id,
       status: 'scheduled',
     });
 
@@ -43,39 +42,7 @@ export const createMatch = async (req, res, next) => {
   }
 };
 
-// Spectator Endpoints
-export const getSpectatorAssignments = async (req, res, next) => {
-  try {
-    const matches = await Match.find({ assignedSpectator: req.user._id })
-      .populate('tournamentId', 'title format matchDate map scoringConfig status')
-      .sort({ scheduledAt: -1 });
-
-    // For each match, attach approved participants
-    const populated = await Promise.all(
-      matches.map(async (m) => {
-        const registrations = await Registration.find({
-          tournamentId: m.tournamentId._id,
-          paymentStatus: PAYMENT_STATUS.VERIFIED,
-          isApproved: true,
-        }).select('referenceId teamName captain players format');
-
-        const existingResult = await MatchResult.findOne({ matchId: m._id });
-
-        return {
-          ...m.toObject(),
-          participants: registrations,
-          submittedResult: existingResult || null,
-        };
-      })
-    );
-
-    res.json({ success: true, matches: populated });
-  } catch (error) {
-    next(error);
-  }
-};
-
-export const submitSpectatorResult = async (req, res, next) => {
+export const submitMatchResult = async (req, res, next) => {
   try {
     const { id: matchId } = req.params;
     const { entries, notes, evidenceScreenshots } = req.body;
@@ -87,11 +54,6 @@ export const submitSpectatorResult = async (req, res, next) => {
     const match = await Match.findById(matchId).populate('tournamentId');
     if (!match) {
       return res.status(404).json({ success: false, message: 'Match not found' });
-    }
-
-    // Verify spectator assignment (unless admin)
-    if (req.user.role === 'spectator' && match.assignedSpectator?.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ success: false, message: 'You are not the designated spectator for this match' });
     }
 
     const scoringConfig = match.tournamentId?.scoringConfig;

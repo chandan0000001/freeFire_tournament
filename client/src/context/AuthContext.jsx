@@ -46,10 +46,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   const isAdmin = user && ['superadmin', 'admin'].includes(user.role);
-  const isSpectator = user && ['spectator', 'admin', 'superadmin'].includes(user.role);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, isAdmin, isSpectator }}>
+    <AuthContext.Provider value={{ user, loading, login, logout, isAdmin }}>
       {children}
     </AuthContext.Provider>
   );

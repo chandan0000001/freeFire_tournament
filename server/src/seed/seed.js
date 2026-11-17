@@ -32,24 +32,7 @@ const seedDatabase = async () => {
       console.log(`[Seed] Superadmin already exists: ${adminEmail}`);
     }
 
-    // 2. Seed Spectator
-    const spectatorEmail = 'spectator@ritesports.in';
-    const spectatorPassword = 'Spectator@RIT2026!';
-    let spectator = await User.findOne({ email: spectatorEmail });
-    if (!spectator) {
-      spectator = await User.create({
-        name: 'Official Match Observer #1',
-        email: spectatorEmail,
-        password: spectatorPassword,
-        role: ROLES.SPECTATOR,
-        isActive: true,
-      });
-      console.log(`[Seed] Spectator created: ${spectatorEmail} / ${spectatorPassword}`);
-    } else {
-      console.log(`[Seed] Spectator already exists: ${spectatorEmail}`);
-    }
-
-    // 3. Seed Site Settings
+    // 2. Seed Site Settings
     let settings = await SiteSetting.findOne();
     if (!settings) {
       settings = await SiteSetting.create({

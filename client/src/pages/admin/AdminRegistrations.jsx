@@ -238,7 +238,7 @@ export default function AdminRegistrations() {
                     </td>
                     <td className="py-3 px-5 text-center">
                       <span className="text-[11px] text-slate-400 capitalize">
-                        {reg.roomCredentialStatus === 'sent' ? '✅ Sent' : 'Pending'}
+                        {reg.roomCredentialStatus === 'sent' ? 'Sent' : 'Pending'}
                       </span>
                     </td>
                     <td className="py-3 px-5 text-right">

@@ -1,18 +1,13 @@
 import React from 'react';
 
+/**
+ * Ultra-fast, minimal top progress indicator.
+ * Eliminates intrusive full-screen blocking spinners so the page shell remains visible.
+ */
 export default function PageLoadingFallback() {
   return (
-    <div className="min-h-[50vh] flex flex-col items-center justify-center space-y-4 px-4">
-      <div className="relative w-14 h-14">
-        <div className="absolute inset-0 rounded-full border-4 border-brand-orange/20 animate-ping"></div>
-        <div className="w-14 h-14 rounded-full border-4 border-brand-orange border-t-transparent animate-spin"></div>
-        <div className="absolute inset-0 flex items-center justify-center">
-          <img src="/images/rit-logo.png" alt="Loading" className="w-7 h-7 object-contain" />
-        </div>
-      </div>
-      <p className="text-xs uppercase font-bold tracking-widest text-slate-400 animate-pulse">
-        Loading Arena...
-      </p>
+    <div className="fixed top-0 left-0 right-0 z-50 pointer-events-none">
+      <div className="h-1 w-full bg-gradient-to-r from-brand-orange via-brand-amber to-brand-gold animate-pulse"></div>
     </div>
   );
 }

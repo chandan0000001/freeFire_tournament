@@ -17,7 +17,7 @@ import {
   getRoomDeliveryLogs,
   retryRoomDelivery,
 } from '../controllers/roomController.js';
-import { getMatches, createMatch } from '../controllers/matchController.js';
+import { getMatches, createMatch, submitMatchResult } from '../controllers/matchController.js';
 import {
   getAdminResults,
   reviewMatchResult,
@@ -56,9 +56,10 @@ router.post('/rooms/:tournamentId/send', distributeRoomCredentials);
 router.get('/rooms/:tournamentId/logs', getRoomDeliveryLogs);
 router.post('/rooms/retry/:logId', retryRoomDelivery);
 
-// Matches & Spectator Assignments
+// Matches & Results Recording
 router.get('/matches', getMatches);
 router.post('/matches', createMatch);
+router.post('/matches/:id/results', submitMatchResult);
 
 // Match Results Review & Publishing
 router.get('/results', getAdminResults);

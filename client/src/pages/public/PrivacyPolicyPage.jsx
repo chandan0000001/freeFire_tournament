@@ -57,7 +57,7 @@ export default function PrivacyPolicyPage() {
           <ul className="space-y-1.5 pl-2">
             <li>• Verifying that all participants are legitimate RIT college students.</li>
             <li>• Securely dispatching Custom Room ID and Password via Brevo transactional emails to verified team captains.</li>
-            <li>• Tracking match kills and placement scores via spectator observations.</li>
+            <li>• Tracking match kills and placement scores via referee observations.</li>
             <li>• Displaying leaderboard ranks and Hall of Fame winner honors.</li>
             <li>• Releasing UPI cash prize payouts directly to winning team captains.</li>
           </ul>

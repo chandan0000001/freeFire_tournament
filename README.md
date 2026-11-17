@@ -1,4 +1,4 @@
-# 🔥 RIT Esports Arena — Official College Free Fire League
+# RIT Esports Arena — Official College Free Fire League
 
 [![Live Frontend](https://img.shields.io/badge/Frontend-Vercel-black?logo=vercel&logoColor=white)](https://rittournament.vercel.app)
 [![Live API](https://img.shields.io/badge/Backend-Render-46E3B7?logo=render&logoColor=white)](https://freefire-tournament-hlu5.onrender.com)
@@ -10,7 +10,7 @@ A modern, mobile-responsive, production-ready competitive Free Fire esports plat
 
 ---
 
-## 🌐 Live Production Deployments
+## Live Production Deployments
 
 - **Frontend Application**: [https://rittournament.vercel.app](https://rittournament.vercel.app)
 - **Backend API**: [https://freefire-tournament-hlu5.onrender.com](https://freefire-tournament-hlu5.onrender.com)
@@ -20,7 +20,7 @@ A modern, mobile-responsive, production-ready competitive Free Fire esports plat
 
 ---
 
-## 🎮 Tech Stack & Architecture
+## Tech Stack & Architecture
 
 ### Frontend (Client)
 - **Framework**: React 18, Vite 6, Tailwind CSS
@@ -42,7 +42,7 @@ A modern, mobile-responsive, production-ready competitive Free Fire esports plat
 
 ---
 
-## ⚡ Core Platform Workflows
+## Core Platform Workflows
 
 ```
    [ Student Registration ]               [ Admin Verification ]            [ Match Day Execution ]
@@ -71,7 +71,7 @@ A modern, mobile-responsive, production-ready competitive Free Fire esports plat
 
 ---
 
-## 🖼️ Curated 16:9 Tournament Banners
+## Curated 16:9 Tournament Banners
 
 All tournament banners are optimized to standard **16:9 widescreen WebP** (saving 95% bandwidth):
 - `/images/ff-banner.webp`: Squad Battle Crimson (16:9)
@@ -86,7 +86,7 @@ All tournament banners are optimized to standard **16:9 widescreen WebP** (savin
 
 ---
 
-## 🛠️ Local Development & Setup
+## Local Development & Setup
 
 ### 1. Prerequisites
 - Node.js 18+ (Tested on Node 20 & 24)
@@ -148,7 +148,6 @@ npm run dev
 ```
 - Frontend: `http://localhost:5173`
 - Admin Portal: `http://localhost:5173/admin/login`
-- Spectator Portal: `http://localhost:5173/spectator/login`
 - Backend API: `http://localhost:5000/api`
 
 ### 6. Run Unit & Concurrency Tests
@@ -158,7 +157,7 @@ npm test
 
 ---
 
-## 📡 Key API Endpoints
+## Key API Endpoints
 
 | Method | Endpoint | Description | Access |
 |---|---|---|---|
@@ -169,11 +168,11 @@ npm test
 | `POST` | `/api/registrations/solo` | Register solo player + reserve slot | Public |
 | `GET` | `/api/registrations/status/:ref`| Track verification & room details | Public |
 | `GET` | `/api/leaderboards` | Campus standings & top fraggers | Public |
-| `POST` | `/api/auth/login` | Admin & Spectator JWT authentication | Public |
+| `POST` | `/api/auth/login` | Admin JWT authentication | Public |
 | `POST` | `/api/admin/rooms/distribute` | Send Room ID & Pass via Brevo | Admin |
-| `POST` | `/api/results/:matchId/publish`| Publish verified match scorecard | Admin |
+| `POST` | `/api/admin/matches/:id/results`| Submit and verify match scorecard | Admin |
 
 ---
 
-## 📜 Campus Policy & Fair Play
+## Campus Policy & Fair Play
 This is a non-commercial student initiative for Roland Institute of Technology. All players must comply with the [RIT Esports Fair Play Policy](https://rittournament.vercel.app/privacy). Free Fire is a trademark of Garena International.

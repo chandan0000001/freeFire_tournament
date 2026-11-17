@@ -90,10 +90,6 @@ function Footer() {
                 <Link to="/admin/login" className="hover:text-slate-300 flex items-center gap-1">
                   <Lock className="w-3 h-3" /> Admin Portal
                 </Link>
-                <span>•</span>
-                <Link to="/spectator/login" className="hover:text-slate-300">
-                  Spectator Portal
-                </Link>
               </div>
             </div>
           </div>

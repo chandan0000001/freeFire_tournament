@@ -26,10 +26,6 @@ const matchSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
-    assignedSpectator: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-    },
     roomCredentials: {
       roomId: {
         type: String,

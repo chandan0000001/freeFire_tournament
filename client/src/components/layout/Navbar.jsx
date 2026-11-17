@@ -18,7 +18,7 @@ import {
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
-  const { user, isAdmin, isSpectator, logout } = useAuth();
+  const { user, isAdmin, logout } = useAuth();
 
   const navLinks = [
     { name: 'Tournaments', path: '/tournaments', icon: Trophy },
@@ -95,8 +95,8 @@ export default function Navbar() {
               WhatsApp Group
             </a>
 
-            {/* Admin or Spectator Portal button (Only shown when logged in) */}
-            {isAdmin ? (
+            {/* Admin Portal button (Only shown when logged in) */}
+            {isAdmin && (
               <Link
                 to="/admin/dashboard"
                 className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-purple-950/60 text-purple-300 border border-purple-500/40 hover:bg-purple-900/80 text-xs font-bold transition-all"
@@ -104,15 +104,7 @@ export default function Navbar() {
                 <ShieldCheck className="w-4 h-4 text-purple-400" />
                 Admin Panel
               </Link>
-            ) : isSpectator ? (
-              <Link
-                to="/spectator/workspace"
-                className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-cyan-950/60 text-cyan-300 border border-cyan-500/40 hover:bg-cyan-900/80 text-xs font-bold transition-all"
-              >
-                <ShieldCheck className="w-4 h-4 text-cyan-400" />
-                Spectator Workspace
-              </Link>
-            ) : null}
+            )}
 
             {/* Join Tournament CTA */}
             <Link
