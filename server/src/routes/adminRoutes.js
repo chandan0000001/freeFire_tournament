@@ -23,6 +23,7 @@ import {
   getAdminResults,
   reviewMatchResult,
   publishMatchResult,
+  directRecordMatchResult,
 } from '../controllers/resultController.js';
 import { getAdminPrizes, updatePayoutStatus } from '../controllers/prizeController.js';
 import {
@@ -65,6 +66,7 @@ router.post('/matches/:id/results', submitMatchResult);
 
 // Match Results Review & Publishing
 router.get('/results', getAdminResults);
+router.post('/results/direct-record', directRecordMatchResult);
 router.patch('/results/:id/review', reviewMatchResult);
 router.post('/results/:id/publish', publishMatchResult);
 

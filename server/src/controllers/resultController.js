@@ -1,4 +1,5 @@
 import { MatchResult } from '../models/MatchResult.js';
+import { Match } from '../models/Match.js';
 import { Tournament } from '../models/Tournament.js';
 import { Registration } from '../models/Registration.js';
 import { Prize } from '../models/Prize.js';
@@ -206,3 +207,151 @@ export const publishMatchResult = async (req, res, next) => {
     next(error);
   }
 };
+
+/**
+ * Admin: Direct Match Recording & Winner Declaration
+ * Allows admin to record match placements, kills, and declare winners in a single intuitive operation
+ */
+export const directRecordMatchResult = async (req, res, next) => {
+  try {
+    const {
+      tournamentId,
+      matchNumber = 1,
+      map = 'Bermuda',
+      entries,
+      notes = '',
+      evidenceScreenshots = [],
+      autoPublish = true,
+    } = req.body;
+
+    if (!tournamentId) {
+      return res.status(400).json({ success: false, message: 'Tournament ID is required' });
+    }
+    if (!Array.isArray(entries) || entries.length === 0) {
+      return res.status(400).json({ success: false, message: 'At least one participant score entry is required' });
+    }
+
+    const tournament = await Tournament.findById(tournamentId);
+    if (!tournament) {
+      return res.status(404).json({ success: false, message: 'Tournament not found' });
+    }
+
+    // 1. Find or create Match document
+    let match = await Match.findOne({ tournamentId, matchNumber });
+    if (!match) {
+      match = await Match.create({
+        tournamentId,
+        matchNumber,
+        roundNumber: 1,
+        map: map || tournament.map || 'Bermuda',
+        scheduledAt: tournament.matchDate || new Date(),
+        status: autoPublish ? 'completed' : 'in_progress',
+      });
+    } else {
+      if (autoPublish) match.status = 'completed';
+      if (map) match.map = map;
+      await match.save();
+    }
+
+    // 2. Compute entries using tournament scoringConfig
+    const scoringConfig = tournament.scoringConfig || { killPointValue: 1, booyahBonus: 12 };
+    const computedEntries = entries.map((entry) => {
+      const score = calculateEntryScore(entry, scoringConfig);
+      return {
+        registrationId: entry.registrationId || null,
+        participantName: (entry.participantName || 'Unknown Team').trim(),
+        placement: parseInt(entry.placement, 10) || 1,
+        kills: score.kills,
+        isBooyah: score.isBooyah,
+        calculatedPoints: score.calculatedPoints,
+        playerKills: entry.playerKills || [],
+      };
+    });
+
+    // 3. Find or create MatchResult document
+    let resultDoc = await MatchResult.findOne({ matchId: match._id });
+    if (!resultDoc) {
+      resultDoc = new MatchResult({
+        matchId: match._id,
+        tournamentId: tournament._id,
+        recordedBy: req.user._id,
+        status: autoPublish ? RESULT_STATUS.PUBLISHED : RESULT_STATUS.PENDING_REVIEW,
+        entries: computedEntries,
+        notes: notes || '',
+        evidenceScreenshots: evidenceScreenshots || [],
+      });
+    } else {
+      resultDoc.entries = computedEntries;
+      resultDoc.notes = notes || resultDoc.notes;
+      if (evidenceScreenshots && evidenceScreenshots.length > 0) {
+        resultDoc.evidenceScreenshots = evidenceScreenshots;
+      }
+      resultDoc.status = autoPublish ? RESULT_STATUS.PUBLISHED : RESULT_STATUS.PENDING_REVIEW;
+      resultDoc.recordedBy = req.user._id;
+    }
+
+    if (autoPublish) {
+      resultDoc.publishedAt = new Date();
+      resultDoc.verifiedBy = req.user._id;
+      tournament.status = TOURNAMENT_STATUS.COMPLETED;
+      await tournament.save();
+    }
+
+    await resultDoc.save();
+
+    // 4. Auto-allocate prizes and clear Redis cache if published
+    if (autoPublish) {
+      const ranked = rankParticipants(resultDoc.entries);
+      if (tournament.prizeConfig && ranked.length > 0) {
+        const prizeTiers = [
+          { rank: 1, title: '1st Place Winner (Booyah Champion)', amount: tournament.prizeConfig.firstPlace },
+          { rank: 2, title: '2nd Place (Runner-Up)', amount: tournament.prizeConfig.secondPlace },
+          { rank: 3, title: '3rd Place', amount: tournament.prizeConfig.thirdPlace },
+        ];
+
+        for (const tier of prizeTiers) {
+          if (tier.amount > 0 && ranked[tier.rank - 1]) {
+            const winnerEntry = ranked[tier.rank - 1];
+            await Prize.findOneAndUpdate(
+              { tournamentId: tournament._id, rank: tier.rank },
+              {
+                tournamentId: tournament._id,
+                rank: tier.rank,
+                title: tier.title,
+                amount: tier.amount,
+                winnerRegistrationId: winnerEntry.registrationId,
+                winnerName: winnerEntry.participantName,
+              },
+              { upsert: true, new: true }
+            );
+          }
+        }
+      }
+
+      await cache.delPattern('leaderboard:*');
+      await cache.delPattern('tournaments:*');
+      await cache.delPattern('winners:*');
+    }
+
+    await logAudit({
+      action: autoPublish ? 'RESULT_PUBLISHED' : 'MATCH_RESULT_RECORDED',
+      performedBy: req.user,
+      targetEntity: 'MatchResult',
+      targetId: resultDoc._id,
+      details: `${autoPublish ? 'Recorded and published' : 'Recorded'} match result for tournament: "${tournament.title}". Winner: ${computedEntries[0]?.participantName || 'N/A'}`,
+      ipAddress: req.ip,
+    });
+
+    res.status(201).json({
+      success: true,
+      message: autoPublish
+        ? `Match result officially published! "${computedEntries[0]?.participantName || 'Winner'}" declared champion.`
+        : 'Match result saved to review queue.',
+      result: resultDoc,
+      published: autoPublish,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
