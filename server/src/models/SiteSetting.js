@@ -12,23 +12,23 @@ const siteSettingSchema = new mongoose.Schema(
     },
     adminWhatsAppNumber: {
       type: String,
-      default: '918114603994',
+      default: () => process.env.ADMIN_WHATSAPP_NUMBER || '',
     },
     upiId: {
       type: String,
-      default: 'srikantap571-1@okaxis',
+      default: () => process.env.ADMIN_UPI_ID || 'organizer@upi',
     },
     upiPayeeName: {
       type: String,
-      default: 'Srikant Panda',
+      default: () => process.env.ADMIN_UPI_NAME || 'RIT Esports Organizer',
     },
     upiAid: {
       type: String,
-      default: 'uGICAgIDP-4HlSw',
+      default: () => process.env.ADMIN_UPI_AID || '',
     },
     upiUriTemplate: {
       type: String,
-      default: 'upi://pay?pa=srikantap571-1@okaxis&pn=Srikant%20Panda&aid=uGICAgIDP-4HlSw',
+      default: () => process.env.ADMIN_UPI_URI || '',
     },
     upiQrCodeUrl: {
       type: String,

@@ -87,8 +87,8 @@ export default function PrivacyPolicyPage() {
             If you have questions regarding data privacy, leaderboard removal, or roll number verification, contact our chief administrator:
           </p>
           <div className="p-3 rounded-lg bg-[#0B0E14] border border-[#1F293D] space-y-1 font-mono text-slate-300">
-            <p>Admin Email: <span className="text-white">rittournament01@gmail.com</span></p>
-            <p>Admin WhatsApp: <span className="text-white">+91 8114603994</span></p>
+            <p>Admin Email: <span className="text-white">admin@ritesports.in</span></p>
+            <p>Admin Support: <span className="text-white">Official Helpdesk via WhatsApp Community</span></p>
             <p>Institution: <span className="text-white">Roland Institute of Technology, Berhampur, Odisha</span></p>
           </div>
         </div>

@@ -2,10 +2,14 @@ import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api.js';
 import TournamentCard from '../../components/tournament/TournamentCard.jsx';
 import usePageMeta from '../../hooks/usePageMeta.js';
-import { Trophy, Search, Filter } from 'lucide-react';
+import { Trophy, Search, Users, User, Flame, Sparkles } from 'lucide-react';
 
 export default function TournamentsPage() {
-  usePageMeta('Active Competitions | RIT Esports Arena', 'Browse upcoming Free Fire custom room tournaments, check slot availability, and secure your team entry.');
+  usePageMeta(
+    'Free Fire Tournaments | RIT Esports Arena',
+    'Browse weekly verified Free Fire tournaments for Roland Institute of Technology. Check slot availability, prize pools, and register your squad.'
+  );
+
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formatFilter, setFormatFilter] = useState('');
@@ -18,7 +22,7 @@ export default function TournamentsPage() {
       const params = new URLSearchParams();
       if (formatFilter) params.append('format', formatFilter);
       if (statusFilter) params.append('status', statusFilter);
-      if (search) params.append('search', search);
+      if (search.trim()) params.append('search', search.trim());
 
       const res = await api.get(`/tournaments?${params.toString()}`);
       if (res.success) {
@@ -42,60 +46,47 @@ export default function TournamentsPage() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20 space-y-8">
-      
-      {/* Header */}
-      <div>
-        <div className="flex items-center gap-2 text-brand-orange text-xs font-bold uppercase tracking-wider mb-1">
-          <Trophy className="w-4 h-4" />
-          <span>Competition Hub</span>
+      {/* Header Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-[#1A2234]">
+        <div>
+          <div className="flex items-center gap-2 text-brand-orange text-xs font-bold uppercase tracking-wider mb-1">
+            <Trophy className="w-4 h-4" />
+            <span>Official College Esports Hub</span>
+          </div>
+          <h1 className="font-display text-3xl sm:text-4xl font-extrabold uppercase text-white tracking-wide">
+            Tournaments
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-1">
+            Browse upcoming Free Fire custom room battles, track live slots, and secure your place.
+          </p>
         </div>
-        <h1 className="font-display text-3xl sm:text-4xl font-extrabold uppercase text-white tracking-wide">
-          Free Fire Tournaments
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Browse upcoming custom rooms, check slot availability, and secure your spot.
-        </p>
+
+        <div className="flex items-center gap-2 text-xs text-slate-400">
+          <span className="px-3 py-1.5 rounded-lg bg-[#101522] border border-[#1A2234] font-semibold">
+            {tournaments.length} {tournaments.length === 1 ? 'Tournament' : 'Tournaments'} Available
+          </span>
+        </div>
       </div>
 
-      {/* Filter and Search Bar */}
-      <div className="p-4 rounded-xl bg-[#121722] border border-[#1F293D] flex flex-col md:flex-row items-center justify-between gap-4 sticky top-24 z-30 shadow-xl backdrop-blur-md bg-[#121722]/95">
-        
-        {/* Format & Status Toggle Filters */}
-        <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
-          <span className="text-xs text-slate-400 font-bold uppercase mr-1 flex items-center gap-1">
-            <Filter className="w-3.5 h-3.5" /> Format:
-          </span>
-          {['', 'squad', 'solo'].map((fmt) => (
-            <button
-              key={fmt}
-              type="button"
-              onClick={() => setFormatFilter(fmt)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${
-                formatFilter === fmt
-                  ? 'bg-brand-orange text-white shadow-glow-orange'
-                  : 'bg-[#161B26] text-slate-400 hover:text-white border border-[#1F293D]'
-              }`}
-            >
-              {fmt === '' ? 'All Formats' : fmt}
-            </button>
-          ))}
-
-          <span className="text-xs text-slate-400 font-bold uppercase ml-2 mr-1">Status:</span>
+      {/* GBArena Inspired Filter & Control Bar */}
+      <div className="p-3 sm:p-4 rounded-2xl bg-[#101522]/95 border border-[#1E2638] flex flex-col lg:flex-row items-center justify-between gap-4 sticky top-20 z-30 shadow-2xl backdrop-blur-md">
+        {/* Status Filter Tabs (GBArena Style) */}
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full lg:w-auto scrollbar-none pb-1 lg:pb-0">
           {[
-            { label: 'All', val: '' },
-            { label: 'Open', val: 'registration_open' },
-            { label: 'Full', val: 'full' },
-            { label: 'Room Ready', val: 'room_ready' },
-            { label: 'Completed', val: 'completed' },
+            { label: 'ALL', val: '' },
+            { label: 'UPCOMING', val: 'upcoming' },
+            { label: 'REGISTRATION OPEN', val: 'registration_open' },
+            { label: 'LIVE', val: 'live' },
+            { label: 'FINISHED', val: 'completed' },
           ].map((st) => (
             <button
               key={st.val}
               type="button"
               onClick={() => setStatusFilter(st.val)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${
+              className={`px-3.5 py-2 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all whitespace-nowrap ${
                 statusFilter === st.val
-                  ? 'bg-brand-amber text-slate-950 font-extrabold'
-                  : 'bg-[#161B26] text-slate-400 hover:text-white border border-[#1F293D]'
+                  ? 'bg-gradient-to-r from-brand-orange to-amber-500 text-white shadow-[0_2px_12px_rgba(255,85,0,0.35)]'
+                  : 'bg-[#090C12] text-slate-400 hover:text-white border border-[#1A2234]'
               }`}
             >
               {st.label}
@@ -103,25 +94,53 @@ export default function TournamentsPage() {
           ))}
         </div>
 
-        {/* Search Input */}
-        <form onSubmit={handleSearchSubmit} className="relative w-full md:w-64">
-          <input
-            type="text"
-            placeholder="Search tournament..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-orange"
-          />
-          <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
-        </form>
+        {/* Secondary: Format Toggle & Search */}
+        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
+          {/* Format Toggle */}
+          <div className="flex items-center gap-1 p-1 rounded-xl bg-[#090C12] border border-[#1A2234] w-full sm:w-auto justify-center">
+            {[
+              { label: 'ALL', val: '', icon: null },
+              { label: 'SQUAD', val: 'squad', icon: Users },
+              { label: 'SOLO', val: 'solo', icon: User },
+            ].map((fmt) => {
+              const Icon = fmt.icon;
+              return (
+                <button
+                  key={fmt.val}
+                  type="button"
+                  onClick={() => setFormatFilter(fmt.val)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all flex items-center gap-1.5 ${
+                    formatFilter === fmt.val
+                      ? 'bg-brand-orange text-white'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  {Icon && <Icon className="w-3.5 h-3.5" />}
+                  <span>{fmt.label}</span>
+                </button>
+              );
+            })}
+          </div>
 
+          {/* Search Input */}
+          <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-64">
+            <input
+              type="text"
+              placeholder="Search tournaments..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#090C12] border border-[#1A2234] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-orange transition-colors"
+            />
+            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          </form>
+        </div>
       </div>
 
       {/* Tournaments Grid */}
       {loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
           {[1, 2, 3, 4, 5, 6].map((n) => (
-            <div key={n} className="h-96 rounded-xl bg-[#121722] border border-[#1F293D] animate-pulse"></div>
+            <div key={n} className="h-96 rounded-2xl bg-[#101522] border border-[#1A2234] animate-pulse"></div>
           ))}
         </div>
       ) : tournaments.length > 0 ? (
@@ -131,23 +150,24 @@ export default function TournamentsPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 bg-[#121722] rounded-xl border border-[#1F293D] p-8">
-          <Trophy className="w-12 h-12 text-slate-600 mx-auto mb-3" />
-          <h3 className="text-lg font-bold text-white">No Tournaments Match Your Filter</h3>
-          <p className="text-xs text-slate-400 mt-1 mb-4">Try clearing filters or search terms.</p>
+        <div className="text-center py-20 bg-[#101522] rounded-2xl border border-[#1A2234] p-8 max-w-xl mx-auto space-y-4">
+          <Trophy className="w-12 h-12 text-slate-600 mx-auto" />
+          <h3 className="text-lg font-bold text-white">No Tournaments Found</h3>
+          <p className="text-xs text-slate-400 leading-relaxed">
+            There are currently no tournaments matching your active filters. Try resetting the filters or check back soon for next week's schedule.
+          </p>
           <button
             onClick={() => {
               setFormatFilter('');
               setStatusFilter('');
               setSearch('');
             }}
-            className="px-4 py-2 rounded-lg bg-brand-orange text-white text-xs font-bold uppercase tracking-wider"
+            className="px-5 py-2.5 rounded-xl bg-brand-orange text-white text-xs font-bold uppercase tracking-wider shadow-md hover:brightness-110 transition-all"
           >
-            Reset Filters
+            Reset All Filters
           </button>
         </div>
       )}
-
     </div>
   );
 }

@@ -18,22 +18,22 @@ export const getPublicSettings = async (req, res, next) => {
     if (!setting) {
       setting = {
         collegeName: 'RIT Esports Arena',
-        whatsappCommunityUrl: process.env.WHATSAPP_COMMUNITY_URL || 'https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2',
-        adminWhatsAppNumber: process.env.ADMIN_WHATSAPP_NUMBER || '918114603994',
-        upiId: process.env.ADMIN_UPI_ID || 'srikantap571-1@okaxis',
-        upiPayeeName: process.env.ADMIN_UPI_NAME || 'Srikant Panda',
-        upiAid: process.env.ADMIN_UPI_AID || 'uGICAgIDP-4HlSw',
-        upiUriTemplate: process.env.ADMIN_UPI_URI || 'upi://pay?pa=srikantap571-1@okaxis&pn=Srikant%20Panda&aid=uGICAgIDP-4HlSw',
+        whatsappCommunityUrl: process.env.WHATSAPP_COMMUNITY_URL || '',
+        adminWhatsAppNumber: process.env.ADMIN_WHATSAPP_NUMBER || '',
+        upiId: process.env.ADMIN_UPI_ID || 'organizer@upi',
+        upiPayeeName: process.env.ADMIN_UPI_NAME || 'RIT Esports Organizer',
+        upiAid: process.env.ADMIN_UPI_AID || '',
+        upiUriTemplate: process.env.ADMIN_UPI_URI || '',
         upiQrCodeUrl: '',
         announcementBanner: 'Welcome to RIT Esports Arena! Register now for Weekly Free Fire Tournaments!',
-        contactEmail: 'ritesports.arena@gmail.com',
+        contactEmail: process.env.EMAIL_FROM || 'admin@ritesports.in',
       };
     } else {
       // Ensure defaults if fields were empty
-      setting.upiId = setting.upiId || process.env.ADMIN_UPI_ID || 'srikantap571-1@okaxis';
-      setting.upiPayeeName = setting.upiPayeeName || process.env.ADMIN_UPI_NAME || 'Srikant Panda';
-      setting.upiAid = setting.upiAid || process.env.ADMIN_UPI_AID || 'uGICAgIDP-4HlSw';
-      setting.upiUriTemplate = setting.upiUriTemplate || process.env.ADMIN_UPI_URI || 'upi://pay?pa=srikantap571-1@okaxis&pn=Srikant%20Panda&aid=uGICAgIDP-4HlSw';
+      setting.upiId = setting.upiId || process.env.ADMIN_UPI_ID || 'organizer@upi';
+      setting.upiPayeeName = setting.upiPayeeName || process.env.ADMIN_UPI_NAME || 'RIT Esports Organizer';
+      setting.upiAid = setting.upiAid || process.env.ADMIN_UPI_AID || '';
+      setting.upiUriTemplate = setting.upiUriTemplate || process.env.ADMIN_UPI_URI || '';
     }
 
     await cache.set('settings:public', setting, 300);
@@ -48,12 +48,12 @@ export const getAdminSettings = async (req, res, next) => {
     let setting = await SiteSetting.findOne();
     if (!setting) {
       setting = await SiteSetting.create({
-        whatsappCommunityUrl: process.env.WHATSAPP_COMMUNITY_URL || 'https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2',
-        adminWhatsAppNumber: process.env.ADMIN_WHATSAPP_NUMBER || '918114603994',
-        upiId: process.env.ADMIN_UPI_ID || 'srikantap571-1@okaxis',
-        upiPayeeName: process.env.ADMIN_UPI_NAME || 'Srikant Panda',
-        upiAid: process.env.ADMIN_UPI_AID || 'uGICAgIDP-4HlSw',
-        upiUriTemplate: process.env.ADMIN_UPI_URI || 'upi://pay?pa=srikantap571-1@okaxis&pn=Srikant%20Panda&aid=uGICAgIDP-4HlSw',
+        whatsappCommunityUrl: process.env.WHATSAPP_COMMUNITY_URL || '',
+        adminWhatsAppNumber: process.env.ADMIN_WHATSAPP_NUMBER || '',
+        upiId: process.env.ADMIN_UPI_ID || 'organizer@upi',
+        upiPayeeName: process.env.ADMIN_UPI_NAME || 'RIT Esports Organizer',
+        upiAid: process.env.ADMIN_UPI_AID || '',
+        upiUriTemplate: process.env.ADMIN_UPI_URI || '',
       });
     }
 

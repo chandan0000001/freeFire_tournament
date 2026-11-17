@@ -3,6 +3,7 @@ import { Tournament } from '../models/Tournament.js';
 import { SiteSetting } from '../models/SiteSetting.js';
 import { reserveSlot, releaseSlot, checkAvailableCapacity, syncTournamentSlots } from '../services/slotService.js';
 import { generateRegistrationRef } from '../utils/refGenerator.js';
+import { escapeRegex } from '../utils/security.js';
 import { sendRegistrationEmail, sendPaymentVerifiedEmail } from '../services/emailService.js';
 import { logAudit } from '../services/auditService.js';
 import { PAYMENT_STATUS, TOURNAMENT_FORMAT } from '../constants/statuses.js';
@@ -132,10 +133,10 @@ export const registerSquad = async (req, res, next) => {
 
     // 4. Fetch site settings for UPI & WhatsApp numbers
     const settings = (await SiteSetting.findOne()) || {};
-    const adminWhatsApp = settings.adminWhatsAppNumber || process.env.ADMIN_WHATSAPP_NUMBER || '918114603994';
-    const upiId = settings.upiId || process.env.ADMIN_UPI_ID || 'srikantap571-1@okaxis';
-    const payeeName = settings.upiPayeeName || process.env.ADMIN_UPI_NAME || 'Srikant Panda';
-    const aid = settings.upiAid || process.env.ADMIN_UPI_AID || 'uGICAgIDP-4HlSw';
+    const adminWhatsApp = settings.adminWhatsAppNumber || process.env.ADMIN_WHATSAPP_NUMBER || '';
+    const upiId = settings.upiId || process.env.ADMIN_UPI_ID || 'organizer@upi';
+    const payeeName = settings.upiPayeeName || process.env.ADMIN_UPI_NAME || 'RIT Esports Organizer';
+    const aid = settings.upiAid || process.env.ADMIN_UPI_AID || '';
     const amount = reservedTournament.entryFee;
 
     // UPI Deep Link & Dynamic QR Code
@@ -249,10 +250,10 @@ export const registerSolo = async (req, res, next) => {
 
     // 4. Fetch site settings
     const settings = (await SiteSetting.findOne()) || {};
-    const adminWhatsApp = settings.adminWhatsAppNumber || process.env.ADMIN_WHATSAPP_NUMBER || '918114603994';
-    const upiId = settings.upiId || process.env.ADMIN_UPI_ID || 'srikantap571-1@okaxis';
-    const payeeName = settings.upiPayeeName || process.env.ADMIN_UPI_NAME || 'Srikant Panda';
-    const aid = settings.upiAid || process.env.ADMIN_UPI_AID || 'uGICAgIDP-4HlSw';
+    const adminWhatsApp = settings.adminWhatsAppNumber || process.env.ADMIN_WHATSAPP_NUMBER || '';
+    const upiId = settings.upiId || process.env.ADMIN_UPI_ID || 'organizer@upi';
+    const payeeName = settings.upiPayeeName || process.env.ADMIN_UPI_NAME || 'RIT Esports Organizer';
+    const aid = settings.upiAid || process.env.ADMIN_UPI_AID || '';
     const amount = reservedTournament.entryFee;
 
     // UPI Deep Link & Dynamic QR Code
@@ -388,12 +389,13 @@ export const getAdminRegistrations = async (req, res, next) => {
 
     if (tournamentId) query.tournamentId = tournamentId;
     if (paymentStatus) query.paymentStatus = paymentStatus;
-    if (search) {
+    if (search && typeof search === 'string' && search.trim()) {
+      const safeSearch = escapeRegex(search.trim());
       query.$or = [
-        { referenceId: { $regex: search, $options: 'i' } },
-        { teamName: { $regex: search, $options: 'i' } },
-        { 'captain.name': { $regex: search, $options: 'i' } },
-        { 'captain.email': { $regex: search, $options: 'i' } },
+        { referenceId: { $regex: safeSearch, $options: 'i' } },
+        { teamName: { $regex: safeSearch, $options: 'i' } },
+        { 'captain.name': { $regex: safeSearch, $options: 'i' } },
+        { 'captain.email': { $regex: safeSearch, $options: 'i' } },
       ];
     }
 

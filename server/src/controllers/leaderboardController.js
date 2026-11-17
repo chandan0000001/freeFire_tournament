@@ -5,6 +5,7 @@ import { Registration } from '../models/Registration.js';
 import { RESULT_STATUS } from '../constants/statuses.js';
 import { rankParticipants } from '../services/scoringService.js';
 import { cache } from '../config/redis.js';
+import { escapeRegex } from '../utils/security.js';
 
 /**
  * Public Leaderboard (Squad and Individual)
@@ -218,8 +219,9 @@ export const getWinners = async (req, res, next) => {
 export const getPlayerProfile = async (req, res, next) => {
   try {
     const { id } = req.params; // search by in-game name or UID
+    const safeId = escapeRegex(id || '');
     const registrations = await Registration.find({
-      'players.inGameName': { $regex: new RegExp(`^${id}$`, 'i') },
+      'players.inGameName': { $regex: new RegExp(`^${safeId}$`, 'i') },
       paymentStatus: 'verified',
     })
       .populate('tournamentId', 'title format matchDate bannerUrl')

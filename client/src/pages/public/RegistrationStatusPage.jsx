@@ -18,6 +18,15 @@ export default function RegistrationStatusPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [data, setData] = useState(null);
+  const [adminWhatsApp, setAdminWhatsApp] = useState('');
+
+  React.useEffect(() => {
+    api.get('/settings/public').then((res) => {
+      if (res.success && res.settings?.adminWhatsAppNumber) {
+        setAdminWhatsApp(res.settings.adminWhatsAppNumber);
+      }
+    }).catch(() => {});
+  }, []);
 
   const handleLookup = async (e) => {
     e.preventDefault();
@@ -150,12 +159,12 @@ export default function RegistrationStatusPage() {
                 Your slot is reserved temporarily. To confirm your entry, please send your UPI payment screenshot to the official admin WhatsApp contact.
               </p>
               <a
-                href="https://wa.me/918114603994"
+                href={adminWhatsApp ? `https://wa.me/${adminWhatsApp}` : 'https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2'}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-emerald-400 font-bold hover:underline"
               >
-                <MessageCircle className="w-4 h-4" /> Open WhatsApp with Admin (+91 8114603994)
+                <MessageCircle className="w-4 h-4" /> Open WhatsApp with Admin Helpdesk
               </a>
             </div>
           )}
@@ -173,15 +182,15 @@ export default function RegistrationStatusPage() {
             </p>
 
             <a
-              href={`https://wa.me/918114603994?text=${encodeURIComponent(
+              href={adminWhatsApp ? `https://wa.me/${adminWhatsApp}?text=${encodeURIComponent(
                 `Hello Admin!\n*Reference ID:* ${data.referenceId}\n*Tournament:* ${data.tournamentTitle}\n*Team/Player:* ${data.teamOrPlayerName}\nAttached is my payment receipt / match scoreboard screenshot.`
-              )}`}
+              )}` : 'https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2'}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-950/70 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-all shadow-md"
             >
               <MessageCircle className="w-4 h-4 text-emerald-400" />
-              Send Screenshot to Admin on WhatsApp (+91 8114603994)
+              Send Screenshot to Admin on WhatsApp
             </a>
           </div>
 

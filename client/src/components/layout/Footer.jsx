@@ -62,7 +62,7 @@ function Footer() {
               <li><Link to="/rules#anti-cheat" className="hover:text-brand-orange transition-colors">Anti-Cheat & Mobile Only</Link></li>
               <li><Link to="/privacy" className="text-emerald-400 hover:text-emerald-300 font-medium transition-colors">Privacy Policy</Link></li>
               <li>
-                <a href="https://wa.me/918114603994" target="_blank" rel="noopener noreferrer" className="hover:text-brand-orange transition-colors">
+                <a href="https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2" target="_blank" rel="noopener noreferrer" className="hover:text-brand-orange transition-colors">
                   Contact Support
                 </a>
               </li>
@@ -85,7 +85,7 @@ function Footer() {
             </a>
             
             <div className="pt-2 text-[11px] text-slate-400 space-y-1">
-              <p>Admin Contact: <strong className="text-slate-200 font-mono">+91 8114603994</strong></p>
+              <p>Admin Support: <strong className="text-slate-200 font-medium">Available via Community Group</strong></p>
               <div className="flex items-center gap-2 pt-1 text-[10px] text-slate-500">
                 <Link to="/admin/login" className="hover:text-slate-300 flex items-center gap-1">
                   <Lock className="w-3 h-3" /> Admin Portal

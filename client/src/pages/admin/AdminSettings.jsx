@@ -33,12 +33,12 @@ export default function AdminSettings() {
             collegeName: res.settings.collegeName || 'RIT Esports Arena',
             whatsappCommunityUrl: res.settings.whatsappCommunityUrl || '',
             adminWhatsAppNumber: res.settings.adminWhatsAppNumber || '',
-            upiId: res.settings.upiId || 'srikantap571-1@okaxis',
-            upiPayeeName: res.settings.upiPayeeName || 'Srikant Panda',
-            upiAid: res.settings.upiAid || 'uGICAgIDP-4HlSw',
+            upiId: res.settings.upiId || 'organizer@upi',
+            upiPayeeName: res.settings.upiPayeeName || 'RIT Esports Organizer',
+            upiAid: res.settings.upiAid || '',
             announcementBanner: res.settings.announcementBanner || '',
             contactEmail: res.settings.contactEmail || '',
-            brevoSenderEmail: res.settings.brevoSenderEmail || 'kumardalaichandan803@gmail.com',
+            brevoSenderEmail: res.settings.brevoSenderEmail || '',
           });
         }
       } catch (err) {
@@ -145,7 +145,7 @@ export default function AdminSettings() {
             <input
               type="text"
               required
-              placeholder="e.g. 918114603994"
+              placeholder="e.g. 919876543210"
               value={formData.adminWhatsAppNumber}
               onChange={(e) => setFormData({ ...formData, adminWhatsAppNumber: e.target.value })}
               className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
@@ -162,13 +162,13 @@ export default function AdminSettings() {
             <input
               type="text"
               required
-              placeholder="e.g. srikantap571-1@okaxis"
+              placeholder="e.g. organizer@oksbi"
               value={formData.upiId}
               onChange={(e) => setFormData({ ...formData, upiId: e.target.value })}
               className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
             />
             <span className="text-[10px] text-slate-500 mt-1 block">
-              Receiver VPA address for UPI transactions (e.g. srikantap571-1@okaxis).
+              Receiver VPA address for UPI transactions (e.g. ritesports@oksbi).
             </span>
           </div>
 

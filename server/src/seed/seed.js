@@ -37,11 +37,11 @@ const seedDatabase = async () => {
     if (!settings) {
       settings = await SiteSetting.create({
         collegeName: 'RIT Esports Arena',
-        whatsappCommunityUrl: process.env.WHATSAPP_COMMUNITY_URL || 'https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2',
-        adminWhatsAppNumber: process.env.ADMIN_WHATSAPP_NUMBER || '918114603994',
-        upiId: process.env.ADMIN_UPI_ID || '8114603994@paytm',
+        whatsappCommunityUrl: process.env.WHATSAPP_COMMUNITY_URL || '',
+        adminWhatsAppNumber: process.env.ADMIN_WHATSAPP_NUMBER || '',
+        upiId: process.env.ADMIN_UPI_ID || 'organizer@upi',
         announcementBanner: 'Welcome to RIT Esports Arena! Registrations for Week 01 Squad & Solo Battles are now OPEN!',
-        contactEmail: 'ritesports.arena@gmail.com',
+        contactEmail: process.env.EMAIL_FROM || 'admin@ritesports.in',
       });
       console.log('[Seed] Site settings created with WhatsApp and UPI configurations.');
     } else {

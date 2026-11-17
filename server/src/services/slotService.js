@@ -110,18 +110,37 @@ export const reserveSlot = async (tournamentId) => {
 };
 
 /**
- * Release a previously reserved slot
+ * Release a previously reserved slot atomically, guaranteeing registeredSlots never drops below 0
  */
 export const releaseSlot = async (tournamentId) => {
-  const tournament = await Tournament.findById(tournamentId);
-  if (!tournament) return null;
+  const tournament = await Tournament.findOneAndUpdate(
+    {
+      _id: tournamentId,
+      registeredSlots: { $gt: 0 },
+    },
+    [
+      {
+        $set: {
+          registeredSlots: { $max: [0, { $subtract: ['$registeredSlots', 1] }] },
+          status: {
+            $cond: {
+              if: {
+                $and: [
+                  { $eq: ['$status', TOURNAMENT_STATUS.FULL] },
+                  { $lt: [{ $subtract: ['$registeredSlots', 1] }, '$maxSlots'] },
+                ],
+              },
+              then: TOURNAMENT_STATUS.REGISTRATION_OPEN,
+              else: '$status',
+            },
+          },
+        },
+      },
+    ],
+    { new: true }
+  );
 
-  if (tournament.registeredSlots > 0) {
-    tournament.registeredSlots -= 1;
-    if (tournament.status === TOURNAMENT_STATUS.FULL && tournament.registeredSlots < tournament.maxSlots) {
-      tournament.status = TOURNAMENT_STATUS.REGISTRATION_OPEN;
-    }
-    await tournament.save();
+  if (tournament) {
     await cache.delPattern('tournaments:*');
     await cache.del(`tournament:slug:${tournament.slug}`);
   }
