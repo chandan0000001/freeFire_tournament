@@ -322,37 +322,6 @@ function HomePage() {
         </div>
       </section>
 
-      {/* GBArena-Style Broadcast Ticker Bar */}
-      <div className="border-y border-[#1F293D] bg-[#0E131E]/90 backdrop-blur-sm py-2.5 overflow-hidden">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-wrap items-center justify-between gap-3 text-[11px] sm:text-xs">
-            <div className="flex items-center gap-2">
-              <span className="flex h-2 w-2 relative">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-orange"></span>
-              </span>
-              <span className="font-display font-bold uppercase tracking-wider text-brand-orange">
-                Arena Broadcast:
-              </span>
-              <span className="text-slate-300 font-medium">
-                RIT Squad Battle Week 01 • Bermuda Map • Registration Active
-              </span>
-            </div>
-            <div className="hidden md:flex items-center gap-6 text-slate-400 font-medium">
-              <span className="flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Mobile-Only Anti-Cheat
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Mail className="w-3.5 h-3.5 text-cyan-400" /> Automated Room Email Dispatch
-              </span>
-              <span className="flex items-center gap-1.5">
-                <Trophy className="w-3.5 h-3.5 text-brand-amber" /> Instant UPI Payout
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Featured Tournaments Section - Challengermode Discovery Hub */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-6">
