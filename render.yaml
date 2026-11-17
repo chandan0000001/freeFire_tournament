@@ -1,0 +1,43 @@
+services:
+  - type: web
+    name: rit-esports-backend
+    env: node
+    plan: free
+    rootDir: server
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 5000
+      - key: CLIENT_URL
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: BREVO_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: rittournament01@gmail.com
+      - key: EMAIL_FROM_NAME
+        value: RIT Esports Arena
+      - key: ADMIN_WHATSAPP_NUMBER
+        value: 918114603994
+      - key: WHATSAPP_COMMUNITY_URL
+        value: https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2
+      - key: ADMIN_UPI_ID
+        value: srikantap571-1@okaxis
+      - key: ADMIN_UPI_NAME
+        value: Srikant Panda
+      - key: ADMIN_UPI_AID
+        value: uGICAgIDP-4HlSw
+      - key: ADMIN_UPI_URI
+        value: upi://pay?pa=srikantap571-1@okaxis&pn=Srikant%20Panda&aid=uGICAgIDP-4HlSw
+      - key: ADMIN_BOOTSTRAP_EMAIL
+        value: admin@ritesports.in
+      - key: ADMIN_BOOTSTRAP_PASSWORD
+        sync: false

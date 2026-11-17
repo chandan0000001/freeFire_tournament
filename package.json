@@ -1,0 +1,17 @@
+{
+  "name": "rit-esports-arena",
+  "version": "1.0.0",
+  "description": "Production-ready Free Fire college esports tournament platform",
+  "private": true,
+  "scripts": {
+    "server": "npm --prefix server run dev",
+    "client": "npm --prefix client run dev",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "build": "npm --prefix client run build",
+    "seed": "npm --prefix server run seed",
+    "test": "npm --prefix server run test"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
