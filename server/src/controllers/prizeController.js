@@ -12,11 +12,84 @@ export const getAdminPrizes = async (req, res, next) => {
 
     const prizes = await Prize.find(query)
       .select('+offlineTransactionRef') // Select offline transaction ref for admin
-      .populate('tournamentId', 'title format matchDate entryFee')
+      .populate('tournamentId', 'title format matchDate entryFee prizeConfig')
       .populate('winnerRegistrationId', 'referenceId teamName captain')
       .sort({ createdAt: -1 });
 
     res.json({ success: true, count: prizes.length, prizes });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createAdminPrize = async (req, res, next) => {
+  try {
+    const {
+      tournamentId,
+      rank = 1,
+      title = '1st Place Champion',
+      amount,
+      winnerRegistrationId,
+      winnerName = 'To be decided',
+      payoutStatus = PRIZE_PAYOUT_STATUS.PENDING,
+      offlineTransactionRef = '',
+      notes = '',
+    } = req.body;
+
+    if (!tournamentId || amount === undefined || amount === null) {
+      return res.status(400).json({ success: false, message: 'Tournament and Prize Amount are required' });
+    }
+
+    const prize = await Prize.create({
+      tournamentId,
+      rank: parseInt(rank, 10) || 1,
+      title: title.trim(),
+      amount: parseFloat(amount),
+      winnerRegistrationId: winnerRegistrationId || null,
+      winnerName: winnerName.trim(),
+      payoutStatus,
+      offlineTransactionRef: offlineTransactionRef.trim(),
+      paidAt: payoutStatus === PRIZE_PAYOUT_STATUS.PAID ? new Date() : null,
+      notes: notes.trim(),
+    });
+
+    await cache.del('winners:halloffame');
+
+    await logAudit({
+      action: 'PRIZE_ALLOCATED',
+      performedBy: req.user,
+      targetEntity: 'Prize',
+      targetId: prize._id,
+      details: `Allocated ₹${amount} prize (${title}) to "${winnerName}".`,
+      ipAddress: req.ip,
+    });
+
+    res.status(201).json({ success: true, message: 'Prize record created successfully', prize });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteAdminPrize = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const prize = await Prize.findByIdAndDelete(id);
+    if (!prize) {
+      return res.status(404).json({ success: false, message: 'Prize record not found' });
+    }
+
+    await cache.del('winners:halloffame');
+
+    await logAudit({
+      action: 'PRIZE_DELETED',
+      performedBy: req.user,
+      targetEntity: 'Prize',
+      targetId: id,
+      details: `Deleted prize record for "${prize.winnerName}" (${prize.title} - ₹${prize.amount}).`,
+      ipAddress: req.ip,
+    });
+
+    res.json({ success: true, message: 'Prize record deleted successfully' });
   } catch (error) {
     next(error);
   }
@@ -36,13 +109,14 @@ export const updatePayoutStatus = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Prize record not found' });
     }
 
-    const previousStatus = prize.payoutStatus;
     prize.payoutStatus = payoutStatus;
-    if (offlineTransactionRef) prize.offlineTransactionRef = offlineTransactionRef.trim();
-    if (notes) prize.notes = notes.trim();
+    if (offlineTransactionRef !== undefined) prize.offlineTransactionRef = offlineTransactionRef.trim();
+    if (notes !== undefined) prize.notes = notes.trim();
 
     if (payoutStatus === PRIZE_PAYOUT_STATUS.PAID) {
       prize.paidAt = new Date();
+    } else {
+      prize.paidAt = null;
     }
 
     await prize.save();
@@ -68,3 +142,4 @@ export const updatePayoutStatus = async (req, res, next) => {
     next(error);
   }
 };
+

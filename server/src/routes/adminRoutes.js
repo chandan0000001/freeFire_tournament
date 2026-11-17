@@ -25,7 +25,12 @@ import {
   publishMatchResult,
   directRecordMatchResult,
 } from '../controllers/resultController.js';
-import { getAdminPrizes, updatePayoutStatus } from '../controllers/prizeController.js';
+import {
+  getAdminPrizes,
+  createAdminPrize,
+  updatePayoutStatus,
+  deleteAdminPrize,
+} from '../controllers/prizeController.js';
 import {
   getAdminSettings,
   updateAdminSettings,
@@ -72,7 +77,9 @@ router.post('/results/:id/publish', publishMatchResult);
 
 // Cash Prizes & Payouts
 router.get('/prizes', getAdminPrizes);
+router.post('/prizes', createAdminPrize);
 router.patch('/prizes/:id/payout', updatePayoutStatus);
+router.delete('/prizes/:id', deleteAdminPrize);
 
 // Settings & Audit Logs
 router.get('/settings', getAdminSettings);
