@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api.js';
+import usePageMeta from '../../hooks/usePageMeta.js';
 import { Trophy, Award, Calendar, Users, ShieldCheck } from 'lucide-react';
 
 export default function WinnersPage() {
+  usePageMeta('Hall of Fame — Champions | RIT Esports Arena', 'Celebrating Roland Institute of Technology Free Fire champions, MVP gunslingers, and verified cash prize winners.');
   const [winnerTournaments, setWinnerTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
 

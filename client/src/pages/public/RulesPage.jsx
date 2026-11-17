@@ -1,7 +1,9 @@
 import React from 'react';
+import usePageMeta from '../../hooks/usePageMeta.js';
 import { BookOpen, ShieldCheck, Flame, AlertTriangle, Trophy, CheckCircle } from 'lucide-react';
 
 export default function RulesPage() {
+  usePageMeta('Rules & Fair Play Guidelines | RIT Esports Arena', 'Official competitive Free Fire rules, device eligibility, mobile-only policy, and scoring system for RIT students.');
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
       

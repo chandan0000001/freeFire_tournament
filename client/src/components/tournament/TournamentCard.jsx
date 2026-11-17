@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Users, Calendar, Trophy, Zap, MapPin } from 'lucide-react';
 
-export default function TournamentCard({ tournament }) {
+function TournamentCard({ tournament }) {
   const isMarkedFull = tournament.status === 'full' || tournament.registeredSlots >= tournament.maxSlots;
   const isRegistrationOpen = tournament.status === 'registration_open' && !isMarkedFull;
   
@@ -136,7 +136,8 @@ export default function TournamentCard({ tournament }) {
       <div className="relative h-44 w-full bg-slate-900 overflow-hidden">
         <img
           src={tournament.bannerUrl || '/images/ff-banner.webp'}
-          alt={tournament.title}
+          alt={tournament.title || 'Free Fire Tournament Banner'}
+          loading="lazy"
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-95"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#121722] via-[#121722]/40 to-transparent"></div>
@@ -232,6 +233,7 @@ export default function TournamentCard({ tournament }) {
             </Link>
           ) : (
             <button
+              type="button"
               disabled
               className="flex-1 py-2.5 px-3 rounded-lg bg-slate-800 text-slate-400 text-xs font-bold uppercase tracking-wider cursor-not-allowed"
             >
@@ -243,3 +245,5 @@ export default function TournamentCard({ tournament }) {
     </div>
   );
 }
+
+export default React.memo(TournamentCard);

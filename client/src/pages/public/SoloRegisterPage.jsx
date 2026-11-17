@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api.js';
+import usePageMeta from '../../hooks/usePageMeta.js';
 import { 
   User, 
   ShieldAlert, 
@@ -13,6 +14,7 @@ import {
 
 export default function SoloRegisterPage() {
   const { tournamentId } = useParams();
+  usePageMeta('Solo Registration | Free Fire Tournament | RIT Esports', 'Register as a solo Free Fire player for Roland Institute of Technology weekly tournaments. Instant room verification via Brevo email.');
 
   const [tournament, setTournament] = useState(null);
   const [loading, setLoading] = useState(true);

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../../services/api.js';
+import usePageMeta from '../../hooks/usePageMeta.js';
 import { 
   Trophy, 
   Calendar, 
@@ -18,6 +19,11 @@ export default function TournamentDetailPage() {
   const [tournament, setTournament] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
+
+  usePageMeta(
+    tournament ? `${tournament.title} | Free Fire Tournament | RIT Esports` : 'Tournament Details | RIT Esports Arena',
+    tournament ? `Join ${tournament.title} with prize pool of ₹${tournament.prizePool || 0}. Format: ${tournament.gameMode || 'Battle Royale'}, Entry: ₹${tournament.entryFee || 0}. Exclusively for Roland Institute of Technology.` : 'View Free Fire tournament details, schedules, scoring system, and prize breakdown for RIT college students.'
+  );
 
   useEffect(() => {
     const fetchTournament = async () => {

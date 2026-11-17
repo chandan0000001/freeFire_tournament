@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api.js';
+import usePageMeta from '../../hooks/usePageMeta.js';
 import { Flame, Calendar, MapPin, Trophy, ShieldCheck } from 'lucide-react';
 
 export default function ResultsPage() {
+  usePageMeta('Match Results & Scorecards | RIT Esports Arena', 'Verified Free Fire custom room match results, team kill counts, Booyah finishes, and official observer scorecards.');
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
 

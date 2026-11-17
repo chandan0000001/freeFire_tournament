@@ -1,16 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../../services/api.js';
 import TournamentCard from '../../components/tournament/TournamentCard.jsx';
+import usePageMeta from '../../hooks/usePageMeta.js';
 import { Trophy, Search, Filter } from 'lucide-react';
 
 export default function TournamentsPage() {
+  usePageMeta('Active Competitions | RIT Esports Arena', 'Browse upcoming Free Fire custom room tournaments, check slot availability, and secure your team entry.');
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [formatFilter, setFormatFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
 
-  const fetchTournaments = async () => {
+  const fetchTournaments = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams();
@@ -27,7 +29,7 @@ export default function TournamentsPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [formatFilter, statusFilter, search]);
 
   useEffect(() => {
     fetchTournaments();
@@ -66,6 +68,7 @@ export default function TournamentsPage() {
           {['', 'squad', 'solo'].map((fmt) => (
             <button
               key={fmt}
+              type="button"
               onClick={() => setFormatFilter(fmt)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${
                 formatFilter === fmt
@@ -87,6 +90,7 @@ export default function TournamentsPage() {
           ].map((st) => (
             <button
               key={st.val}
+              type="button"
               onClick={() => setStatusFilter(st.val)}
               className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all ${
                 statusFilter === st.val

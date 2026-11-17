@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api.js';
 import TournamentCard from '../../components/tournament/TournamentCard.jsx';
+import usePageMeta from '../../hooks/usePageMeta.js';
 import { 
   Trophy, 
   Flame, 
@@ -9,13 +10,18 @@ import {
   Smartphone, 
   MessageCircle, 
   Award, 
-  ArrowRight,
-  CheckCircle,
-  Users,
-  Zap
+  ArrowRight, 
+  CheckCircle, 
+  Users, 
+  Zap 
 } from 'lucide-react';
 
 export default function HomePage() {
+  usePageMeta(
+    'RIT Esports Arena — Official College Free Fire League',
+    'Compete in weekly verified Free Fire tournaments organized exclusively for RIT college students. Custom rooms, Kill + Booyah scoring, and instant UPI cash prizes.'
+  );
+
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [settings, setSettings] = useState(null);
@@ -49,32 +55,33 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="space-y-20 pb-16">
+    <div className="space-y-12 sm:space-y-20 pb-16">
       
-      {/* Hero Section */}
-      <section className="relative overflow-hidden pt-12 pb-20 md:py-28 border-b border-[#1F293D]">
+      {/* Hero Section - Compact & CTA Above The Fold on Mobile */}
+      <section className="relative overflow-hidden pt-6 pb-12 sm:pt-20 sm:pb-24 border-b border-[#1F293D]">
         {/* Background esports arena photo with rich dark gradient overlays */}
         <div className="absolute inset-0 z-0">
           <img 
             src="/images/arena-stage.jpg" 
-            alt="Esports Arena Background" 
+            alt="RIT Free Fire Esports Arena Championship Stage" 
+            loading="lazy"
             className="w-full h-full object-cover opacity-20 filter contrast-125"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0E14] via-[#0B0E14]/80 to-[#0B0E14]/60"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0E14] via-[#0B0E14]/85 to-[#0B0E14]/65"></div>
           <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-brand-orange/15 blur-[140px] pointer-events-none rounded-full"></div>
         </div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          <div className="text-center max-w-3xl mx-auto space-y-6">
+          <div className="text-center max-w-3xl mx-auto space-y-4 sm:space-y-6">
             
-            {/* Top Badge */}
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-orange/10 border border-brand-orange/30 text-brand-orange text-xs font-bold uppercase tracking-wider backdrop-blur-md">
-              <Flame className="w-4 h-4 fill-brand-orange" />
-              <span>Official College Free Fire League</span>
+            {/* Top Badge with RIT Seal */}
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-orange/10 border border-brand-orange/30 text-brand-orange text-[10px] sm:text-xs font-bold uppercase tracking-wider backdrop-blur-md">
+              <img src="/images/rit-logo.png" alt="RIT Crest" className="w-4 h-4 object-contain rounded-full" />
+              <span>Roland Institute of Technology • Free Fire League</span>
             </div>
 
             {/* Main Headline */}
-            <h1 className="font-display text-4xl sm:text-6xl font-extrabold uppercase tracking-tight text-white leading-tight">
+            <h1 className="font-display text-3xl sm:text-5xl lg:text-6xl font-extrabold uppercase tracking-tight text-white leading-tight">
               Prove Your Squad. <br />
               <span className="bg-gradient-to-r from-brand-orange via-brand-amber to-brand-gold bg-clip-text text-transparent">
                 Claim The Booyah.
@@ -82,30 +89,30 @@ export default function HomePage() {
             </h1>
 
             {/* Sub-headline */}
-            <p className="text-base sm:text-lg text-slate-300 leading-relaxed max-w-2xl mx-auto">
-              Compete in weekly verified Free Fire tournaments organized exclusively for RIT college students. Custom rooms, transparent Kill + Booyah scoring, and instant cash prizes.
+            <p className="text-xs sm:text-base text-slate-300 leading-relaxed max-w-2xl mx-auto">
+              Weekly verified Free Fire custom room tournaments for RIT students. Fair scoring, spectator-verified anti-cheat, and instant UPI cash payouts.
             </p>
 
             {/* Key Value Props Pill Row */}
-            <div className="flex flex-wrap items-center justify-center gap-4 text-xs font-semibold text-slate-400 pt-2">
-              <span className="flex items-center gap-1.5">
-                <CheckCircle className="w-4 h-4 text-emerald-400" /> ₹29 Squad / ₹14 Solo
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-[11px] sm:text-xs font-semibold text-slate-300 pt-1">
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#121722]/80 border border-[#1F293D]">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> ₹29 Squad / ₹14 Solo
               </span>
-              <span className="flex items-center gap-1.5">
-                <CheckCircle className="w-4 h-4 text-emerald-400" /> Brevo Email Room Codes
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#121722]/80 border border-[#1F293D]">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Email Room Codes
               </span>
-              <span className="flex items-center gap-1.5">
-                <CheckCircle className="w-4 h-4 text-emerald-400" /> Observer Verified Results
+              <span className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#121722]/80 border border-[#1F293D]">
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Observer Verified
               </span>
             </div>
 
-            {/* CTA Buttons */}
-            <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+            {/* CTA Buttons - Prominently Above The Fold on Mobile */}
+            <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 max-w-md mx-auto sm:max-w-none">
               <Link
                 to="/tournaments"
-                className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber text-white font-display font-bold text-base uppercase tracking-wider shadow-glow-orange hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-7 py-3 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber text-white font-display font-bold text-sm sm:text-base uppercase tracking-wider shadow-glow-orange hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2"
               >
-                <Trophy className="w-5 h-5" />
+                <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
                 Browse Tournaments
               </Link>
               
@@ -113,34 +120,34 @@ export default function HomePage() {
                 href={settings?.whatsappCommunityUrl || 'https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2'}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-900/60 hover:border-emerald-400 font-semibold text-sm transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-900/60 hover:border-emerald-400 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2"
               >
-                <MessageCircle className="w-5 h-5" />
+                <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                 Join WhatsApp Community
               </a>
             </div>
 
             {/* Character Spotlight Preview Strip */}
-            <div className="pt-8 grid grid-cols-3 gap-3 max-w-xl mx-auto">
-              <div className="p-2 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md flex items-center gap-2.5 hover:border-brand-orange/40 transition-all">
-                <img src="/images/ff-character-1.webp" alt="Solo Warrior" className="w-10 h-10 rounded-lg object-cover border border-white/10" />
+            <div className="pt-4 sm:pt-8 grid grid-cols-3 gap-2 sm:gap-3 max-w-xl mx-auto">
+              <div className="p-2 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md flex items-center gap-2 hover:border-brand-orange/40 transition-all">
+                <img src="/images/ff-character-1.webp" alt="Solo Tournament Entry Character" loading="lazy" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover border border-white/10 shrink-0" />
                 <div className="text-left">
                   <span className="text-[9px] uppercase font-bold text-brand-orange block">Solo</span>
-                  <span className="text-xs font-bold text-white">₹14 Entry</span>
+                  <span className="text-[11px] sm:text-xs font-bold text-white">₹14 Entry</span>
                 </div>
               </div>
-              <div className="p-2 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md flex items-center gap-2.5 hover:border-brand-amber/40 transition-all">
-                <img src="/images/ff-banner.webp" alt="Squad Battle" className="w-10 h-10 rounded-lg object-cover border border-white/10" />
+              <div className="p-2 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md flex items-center gap-2 hover:border-brand-amber/40 transition-all">
+                <img src="/images/ff-banner.webp" alt="Squad Battle Tournament Banner" loading="lazy" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover border border-white/10 shrink-0" />
                 <div className="text-left">
                   <span className="text-[9px] uppercase font-bold text-brand-amber block">Squad 4v4</span>
-                  <span className="text-xs font-bold text-white">₹29 Entry</span>
+                  <span className="text-[11px] sm:text-xs font-bold text-white">₹29 Entry</span>
                 </div>
               </div>
-              <div className="p-2 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md flex items-center gap-2.5 hover:border-emerald-500/40 transition-all">
-                <img src="/images/ff-character-3.webp" alt="Cash Prizes" className="w-10 h-10 rounded-lg object-cover border border-white/10" />
+              <div className="p-2 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md flex items-center gap-2 hover:border-emerald-500/40 transition-all">
+                <img src="/images/ff-character-3.webp" alt="Verified Cash Prize Rewards" loading="lazy" className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover border border-white/10 shrink-0" />
                 <div className="text-left">
                   <span className="text-[9px] uppercase font-bold text-emerald-400 block">Prizes</span>
-                  <span className="text-xs font-bold text-white">₹1100 Pool</span>
+                  <span className="text-[11px] sm:text-xs font-bold text-white">₹1100 Pool</span>
                 </div>
               </div>
             </div>
@@ -260,7 +267,8 @@ export default function HomePage() {
           {/* Background image overlay */}
           <img 
             src="/images/esports-setup.jpg" 
-            alt="Gaming Setup" 
+            alt="Competitive Free Fire Esports Gaming Setup" 
+            loading="lazy"
             className="absolute inset-0 w-full h-full object-cover opacity-20 filter contrast-125"
           />
           <div className="absolute inset-0 bg-gradient-to-r from-[#0B0E14] via-[#0B0E14]/90 to-emerald-950/80"></div>

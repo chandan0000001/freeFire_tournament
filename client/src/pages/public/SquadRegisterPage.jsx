@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../../services/api.js';
+import usePageMeta from '../../hooks/usePageMeta.js';
 import { 
   Users, 
   ShieldAlert, 
@@ -14,6 +15,7 @@ import {
 } from 'lucide-react';
 
 export default function SquadRegisterPage() {
+  usePageMeta('Squad Registration (4 Players) | RIT Esports Arena', 'Register your 4-player Free Fire squad for the upcoming RIT tournament. Instant UPI reservation and room credential dispatch.');
   const { tournamentId } = useParams();
   const navigate = useNavigate();
 

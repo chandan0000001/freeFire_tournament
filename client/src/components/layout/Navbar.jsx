@@ -36,23 +36,25 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
-          {/* Logo & Brand */}
-          <Link to="/" className="flex items-center gap-3 group">
-            <div className="w-11 h-11 rounded-lg bg-gradient-to-br from-brand-orange to-brand-amber p-0.5 flex items-center justify-center shadow-glow-orange group-hover:scale-105 transition-transform">
-              <div className="w-full h-full bg-[#0B0E14] rounded-[7px] flex items-center justify-center">
-                <Flame className="w-6 h-6 text-brand-orange fill-brand-orange" />
-              </div>
+          {/* Logo & Brand with Official RIT Crest */}
+          <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full p-0.5 bg-gradient-to-br from-brand-orange to-brand-amber shadow-glow-orange group-hover:scale-105 transition-transform flex items-center justify-center shrink-0">
+              <img
+                src="/images/rit-logo.png"
+                alt="Roland Institute of Technology Logo"
+                className="w-full h-full object-contain rounded-full bg-[#0B0E14]"
+              />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="font-display text-2xl font-bold tracking-wider text-white uppercase group-hover:text-brand-orange transition-colors">
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                <span className="font-display text-lg sm:text-2xl font-extrabold tracking-wider text-white uppercase group-hover:text-brand-orange transition-colors">
                   RIT <span className="text-brand-orange">Esports</span>
                 </span>
-                <span className="bg-brand-orange/20 text-brand-orange text-[10px] font-extrabold uppercase px-1.5 py-0.5 rounded border border-brand-orange/40">
+                <span className="bg-brand-orange/20 text-brand-orange text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded border border-brand-orange/40">
                   Arena
                 </span>
               </div>
-              <p className="text-[10px] tracking-widest text-slate-400 uppercase font-medium">Free Fire College League</p>
+              <p className="text-[9px] sm:text-[10px] tracking-widest text-slate-400 uppercase font-medium">Free Fire League</p>
             </div>
           </Link>
 
@@ -121,23 +123,25 @@ export default function Navbar() {
             </Link>
           </div>
 
-          {/* Mobile Hamburger Button */}
-          <div className="flex md:hidden items-center gap-2">
+          {/* Mobile Quick Actions */}
+          <div className="flex md:hidden items-center gap-1.5 sm:gap-2">
             <a
               href="https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2"
               target="_blank"
               rel="noopener noreferrer"
-              className="p-2 rounded-lg bg-emerald-950/50 text-emerald-400 border border-emerald-500/40"
+              className="w-9 h-9 flex items-center justify-center rounded-lg bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 active:scale-95 transition-transform"
               aria-label="WhatsApp Group"
+              title="Join WhatsApp Group"
             >
-              <MessageCircle className="w-5 h-5" />
+              <MessageCircle className="w-4 h-4" />
             </a>
             <button
+              type="button"
               onClick={() => setIsOpen(!isOpen)}
-              className="p-2 rounded-lg bg-[#161B26] text-slate-300 hover:text-white border border-[#1F293D]"
+              className="w-9 h-9 flex items-center justify-center rounded-lg bg-[#161B26] text-slate-300 hover:text-white border border-[#1F293D] active:scale-95 transition-transform"
               aria-label="Toggle Navigation Menu"
             >
-              {isOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {isOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
             </button>
           </div>
         </div>

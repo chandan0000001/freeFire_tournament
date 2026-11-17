@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../../services/api.js';
+import usePageMeta from '../../hooks/usePageMeta.js';
 import { 
   Search, 
   CheckCircle, 
@@ -12,6 +13,7 @@ import {
 } from 'lucide-react';
 
 export default function RegistrationStatusPage() {
+  usePageMeta('Track Registration Status | RIT Esports Arena', 'Track your Free Fire tournament registration and payment verification status using your unique Reference ID.');
   const [refInput, setRefInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
