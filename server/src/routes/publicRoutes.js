@@ -26,6 +26,7 @@ router.post('/registrations/evidence', upload.single('screenshot'), submitCaptai
 
 // Competitive Info
 router.get('/leaderboards', getLeaderboards);
+router.get('/leaderboard', getLeaderboards);
 router.get('/results', getPublishedResults);
 router.get('/winners', getWinners);
 router.get('/players/:id', getPlayerProfile);

@@ -15,7 +15,7 @@ const matchResultEntrySchema = new mongoose.Schema(
     registrationId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: 'Registration',
-      required: true,
+      required: false,
     },
     participantName: {
       type: String,
