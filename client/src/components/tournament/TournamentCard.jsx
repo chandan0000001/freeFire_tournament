@@ -1,9 +1,9 @@
-import React from 'react';
+import React, { useMemo, memo } from 'react';
 import { Link } from 'react-router-dom';
-import { Users, User, Calendar, Trophy, MapPin, ShieldCheck, ArrowUpRight, Flame } from 'lucide-react';
+import { Users, User, Calendar, Trophy, MapPin, ShieldCheck, ArrowUpRight } from 'lucide-react';
 
 function TournamentCard({ tournament }) {
-  const isMarkedFull = tournament.status === 'full' || tournament.registeredSlots >= tournament.maxSlots;
+  const isMarkedFull = tournament.status === 'full' || (tournament.registeredSlots || 0) >= tournament.maxSlots;
   const isRegistrationOpen = tournament.status === 'registration_open' && !isMarkedFull;
 
   // When tournament is marked full, or in live/completed/room_ready state, the numeric slots displayed reflect full capacity
@@ -14,10 +14,22 @@ function TournamentCard({ tournament }) {
     ? 100
     : Math.min(100, Math.round(((tournament.registeredSlots || 0) / tournament.maxSlots) * 100));
 
-  const getSlotStatusText = () => {
-    if (isMarkedFull) {
-      return 'Slots Full';
+  const matchDateFormatted = useMemo(() => {
+    try {
+      return new Date(tournament.matchDate).toLocaleString('en-IN', {
+        day: 'numeric',
+        month: 'short',
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+      });
+    } catch {
+      return 'Upcoming';
     }
+  }, [tournament.matchDate]);
+
+  const slotStatusText = useMemo(() => {
+    if (isMarkedFull) return 'Slots Full';
     switch (tournament.status) {
       case 'registration_open':
         return remaining <= 3 && remaining > 0
@@ -35,16 +47,14 @@ function TournamentCard({ tournament }) {
       default:
         return 'Closed';
     }
-  };
+  }, [isMarkedFull, tournament.status, remaining]);
 
-  const getSlotStatusClass = () => {
-    if (isMarkedFull) {
-      return 'text-amber-400 font-bold';
-    }
+  const slotStatusClass = useMemo(() => {
+    if (isMarkedFull) return 'text-amber-400 font-bold';
     switch (tournament.status) {
       case 'registration_open':
         return remaining <= 3 && remaining > 0
-          ? 'text-rose-400 font-bold animate-pulse'
+          ? 'text-rose-400 font-bold'
           : 'text-emerald-400 font-semibold';
       case 'upcoming':
         return 'text-blue-400 font-medium';
@@ -55,15 +65,14 @@ function TournamentCard({ tournament }) {
       default:
         return 'text-slate-400';
     }
-  };
+  }, [isMarkedFull, tournament.status, remaining]);
 
-  const getStatusBadge = () => {
+  const statusBadge = useMemo(() => {
     switch (tournament.status) {
       case 'registration_open':
         return (
           <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/90 text-emerald-300 text-[11px] font-extrabold border border-emerald-500/50 uppercase tracking-wider backdrop-blur-md shadow-lg">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
-            <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400 -ml-2.5 mr-0.5"></span>
+            <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.9)]"></span>
             Registration Open
           </span>
         );
@@ -81,8 +90,8 @@ function TournamentCard({ tournament }) {
         );
       case 'live':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-950/90 text-rose-300 text-[11px] font-extrabold border border-rose-500/50 uppercase tracking-wider animate-pulse backdrop-blur-md shadow-lg">
-            <span className="w-2 h-2 rounded-full bg-rose-500"></span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-950/90 text-rose-300 text-[11px] font-extrabold border border-rose-500/50 uppercase tracking-wider backdrop-blur-md shadow-lg">
+            <span className="w-2 h-2 rounded-full bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.9)]"></span>
             Live Match
           </span>
         );
@@ -105,9 +114,9 @@ function TournamentCard({ tournament }) {
           </span>
         );
     }
-  };
+  }, [tournament.status]);
 
-  const getActionButtonLabel = () => {
+  const actionButtonLabel = useMemo(() => {
     switch (tournament.status) {
       case 'full':
         return 'Slots Full';
@@ -122,15 +131,7 @@ function TournamentCard({ tournament }) {
       default:
         return 'Registration Closed';
     }
-  };
-
-  const matchDateFormatted = new Date(tournament.matchDate).toLocaleString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    hour: 'numeric',
-    minute: '2-digit',
-    hour12: true,
-  });
+  }, [tournament.status]);
 
   return (
     <div className="bg-[#101522] rounded-2xl border border-[#1E2638] overflow-hidden flex flex-col hover:border-brand-orange/60 hover:shadow-[0_10px_30px_rgba(255,85,0,0.15)] transition-all duration-300 group">
@@ -140,7 +141,10 @@ function TournamentCard({ tournament }) {
         <img
           src={tournament.bannerUrl || '/images/ff-banner-squad.webp'}
           alt={tournament.title || 'Free Fire Tournament Banner'}
+          width="640"
+          height="360"
           loading="lazy"
+          decoding="async"
           className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 opacity-95 group-hover:opacity-100"
         />
         
@@ -149,7 +153,7 @@ function TournamentCard({ tournament }) {
 
         {/* Top Header Floating Badges */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
-          {getStatusBadge()}
+          {statusBadge}
           <span className="px-3 py-1 rounded-full bg-black/75 backdrop-blur-md text-white text-[11px] font-extrabold uppercase tracking-wider border border-white/15 flex items-center gap-1.5 shadow-md">
             {tournament.format === 'squad' ? (
               <>
@@ -188,6 +192,8 @@ function TournamentCard({ tournament }) {
                 <img
                   src="/images/rit-logo.webp"
                   alt="Roland Institute of Technology"
+                  width="20"
+                  height="20"
                   className="w-full h-full object-contain rounded-full"
                 />
               </div>
@@ -238,7 +244,7 @@ function TournamentCard({ tournament }) {
                   ({tournament.format === 'squad' ? 'Teams' : 'Players'})
                 </span>
               </span>
-              <span className={getSlotStatusClass()}>{getSlotStatusText()}</span>
+              <span className={slotStatusClass}>{slotStatusText}</span>
             </div>
             <div className="w-full h-2 bg-[#090C12] rounded-full overflow-hidden border border-[#1A2234]">
               <div
@@ -278,7 +284,7 @@ function TournamentCard({ tournament }) {
               disabled
               className="flex-1 py-2.5 px-3 rounded-xl bg-slate-800/80 text-slate-400 text-xs font-bold uppercase tracking-wider cursor-not-allowed border border-slate-700/50"
             >
-              {getActionButtonLabel()}
+              {actionButtonLabel}
             </button>
           )}
         </div>
@@ -287,4 +293,4 @@ function TournamentCard({ tournament }) {
   );
 }
 
-export default React.memo(TournamentCard);
+export default memo(TournamentCard);

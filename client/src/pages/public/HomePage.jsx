@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, memo } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api.js';
 import TournamentCard from '../../components/tournament/TournamentCard.jsx';
@@ -13,10 +13,15 @@ import {
   Zap,
   Sparkles,
   Gamepad2,
-  Mail
+  Mail,
+  Flame,
+  Search,
+  ExternalLink,
+  Smartphone,
+  Award
 } from 'lucide-react';
 
-// Instant-mount default tournaments (renders immediately on first paint with 0ms delay)
+// Instant-mount default featured tournaments (renders with 0ms delay on initial paint)
 const DEFAULT_FEATURED = [
   {
     _id: '6afbf6bf37819059e7865025',
@@ -28,7 +33,7 @@ const DEFAULT_FEATURED = [
     maxSlots: 12,
     registeredSlots: 2,
     map: 'Bermuda',
-    matchDate: new Date(Date.now() + 86400000 * 3).toISOString(),
+    matchDate: '2026-11-20T14:30:00.000Z',
     prizeConfig: { totalPool: 230, firstPlace: 120, secondPlace: 70, thirdPlace: 40 },
     bannerUrl: '/images/ff-banner-squad.webp',
   },
@@ -42,7 +47,7 @@ const DEFAULT_FEATURED = [
     maxSlots: 48,
     registeredSlots: 0,
     map: 'Purgatory',
-    matchDate: new Date(Date.now() + 86400000 * 5).toISOString(),
+    matchDate: '2026-11-22T03:30:00.000Z',
     prizeConfig: { totalPool: 500, firstPlace: 250, secondPlace: 150, thirdPlace: 100 },
     bannerUrl: '/images/ff-banner-solo.webp',
   },
@@ -56,13 +61,82 @@ const DEFAULT_FEATURED = [
     maxSlots: 12,
     registeredSlots: 0,
     map: 'Kalahari',
-    matchDate: new Date(Date.now() + 86400000 * 10).toISOString(),
+    matchDate: '2026-11-27T14:30:00.000Z',
     prizeConfig: { totalPool: 230, firstPlace: 120, secondPlace: 70, thirdPlace: 40 },
     bannerUrl: '/images/ff-banner-rampage.webp',
   },
 ];
 
-export default function HomePage() {
+// Static format filters
+const FORMAT_TABS = [
+  { id: 'all', label: 'All Formats' },
+  { id: 'squad', label: 'Squad (4v4)' },
+  { id: 'solo', label: 'Solo Battle' },
+];
+
+// Static Esports Telemetry HUD metrics
+const HUD_METRICS = [
+  { label: 'Active Formats', value: 'Squad & Solo', tag: 'Mobile Only', color: 'text-white' },
+  { label: 'College Entry Fee', value: '₹29 / ₹14', tag: 'Low & Fair', color: 'text-brand-orange' },
+  { label: 'Season Prize Pool', value: '₹1,100+', tag: 'Guaranteed', color: 'text-brand-amber' },
+  { label: 'Prize Payouts', value: 'Instant UPI', tag: 'Post Scorecard', color: 'text-emerald-400' },
+];
+
+// 4-Step Competitive Workflow
+const HOW_IT_WORKS_STEPS = [
+  {
+    step: '01',
+    title: 'Register Squad or Solo',
+    description: 'Submit team roster and Free Fire UIDs via our instant registration form in under 60 seconds.',
+    icon: Gamepad2,
+    badgeColor: 'border-brand-orange/30 bg-brand-orange/10 text-brand-orange',
+  },
+  {
+    step: '02',
+    title: 'Pay Entry via UPI',
+    description: 'Pay ₹29 for Squad or ₹14 for Solo via Google Pay, PhonePe, or Paytm and submit your UTR number.',
+    icon: Zap,
+    badgeColor: 'border-brand-amber/30 bg-brand-amber/10 text-brand-amber',
+  },
+  {
+    step: '03',
+    title: 'Receive Room Code via Email',
+    description: 'Custom Room ID and Password are dispatched directly to the captain’s registered email before kick-off.',
+    icon: Mail,
+    badgeColor: 'border-cyan-500/30 bg-cyan-950/40 text-cyan-400',
+  },
+  {
+    step: '04',
+    title: 'Booyah & Win Cash',
+    description: 'Certified referees verify kills and placement points. Cash prizes are transferred instantly via UPI.',
+    icon: Trophy,
+    badgeColor: 'border-emerald-500/30 bg-emerald-950/40 text-emerald-400',
+  },
+];
+
+// Fair Play & League Standards
+const LEAGUE_STANDARDS = [
+  {
+    title: 'Mobile-Only Strict Enforcement',
+    desc: 'Emulators, PC players, iPads, and modified APKs are strictly barred. All lobbies are actively scrutinized by campus tournament observers.',
+    icon: Smartphone,
+    tag: 'Integrity First',
+  },
+  {
+    title: 'Official Kill + Booyah Scoring',
+    desc: 'Standard competitive rule set. 1 kill = 1 point, 1st place Booyah = 12 points. Transparent scorecards published post-match.',
+    icon: Flame,
+    tag: 'Esports Scoring',
+  },
+  {
+    title: 'Instant UPI Prize Settlement',
+    desc: 'Direct UPI transactions to the verified team captain with audit log receipts. Zero hidden fees or withdrawal commissions.',
+    icon: Award,
+    tag: 'Instant UPI',
+  },
+];
+
+function HomePage() {
   usePageMeta(
     'RIT Esports Arena — Official College Free Fire League',
     'Compete in weekly verified Free Fire tournaments organized exclusively for RIT college students. Custom rooms, Kill + Booyah scoring, and instant UPI cash prizes.'
@@ -72,7 +146,7 @@ export default function HomePage() {
   const [selectedFormat, setSelectedFormat] = useState('all');
   const [settings, setSettings] = useState(null);
 
-  // Background sync: updates with live database registrations without blocking initial render
+  // Background sync: updates with live database registrations without re-triggering renders if identical
   useEffect(() => {
     let isMounted = true;
     const fetchHomeData = async () => {
@@ -88,14 +162,31 @@ export default function HomePage() {
             if (b.status === 'registration_open' && a.status !== 'registration_open') return 1;
             return new Date(a.matchDate) - new Date(b.matchDate);
           });
-          setTournaments(sorted.slice(0, 6));
+
+          // Smart update: bail out if data is identical to avoid layout reflow and re-render flash
+          setTournaments((prev) => {
+            if (prev && prev.length === sorted.length) {
+              const isIdentical = sorted.every((item, i) =>
+                prev[i] &&
+                prev[i]._id === item._id &&
+                prev[i].status === item.status &&
+                prev[i].registeredSlots === item.registeredSlots
+              );
+              if (isIdentical) return prev;
+            }
+            return sorted.slice(0, 6);
+          });
         }
 
-        if (isMounted && sRes.success) {
-          setSettings(sRes.settings);
+        if (isMounted && sRes.success && sRes.settings) {
+          setSettings((prev) => {
+            if (prev && prev.whatsappCommunityUrl === sRes.settings.whatsappCommunityUrl) {
+              return prev;
+            }
+            return sRes.settings;
+          });
         }
       } catch (err) {
-        // Fallback data is already visible, fail gracefully
         console.warn('Live sync deferred, using instant static state', err);
       }
     };
@@ -104,36 +195,55 @@ export default function HomePage() {
     return () => { isMounted = false; };
   }, []);
 
-  // Challengermode format filtering
+  const handleFormatChange = useCallback((formatId) => {
+    setSelectedFormat(formatId);
+  }, []);
+
+  // Challengermode & GBArena format filtering
   const filteredTournaments = useMemo(() => {
     if (selectedFormat === 'all') return tournaments.slice(0, 3);
     return tournaments.filter((t) => t.format === selectedFormat).slice(0, 3);
   }, [tournaments, selectedFormat]);
 
+  const whatsappUrl = settings?.whatsappCommunityUrl || 'https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2';
+
   return (
-    <div className="space-y-12 sm:space-y-20 pb-16">
+    <div className="space-y-12 sm:space-y-16 pb-16">
       
-      {/* Hero Section - Challengermode & GB Arena Inspired */}
-      <section className="relative overflow-hidden pt-6 pb-12 sm:pt-20 sm:pb-24 border-b border-[#1F293D]">
-        {/* Esports Arena Background with Rich Gradient Overlays */}
-        <div className="absolute inset-0 z-0 pointer-events-none">
+      {/* Hero Section - Challengermode & GBArena Inspired */}
+      <section className="relative overflow-hidden pt-6 pb-12 sm:pt-16 sm:pb-20 border-b border-[#1F293D]">
+        {/* Esports Arena Background with Hardware-Accelerated Radial Overlays (Zero-cost GPU Compositing) */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
           <img 
             src="/images/arena-stage.webp" 
             alt="RIT Free Fire Esports Arena Championship Stage" 
+            width="1920"
+            height="1080"
             loading="eager"
-            className="w-full h-full object-cover opacity-15 filter contrast-125"
+            decoding="async"
+            className="w-full h-full object-cover opacity-15"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0E14] via-[#0B0E14]/90 to-[#0B0E14]/70"></div>
-          <div className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-7xl h-96 bg-brand-orange/15 blur-[140px] rounded-full"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#0B0E14] via-[#0B0E14]/90 to-[#0B0E14]/75"></div>
+          <div 
+            className="absolute top-0 left-1/2 -translate-x-1/2 w-full max-w-6xl h-96 pointer-events-none"
+            style={{ background: 'radial-gradient(ellipse at 50% 0%, rgba(255, 87, 34, 0.15) 0%, rgba(255, 87, 34, 0.03) 55%, transparent 75%)' }}
+          ></div>
         </div>
         
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto space-y-4 sm:space-y-6">
             
-            {/* Top Pill with RIT College Crest */}
+            {/* Top Pill with RIT College Crest & Live Status */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-orange/10 border border-brand-orange/30 text-brand-orange text-[10px] sm:text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-sm">
-              <img src="/images/rit-logo.webp" alt="RIT Crest" className="w-4 h-4 object-contain rounded-full" />
+              <img 
+                src="/images/rit-logo.webp" 
+                alt="RIT Crest" 
+                width="16" 
+                height="16" 
+                className="w-4 h-4 object-contain rounded-full" 
+              />
               <span>Roland Institute of Technology Free Fire League</span>
+              <span className="w-1.5 h-1.5 rounded-full bg-brand-orange shadow-[0_0_6px_rgba(255,87,34,0.9)]"></span>
             </div>
 
             {/* Main Headline */}
@@ -146,7 +256,7 @@ export default function HomePage() {
 
             {/* Sub-headline */}
             <p className="text-xs sm:text-base text-slate-300 leading-relaxed max-w-2xl mx-auto">
-              Weekly verified Free Fire custom rooms organized exclusively for RIT students. Fair scoring, observer-monitored anti-cheat, and instant UPI cash prizes.
+              Weekly verified Free Fire custom rooms organized exclusively for RIT college students. Official Kill + Booyah scoring, observer-monitored anti-cheat, and instant UPI cash prizes.
             </p>
 
             {/* Value Props Pill Row */}
@@ -173,7 +283,7 @@ export default function HomePage() {
               </Link>
               
               <a
-                href={settings?.whatsappCommunityUrl || 'https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2'}
+                href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-900/60 hover:border-emerald-400 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2"
@@ -181,31 +291,67 @@ export default function HomePage() {
                 <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
                 Join WhatsApp Community
               </a>
+
+              <Link
+                to="/status"
+                className="w-full sm:w-auto px-5 py-3 rounded-xl bg-[#141A26] text-slate-300 hover:text-white border border-[#243048] hover:border-brand-orange/40 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2"
+              >
+                <Search className="w-4 h-4 text-brand-orange" />
+                Check Status
+              </Link>
             </div>
 
-            {/* Challengermode Platform Stats Strip */}
+            {/* Esports Telemetry HUD Strip */}
             <div className="pt-6 sm:pt-8 grid grid-cols-2 sm:grid-cols-4 gap-3 max-w-3xl mx-auto">
-              <div className="p-3 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md text-center">
-                <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">Format</span>
-                <span className="text-base sm:text-lg font-display font-extrabold text-white mt-0.5 block">Squad & Solo</span>
-              </div>
-              <div className="p-3 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md text-center">
-                <span className="text-[10px] uppercase font-bold text-brand-orange block tracking-wider">Entry Fee</span>
-                <span className="text-base sm:text-lg font-display font-extrabold text-brand-orange mt-0.5 block">₹14 / ₹29</span>
-              </div>
-              <div className="p-3 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md text-center">
-                <span className="text-[10px] uppercase font-bold text-brand-amber block tracking-wider">Prize Pool</span>
-                <span className="text-base sm:text-lg font-display font-extrabold text-brand-amber mt-0.5 block">₹1,100+ Pool</span>
-              </div>
-              <div className="p-3 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md text-center">
-                <span className="text-[10px] uppercase font-bold text-emerald-400 block tracking-wider">Payouts</span>
-                <span className="text-base sm:text-lg font-display font-extrabold text-emerald-400 mt-0.5 block">Instant UPI</span>
-              </div>
+              {HUD_METRICS.map((metric, idx) => (
+                <div 
+                  key={idx} 
+                  className="p-3 rounded-xl bg-[#121722]/80 border border-[#1F293D] backdrop-blur-md text-center"
+                >
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
+                    {metric.label}
+                  </span>
+                  <span className={`text-base sm:text-lg font-display font-extrabold mt-0.5 block ${metric.color}`}>
+                    {metric.value}
+                  </span>
+                </div>
+              ))}
             </div>
 
           </div>
         </div>
       </section>
+
+      {/* GBArena-Style Broadcast Ticker Bar */}
+      <div className="border-y border-[#1F293D] bg-[#0E131E]/90 backdrop-blur-sm py-2.5 overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-wrap items-center justify-between gap-3 text-[11px] sm:text-xs">
+            <div className="flex items-center gap-2">
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-orange opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-brand-orange"></span>
+              </span>
+              <span className="font-display font-bold uppercase tracking-wider text-brand-orange">
+                Arena Broadcast:
+              </span>
+              <span className="text-slate-300 font-medium">
+                RIT Squad Battle Week 01 • Bermuda Map • Registration Active
+              </span>
+            </div>
+            <div className="hidden md:flex items-center gap-6 text-slate-400 font-medium">
+              <span className="flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" /> Mobile-Only Anti-Cheat
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Mail className="w-3.5 h-3.5 text-cyan-400" /> Automated Room Email Dispatch
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Trophy className="w-3.5 h-3.5 text-brand-amber" /> Instant UPI Payout
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
 
       {/* Featured Tournaments Section - Challengermode Discovery Hub */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -213,7 +359,7 @@ export default function HomePage() {
           <div>
             <div className="flex items-center gap-2 text-brand-orange text-xs font-bold uppercase tracking-wider mb-1">
               <Zap className="w-4 h-4" />
-              <span>Live & Featured Competitions</span>
+              <span>Tournament Hub</span>
             </div>
             <h2 className="font-display text-2xl sm:text-3xl font-bold uppercase text-white tracking-wide">
               Featured Tournaments
@@ -222,24 +368,25 @@ export default function HomePage() {
 
           {/* Challengermode Format Filter Chips */}
           <div className="flex items-center gap-2">
-            {[
-              { id: 'all', label: 'All Formats' },
-              { id: 'squad', label: 'Squad (4v4)' },
-              { id: 'solo', label: 'Solo' },
-            ].map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                onClick={() => setSelectedFormat(tab.id)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
-                  selectedFormat === tab.id
-                    ? 'bg-brand-orange text-white shadow-glow-orange'
-                    : 'bg-[#121722] text-slate-400 hover:text-white border border-[#1F293D]'
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
+            <div className="p-1 rounded-xl bg-[#101522] border border-[#1F293D] flex items-center gap-1">
+              {FORMAT_TABS.map((tab) => {
+                const isSelected = selectedFormat === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    type="button"
+                    onClick={() => handleFormatChange(tab.id)}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+                      isSelected
+                        ? 'bg-gradient-to-r from-brand-orange to-brand-amber text-white shadow-glow-orange'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </div>
             <Link
               to="/tournaments"
               className="ml-2 hidden sm:flex items-center gap-1 text-xs font-bold text-brand-orange hover:text-brand-amber transition-colors"
@@ -266,7 +413,7 @@ export default function HomePage() {
             </p>
             <button
               type="button"
-              onClick={() => setSelectedFormat('all')}
+              onClick={() => handleFormatChange('all')}
               className="inline-flex px-5 py-2.5 rounded-lg bg-[#1F293D] text-slate-200 text-xs font-bold uppercase tracking-wider hover:bg-[#2A3750]"
             >
               Reset Filter
@@ -275,7 +422,7 @@ export default function HomePage() {
         )}
       </section>
 
-      {/* 4-Step Competitive Workflow (Challengermode / GB Arena Style) */}
+      {/* 4-Step Competitive Workflow (Challengermode / GBArena Style) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-2xl mx-auto mb-10">
           <p className="text-brand-orange text-xs font-bold uppercase tracking-widest">How It Works</p>
@@ -285,65 +432,81 @@ export default function HomePage() {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="p-5 rounded-xl bg-[#121722] border border-[#1F293D] hover:border-brand-orange/40 transition-colors">
-            <div className="w-10 h-10 rounded-lg bg-brand-orange/10 text-brand-orange flex items-center justify-center font-display font-extrabold text-lg mb-3 border border-brand-orange/20">
-              01
+          {HOW_IT_WORKS_STEPS.map((item, idx) => {
+            const Icon = item.icon;
+            return (
+              <div 
+                key={idx}
+                className="p-5 rounded-xl bg-[#121722] border border-[#1F293D] hover:border-brand-orange/40 transition-colors"
+              >
+                <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-display font-extrabold text-lg mb-3 border ${item.badgeColor}`}>
+                  {item.step}
+                </div>
+                <h3 className="font-display text-base font-bold text-white uppercase mb-1.5 flex items-center gap-1.5">
+                  <Icon className="w-4 h-4 shrink-0" />
+                  {item.title}
+                </h3>
+                <p className="text-xs text-slate-400 leading-relaxed">
+                  {item.description}
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* League Standards & Fair Play Guarantee */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="rounded-2xl bg-[#0F141F] border border-[#1F293D] p-6 sm:p-8">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-[#1A2234]">
+            <div>
+              <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest block">
+                Campus Esports Integrity
+              </span>
+              <h2 className="font-display text-xl sm:text-2xl font-bold uppercase text-white mt-0.5">
+                RIT Esports League Standards
+              </h2>
             </div>
-            <h3 className="font-display text-base font-bold text-white uppercase mb-1.5 flex items-center gap-1.5">
-              <Gamepad2 className="w-4 h-4 text-brand-orange" />
-              Register Squad or Solo
-            </h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Submit your team roster and Free Fire UIDs via our instant registration form.
-            </p>
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-semibold">
+              <ShieldCheck className="w-4 h-4" />
+              <span>Certified Campus Referees</span>
+            </div>
           </div>
 
-          <div className="p-5 rounded-xl bg-[#121722] border border-[#1F293D] hover:border-brand-amber/40 transition-colors">
-            <div className="w-10 h-10 rounded-lg bg-brand-amber/10 text-brand-amber flex items-center justify-center font-display font-extrabold text-lg mb-3 border border-brand-amber/20">
-              02
-            </div>
-            <h3 className="font-display text-base font-bold text-white uppercase mb-1.5 flex items-center gap-1.5">
-              <Zap className="w-4 h-4 text-brand-amber" />
-              Pay Low Entry via UPI
-            </h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Pay ₹29 for Squad or ₹14 for Solo via phonepe/gpay and share your UTR confirmation.
-            </p>
-          </div>
-
-          <div className="p-5 rounded-xl bg-[#121722] border border-[#1F293D] hover:border-cyan-500/40 transition-colors">
-            <div className="w-10 h-10 rounded-lg bg-cyan-950/40 text-cyan-400 flex items-center justify-center font-display font-extrabold text-lg mb-3 border border-cyan-500/30">
-              03
-            </div>
-            <h3 className="font-display text-base font-bold text-white uppercase mb-1.5 flex items-center gap-1.5">
-              <Mail className="w-4 h-4 text-cyan-400" />
-              Receive Room Code
-            </h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Room ID and Password are dispatched directly to your registered email before match time.
-            </p>
-          </div>
-
-          <div className="p-5 rounded-xl bg-[#121722] border border-[#1F293D] hover:border-emerald-500/40 transition-colors">
-            <div className="w-10 h-10 rounded-lg bg-emerald-950/40 text-emerald-400 flex items-center justify-center font-display font-extrabold text-lg mb-3 border border-emerald-500/30">
-              04
-            </div>
-            <h3 className="font-display text-base font-bold text-white uppercase mb-1.5 flex items-center gap-1.5">
-              <Trophy className="w-4 h-4 text-emerald-400" />
-              Booyah & Win Cash
-            </h3>
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Official referees record placements and kills. Verified cash prizes are paid instantly via UPI.
-            </p>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-6">
+            {LEAGUE_STANDARDS.map((pillar, idx) => {
+              const Icon = pillar.icon;
+              return (
+                <div key={idx} className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-lg bg-brand-orange/10 border border-brand-orange/30 text-brand-orange flex items-center justify-center shrink-0">
+                      <Icon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <h4 className="font-display font-bold text-sm text-white uppercase">{pillar.title}</h4>
+                      <span className="text-[10px] text-slate-500 font-semibold uppercase">{pillar.tag}</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-400 leading-relaxed pt-1">
+                    {pillar.desc}
+                  </p>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* WhatsApp Community Callout Banner */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative p-8 sm:p-10 rounded-2xl border border-emerald-500/30 overflow-hidden shadow-2xl bg-[#0E151A]">
-          {/* Subtle background glow */}
-          <div className="absolute top-0 right-0 w-96 h-96 bg-emerald-500/10 blur-[120px] rounded-full pointer-events-none"></div>
+        <div 
+          className="relative p-8 sm:p-10 rounded-2xl border border-emerald-500/30 overflow-hidden shadow-2xl bg-[#0E151A]"
+        >
+          {/* Subtle hardware-accelerated background glow (No expensive blur filter) */}
+          <div 
+            className="absolute top-0 right-0 w-96 h-96 pointer-events-none"
+            style={{ background: 'radial-gradient(circle at top right, rgba(16, 185, 129, 0.15) 0%, transparent 70%)' }}
+          ></div>
           
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="space-y-2.5 max-w-xl text-center md:text-left">
@@ -359,7 +522,7 @@ export default function HomePage() {
             </div>
 
             <a
-              href={settings?.whatsappCommunityUrl || 'https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2'}
+              href={whatsappUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="px-7 py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold uppercase tracking-wider text-xs sm:text-sm transition-all shadow-lg flex items-center gap-2.5 shrink-0"
@@ -374,3 +537,5 @@ export default function HomePage() {
     </div>
   );
 }
+
+export default memo(HomePage);

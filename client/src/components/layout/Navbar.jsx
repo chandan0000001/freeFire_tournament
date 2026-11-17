@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, memo } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { 
@@ -15,21 +15,21 @@ import {
   ExternalLink
 } from 'lucide-react';
 
-export default function Navbar() {
+const NAV_LINKS = [
+  { name: 'Tournaments', path: '/tournaments', icon: Trophy },
+  { name: 'Leaderboard', path: '/leaderboard', icon: Award },
+  { name: 'Results', path: '/results', icon: Flame },
+  { name: 'Winners', path: '/winners', icon: Users },
+  { name: 'Status Check', path: '/status', icon: Search },
+  { name: 'Rules', path: '/rules', icon: BookOpen },
+];
+
+function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
   const location = useLocation();
   const { user, isAdmin, logout } = useAuth();
 
-  const navLinks = [
-    { name: 'Tournaments', path: '/tournaments', icon: Trophy },
-    { name: 'Leaderboard', path: '/leaderboard', icon: Award },
-    { name: 'Results', path: '/results', icon: Flame },
-    { name: 'Winners', path: '/winners', icon: Users },
-    { name: 'Status Check', path: '/status', icon: Search },
-    { name: 'Rules', path: '/rules', icon: BookOpen },
-  ];
-
-  const isActive = (path) => location.pathname === path;
+  const isActive = useCallback((path) => location.pathname === path, [location.pathname]);
 
   return (
     <header className="sticky top-0 z-50 bg-[#0B0E14]/95 backdrop-blur-md border-b border-[#1F293D]">
@@ -42,6 +42,8 @@ export default function Navbar() {
               <img
                 src="/images/rit-logo.webp"
                 alt="Roland Institute of Technology Logo"
+                width="44"
+                height="44"
                 className="w-full h-full object-contain rounded-full bg-[#0B0E14]"
               />
             </div>
@@ -60,7 +62,7 @@ export default function Navbar() {
 
           {/* Desktop Nav Links */}
           <nav className="hidden md:flex items-center gap-1">
-            {navLinks.map((link) => {
+            {NAV_LINKS.map((link) => {
               const Icon = link.icon;
               const active = isActive(link.path);
               return (
@@ -90,7 +92,7 @@ export default function Navbar() {
               className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-emerald-950/40 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-900/50 hover:border-emerald-400 transition-all text-xs font-bold"
               title="Join Official Free Fire WhatsApp Community"
             >
-              <div className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></div>
+              <div className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]"></div>
               <MessageCircle className="w-4 h-4" />
               WhatsApp Group
             </a>
@@ -208,3 +210,5 @@ export default function Navbar() {
     </header>
   );
 }
+
+export default memo(Navbar);

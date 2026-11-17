@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../services/api.js';
 
 const AuthContext = createContext(null);
@@ -8,29 +8,37 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    let isMounted = true;
     const checkAuth = async () => {
       const token = localStorage.getItem('rit_token');
       if (!token) {
-        setLoading(false);
+        if (isMounted) setLoading(false);
         return;
       }
       try {
         const res = await api.get('/auth/me');
-        if (res.success && res.user) {
-          setUser(res.user);
-        } else {
-          localStorage.removeItem('rit_token');
+        if (isMounted) {
+          if (res.success && res.user) {
+            setUser(res.user);
+          } else {
+            localStorage.removeItem('rit_token');
+            setUser(null);
+          }
         }
       } catch (err) {
-        localStorage.removeItem('rit_token');
+        if (isMounted) {
+          localStorage.removeItem('rit_token');
+          setUser(null);
+        }
       } finally {
-        setLoading(false);
+        if (isMounted) setLoading(false);
       }
     };
     checkAuth();
+    return () => { isMounted = false; };
   }, []);
 
-  const login = async (endpoint, credentials) => {
+  const login = useCallback(async (endpoint, credentials) => {
     const res = await api.post(endpoint, credentials);
     if (res.success && res.token) {
       localStorage.setItem('rit_token', res.token);
@@ -38,17 +46,27 @@ export const AuthProvider = ({ children }) => {
       return res;
     }
     throw new Error(res.message || 'Login failed');
-  };
+  }, []);
 
-  const logout = () => {
+  const logout = useCallback(() => {
     localStorage.removeItem('rit_token');
     setUser(null);
-  };
+  }, []);
 
-  const isAdmin = user && ['superadmin', 'admin'].includes(user.role);
+  const isAdmin = useMemo(() => {
+    return Boolean(user && ['superadmin', 'admin'].includes(user.role));
+  }, [user]);
+
+  const value = useMemo(() => ({
+    user,
+    loading,
+    login,
+    logout,
+    isAdmin
+  }), [user, loading, login, logout, isAdmin]);
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, logout, isAdmin }}>
+    <AuthContext.Provider value={value}>
       {children}
     </AuthContext.Provider>
   );
