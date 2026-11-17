@@ -17,17 +17,28 @@ app.use(
 );
 
 // CORS configuration (allow local dev + production frontend)
+const clientUrls = (process.env.CLIENT_URL || '')
+  .split(',')
+  .map((s) => s.trim().replace(/\/+$/, ''))
+  .filter(Boolean);
+
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  process.env.CLIENT_URL,
-].filter(Boolean);
+  'https://rittournament.vercel.app',
+  ...clientUrls,
+];
 
 app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps, curl, or Postman)
-      if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app') || process.env.NODE_ENV !== 'production') {
+      if (
+        !origin ||
+        allowedOrigins.includes(origin) ||
+        origin.endsWith('.vercel.app') ||
+        process.env.NODE_ENV !== 'production'
+      ) {
         callback(null, true);
       } else {
         callback(null, true);
@@ -49,6 +60,27 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Static uploads directory (for screenshot evidence)
 app.use('/uploads', express.static(path.resolve('uploads')));
 
+// Root Welcome & Ping Route (prevents 404 when visiting primary Render URL)
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: '🔥 RIT Esports Arena API Server is LIVE and healthy!',
+    version: '1.0.0',
+    endpoints: {
+      health: '/api/health',
+      tournaments: '/api/tournaments',
+      leaderboard: '/api/leaderboards',
+      settings: '/api/settings/public',
+    },
+    clientOrigin: process.env.CLIENT_URL || 'https://rittournament.vercel.app',
+    timestamp: new Date().toISOString(),
+  });
+});
+
+app.head('/', (req, res) => {
+  res.status(200).end();
+});
+
 // Health Check Route
 app.get('/api/health', (req, res) => {
   res.json({
@@ -57,6 +89,18 @@ app.get('/api/health', (req, res) => {
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
   });
+});
+
+// Auto-fallback: if client requests /tournaments or /settings/public without /api, seamlessly route to /api/...
+app.use((req, res, next) => {
+  if (
+    !req.path.startsWith('/api') &&
+    !req.path.startsWith('/uploads') &&
+    req.path !== '/'
+  ) {
+    req.url = `/api${req.url}`;
+  }
+  next();
 });
 
 // Mount Main API Routes
