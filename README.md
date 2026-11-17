@@ -34,9 +34,10 @@ A modern, mobile-responsive, production-ready competitive Free Fire esports plat
 - **Runtime**: Node.js (ESM), Express.js
 - **Security**: Helmet, CORS, Joi payload validation, MongoDB atomic `$inc` with `$expr` concurrency guards
 - **Caching & Rate Limiting**: Redis Cloud (`ioredis`) with automatic in-memory fallback:
-  - High-speed 30-second read-through caching for `GET /api/tournaments` (~2ms response)
-  - Non-blocking selective cache invalidation (`delPattern('tournaments:*')`, `delPattern('leaderboard:*')`)
+  - High-speed read-through caching for `/api/tournaments` (30s), `/api/tournaments/:slug` (60s), `/api/settings/public` (300s), `/api/leaderboards` (120s), and `/api/winners` (120s) (~1-3ms response time)
+  - Non-blocking selective cache invalidation (`delPattern('tournaments:*')`, `del('settings:public')`, `del('winners:halloffame')`)
   - Distributed IP rate limiters using `rate-limit-redis`
+  - 1-Year immutable CDN edge caching on Vercel for all static WebP artwork
 - **Email Service**: Brevo (Sendinblue) Transactional API for automated room credentials and payment approvals
 - **File Uploads**: Multer with MIME-type and 5MB size validation for dispute/scoreboard screenshots
 
@@ -73,16 +74,37 @@ A modern, mobile-responsive, production-ready competitive Free Fire esports plat
 
 ## Curated 16:9 Tournament Banners
 
-All tournament banners are optimized to standard **16:9 widescreen WebP** (saving 95% bandwidth):
-- `/images/ff-banner.webp`: Squad Battle Crimson (16:9)
-- `/images/ff-banner-2.webp`: Elite Squad Clash (16:9)
+All tournament banners are optimized to standard **16:9 widescreen WebP** (quality 82, 1280x720, saving 95% bandwidth):
+- `/images/ff-banner-squad.webp`: Official Squad Battle (16:9)
+- `/images/ff-banner-solo.webp`: Solo Firestorm Champion (16:9)
+- `/images/ff-banner-rampage.webp`: Rampage Battleground (16:9)
 - `/images/ff-banner-hayato.webp`: Championship Hayato (16:9, fully framed)
 - `/images/ff-banner-kelly.webp`: Solo Gunslinger Kelly (16:9)
 - `/images/ff-banner-chrono.webp`: Chrono Time Turner (16:9)
-- `/images/ff-banner-moco.webp`: Cyber Moco Hacker (16:9)
+- `/images/ff-banner-paradox.webp`: Cyber Paradox Clash (16:9)
+- `/images/ff-banner-battle.webp`: High Octane Combat (16:9)
 - `/images/ff-banner-flame.webp`: Booyah Flame Champion (16:9)
+- `/images/ff-banner-naruto.webp`: Naruto Shippuden x Free Fire (16:9)
+- `/images/ff-banner-squidgame.webp`: Squid Game x Free Fire (16:9)
+- `/images/ff-banner-evo8.webp`: 8th Anniversary Evo Gun (16:9)
+- `/images/ff-banner-cyberbiker.webp`: Cyber Biker Combat (16:9)
+- `/images/ff-banner-heat.webp`: Heatwave Combat Arena (16:9)
+- `/images/ff-banner-rampage-2.webp`: Rampage Battleground II (16:9)
+- `/images/ff-banner-rampage-finale.webp`: Rampage Finale Championship (16:9)
+- `/images/ff-banner-intense.webp`: Intense Battle Royale (16:9)
+- `/images/ff-banner-together.webp`: Squad Together Battle (16:9)
+- `/images/ff-banner-assemble.webp`: Free Fire Assemble 4v4 (16:9)
+- `/images/ff-banner-max-vc.webp`: Free Fire MAX Ultra Combat (16:9)
+- `/images/ff-banner-max-fk.webp`: Free Fire MAX Special Ops (16:9)
+- `/images/ff-banner-max-0x.webp`: Free Fire MAX Cyber Clash (16:9)
+- `/images/ff-banner-team-2023.webp`: Championship Team 4v4 (16:9)
+- `/images/ff-banner-game-mc.webp`: Cyber Storm Battleground (16:9)
+- `/images/ff-banner-game-4y.webp`: High Voltage 4K Battle (16:9)
+- `/images/ff-banner-cw-2024.webp`: New Dawn Combat 2024 (16:9)
+- `/images/ff-banner-ne-2024.webp`: Neon Striker 2024 (16:9)
+- `/images/ff-banner-game-7x.webp`: Apex Champions 4K (16:9)
+- `/images/ff-banner-2025.webp`: Free Fire Horizon 2025 (16:9)
 - `/images/arena-stage.webp`: Grand Arena Stage (16:9)
-- `/images/esports-setup.webp`: RGB Battle Stations (16:9)
 
 ---
 

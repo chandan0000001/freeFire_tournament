@@ -132,7 +132,7 @@ export default function HomePage() {
             
             {/* Top Pill with RIT College Crest */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-orange/10 border border-brand-orange/30 text-brand-orange text-[10px] sm:text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-sm">
-              <img src="/images/rit-logo.png" alt="RIT Crest" className="w-4 h-4 object-contain rounded-full" />
+              <img src="/images/rit-logo.webp" alt="RIT Crest" className="w-4 h-4 object-contain rounded-full" />
               <span>Roland Institute of Technology Free Fire League</span>
             </div>
 

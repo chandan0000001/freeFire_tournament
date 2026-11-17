@@ -1,6 +1,7 @@
 import { Prize } from '../models/Prize.js';
 import { logAudit } from '../services/auditService.js';
 import { PRIZE_PAYOUT_STATUS } from '../constants/statuses.js';
+import { cache } from '../config/redis.js';
 
 export const getAdminPrizes = async (req, res, next) => {
   try {
@@ -45,6 +46,9 @@ export const updatePayoutStatus = async (req, res, next) => {
     }
 
     await prize.save();
+
+    // Invalidate cached public winners in Redis
+    await cache.del('winners:halloffame');
 
     await logAudit({
       action: 'PRIZE_PAYOUT_UPDATED',

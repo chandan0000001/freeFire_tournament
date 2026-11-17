@@ -163,6 +163,12 @@ export const getLeaderboards = async (req, res, next) => {
  */
 export const getWinners = async (req, res, next) => {
   try {
+    const cacheKey = 'winners:halloffame';
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+      return res.json({ success: true, ...cached, cached: true });
+    }
+
     const prizes = await Prize.find()
       .populate('tournamentId', 'title format matchDate bannerUrl map')
       .populate('winnerRegistrationId', 'teamName players format')
@@ -198,7 +204,9 @@ export const getWinners = async (req, res, next) => {
     }
 
     const results = Array.from(tournamentWinnersMap.values());
-    res.json({ success: true, count: results.length, winners: results });
+    const payload = { count: results.length, winners: results };
+    await cache.set(cacheKey, payload, 120);
+    res.json({ success: true, ...payload });
   } catch (error) {
     next(error);
   }

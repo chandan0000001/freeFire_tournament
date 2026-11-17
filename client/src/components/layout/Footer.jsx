@@ -15,7 +15,7 @@ function Footer() {
             <Link to="/" className="inline-flex items-center gap-2.5 group">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full p-0.5 bg-gradient-to-br from-brand-orange to-brand-amber shadow-glow-orange shrink-0">
                 <img
-                  src="/images/rit-logo.png"
+                  src="/images/rit-logo.webp"
                   alt="Roland Institute of Technology"
                   className="w-full h-full object-contain rounded-full bg-[#0B0E14]"
                 />

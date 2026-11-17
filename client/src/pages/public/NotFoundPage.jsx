@@ -15,7 +15,7 @@ export default function NotFoundPage() {
 
         <div className="relative">
           <div className="w-20 h-20 rounded-2xl bg-[#0B0E14] border-2 border-brand-orange/50 mx-auto flex items-center justify-center shadow-glow-orange">
-            <img src="/images/rit-logo.png" alt="RIT Crest" className="w-14 h-14 object-contain" />
+            <img src="/images/rit-logo.webp" alt="RIT Crest" className="w-14 h-14 object-contain" />
           </div>
           <span className="inline-block mt-4 px-3 py-1 rounded-full bg-rose-950/80 text-rose-400 border border-rose-500/40 text-[10px] font-black uppercase tracking-wider">
             Zone Shrink Elimination

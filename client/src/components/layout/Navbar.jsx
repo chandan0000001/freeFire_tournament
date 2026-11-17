@@ -40,7 +40,7 @@ export default function Navbar() {
           <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
             <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full p-0.5 bg-gradient-to-br from-brand-orange to-brand-amber shadow-glow-orange group-hover:scale-105 transition-transform flex items-center justify-center shrink-0">
               <img
-                src="/images/rit-logo.png"
+                src="/images/rit-logo.webp"
                 alt="Roland Institute of Technology Logo"
                 className="w-full h-full object-contain rounded-full bg-[#0B0E14]"
               />
