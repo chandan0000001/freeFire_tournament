@@ -144,7 +144,7 @@ function Navbar() {
       {/* Mobile Drawer Menu */}
       {isOpen && (
         <div className="md:hidden border-t border-[#1F293D] bg-[#0B0E14] px-4 pt-3 pb-6 space-y-2">
-          {navLinks.map((link) => {
+          {NAV_LINKS.map((link) => {
             const Icon = link.icon;
             const active = isActive(link.path);
             return (
