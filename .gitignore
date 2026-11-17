@@ -12,3 +12,6 @@ server/uploads/evidence/*
 !server/uploads/evidence/.gitkeep
 *.log
 .DS_Store
+
+# Documentation & Internal Guides
+RIT_Esports_Arena_PRD_and_Antigravity_Guide.md

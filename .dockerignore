@@ -1,0 +1,14 @@
+node_modules
+client/node_modules
+client/dist
+.git
+.gitignore
+.env
+.env.*
+server/.env
+server/.env.*
+client/.env
+client/.env.*
+*.log
+.DS_Store
+RIT_Esports_Arena_PRD_and_Antigravity_Guide.md
