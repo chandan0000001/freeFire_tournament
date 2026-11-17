@@ -118,12 +118,14 @@ MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/rit_esports
 JWT_SECRET=your_super_secret_jwt_key_here
 REDIS_URL=redis://default:<password>@<host>:<port>
 BREVO_API_KEY=your_brevo_api_key_here
-EMAIL_FROM=rittournament01@gmail.com
+EMAIL_FROM=your_verified_sender@domain.com
 EMAIL_FROM_NAME=RIT Esports Arena
-ADMIN_WHATSAPP_NUMBER=918114603994
-WHATSAPP_COMMUNITY_URL=https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2
-ADMIN_UPI_ID=srikantap571-1@okaxis
-ADMIN_UPI_NAME=Srikant Panda
+ADMIN_WHATSAPP_NUMBER=91XXXXXXXXXX
+WHATSAPP_COMMUNITY_URL=https://chat.whatsapp.com/your_community_link
+ADMIN_UPI_ID=your_upi_id@bank
+ADMIN_UPI_NAME=Your Payee Name
+ADMIN_BOOTSTRAP_EMAIL=admin@ritesports.in
+ADMIN_BOOTSTRAP_PASSWORD=your_secure_password
 ```
 
 **`client/.env`**:
@@ -135,9 +137,9 @@ VITE_API_BASE_URL=https://freefire-tournament-hlu5.onrender.com/api
 ```bash
 npm run seed
 ```
-Seeds initial admin accounts:
-- **Superadmin**: `admin@ritesports.in` / `Admin@RIT2026!`
-- **Spectator**: `spectator@ritesports.in` / `Spectator@RIT2026!`
+Initializes the database with:
+- **Superadmin** and **Match Spectator** staff accounts (credentials configured via `ADMIN_BOOTSTRAP_EMAIL` and `ADMIN_BOOTSTRAP_PASSWORD` in your `.env`)
+- Sample Squad & Solo Free Fire custom room tournaments and campus site settings
 
 ### 5. Start Servers
 ```bash
