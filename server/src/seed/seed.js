@@ -103,7 +103,7 @@ const seedDatabase = async () => {
           terms: 'Cash prizes transferred via UPI directly by admin within 24 hours of verified results.',
         },
         rules: '1. Only verified RIT students.\n2. No PC/Emulators allowed; mobile only.\n3. Custom Room ID & Password sent via email 20 mins prior.\n4. Toxic behaviour or hacking results in permanent ban.',
-        bannerUrl: 'https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=1200&q=80',
+        bannerUrl: '/images/ff-banner.webp',
         isPublic: true,
       },
       {
@@ -133,7 +133,7 @@ const seedDatabase = async () => {
           terms: 'Cash prize paid manually via UPI to verified winner.',
         },
         rules: '1. Solo mode only. Teaming up with other players will result in immediate disqualification.\n2. Mobile devices only.\n3. Screenshots must be submitted in case of dispute.',
-        bannerUrl: 'https://images.unsplash.com/photo-1511512578047-dfb367046420?auto=format&fit=crop&w=1200&q=80',
+        bannerUrl: '/images/ff-banner-hayato.webp',
         isPublic: true,
       },
       {
@@ -163,7 +163,7 @@ const seedDatabase = async () => {
           terms: 'Standard cash prize terms apply.',
         },
         rules: 'Standard Free Fire esports rules.',
-        bannerUrl: 'https://images.unsplash.com/photo-1538481199705-c710c4e965fc?auto=format&fit=crop&w=1200&q=80',
+        bannerUrl: '/images/ff-banner-2.webp',
         isPublic: true,
       },
     ];

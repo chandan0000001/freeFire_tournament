@@ -24,28 +24,30 @@ export default function AdminTournaments() {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Available local Free Fire tournament banners pool
+  // Curated high-res 16:9 widescreen Free Fire tournament banners
   const BANNER_OPTIONS = [
     { label: '🎲 Random Auto-Select', value: '' },
-    { label: 'Squad Battle Crimson', value: '/images/ff-banner.webp' },
-    { label: 'Elite Squad Clash (New)', value: '/images/ff-banner-2.webp' },
-    { label: 'Solo Gunslinger Kelly', value: '/images/ff-character-1.webp' },
-    { label: 'Championship Hayato (New)', value: '/images/ff-character-4.webp' },
-    { label: 'Urban Combat Hero (New)', value: '/images/ff-character-5.webp' },
-    { label: 'Cyber Gunslinger (New)', value: '/images/ff-character-6.webp' },
-    { label: 'Grand Arena Stage', value: '/images/arena-stage.jpg' },
-    { label: 'RGB Battle Stations', value: '/images/esports-setup.jpg' },
+    { label: 'Squad Battle Crimson (16:9)', value: '/images/ff-banner.webp' },
+    { label: 'Elite Squad Clash (16:9)', value: '/images/ff-banner-2.webp' },
+    { label: 'Championship Hayato (16:9)', value: '/images/ff-banner-hayato.webp' },
+    { label: 'Solo Gunslinger Kelly (16:9)', value: '/images/ff-banner-kelly.webp' },
+    { label: 'Chrono Time Turner (16:9)', value: '/images/ff-banner-chrono.webp' },
+    { label: 'Cyber Moco Hacker (16:9)', value: '/images/ff-banner-moco.webp' },
+    { label: 'Booyah Flame Champion (16:9)', value: '/images/ff-banner-flame.webp' },
+    { label: 'Grand Arena Stage (16:9)', value: '/images/arena-stage.webp' },
+    { label: 'RGB Battle Stations (16:9)', value: '/images/esports-setup.webp' },
   ];
 
   const RANDOM_BANNERS = [
     '/images/ff-banner.webp',
     '/images/ff-banner-2.webp',
-    '/images/arena-stage.jpg',
-    '/images/esports-setup.jpg',
-    '/images/ff-character-1.webp',
-    '/images/ff-character-4.webp',
-    '/images/ff-character-5.webp',
-    '/images/ff-character-6.webp',
+    '/images/ff-banner-hayato.webp',
+    '/images/ff-banner-kelly.webp',
+    '/images/ff-banner-chrono.webp',
+    '/images/ff-banner-moco.webp',
+    '/images/ff-banner-flame.webp',
+    '/images/arena-stage.webp',
+    '/images/esports-setup.webp',
   ];
 
   // Form state
@@ -510,17 +512,17 @@ export default function AdminTournaments() {
                   </div>
 
                   {/* Live Preview */}
-                  <div className="relative h-20 rounded-lg overflow-hidden border border-[#1F293D] bg-slate-900 flex items-center justify-center">
+                  <div className="relative h-28 rounded-xl overflow-hidden border border-[#1F293D] bg-slate-900 flex items-center justify-center shadow-inner">
                     {formData.bannerUrl ? (
                       <img
                         src={formData.bannerUrl}
                         alt="Banner preview"
-                        className="w-full h-full object-cover"
+                        className="w-full h-full object-cover object-center"
                       />
                     ) : (
                       <div className="text-center p-2 text-slate-400 text-[11px]">
                         🎲 <strong className="text-white">Random Mode Active</strong>
-                        <p className="text-[9px] text-slate-500">Auto-assigned from 8 Free Fire images</p>
+                        <p className="text-[9px] text-slate-500">Auto-assigned from 9 high-res Free Fire 16:9 banners</p>
                       </div>
                     )}
                   </div>

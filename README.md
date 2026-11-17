@@ -1,126 +1,177 @@
-# RIT Esports Arena — College Free Fire Tournament Platform
+# 🔥 RIT Esports Arena — Official College Free Fire League
 
-A production-ready, responsive, college-exclusive esports tournament web application for organizing weekly Garena Free Fire competitions.
+[![Live Frontend](https://img.shields.io/badge/Frontend-Vercel-black?logo=vercel&logoColor=white)](https://rittournament.vercel.app)
+[![Live API](https://img.shields.io/badge/Backend-Render-46E3B7?logo=render&logoColor=white)](https://freefire-tournament-hlu5.onrender.com)
+[![Database](https://img.shields.io/badge/Database-MongoDB%20Atlas-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Cache & Rate Limit](https://img.shields.io/badge/Cache-Redis%20Cloud-DC382D?logo=redis&logoColor=white)](https://redis.io/)
+[![Email Delivery](https://img.shields.io/badge/Email-Brevo%20API-0092FF?logo=sendinblue&logoColor=white)](https://www.brevo.com/)
 
----
-
-## 🎮 Technology Stack
-
-- **Frontend**: React 18, Vite, Tailwind CSS, Lucide Icons, React Router DOM (v6)
-- **Backend**: Node.js, Express (REST API, Helmet, CORS, Joi, Express Rate Limit)
-- **Database**: MongoDB (Mongoose ODM with atomic `$inc` slot reservations & unique indexes)
-- **Email Delivery**: Brevo (Sendinblue) Transactional API (with local development fallback)
-- **Cache & Rate Limiting**: Redis (with automatic in-memory fallback if Redis is unavailable)
-- **File Uploads**: Multer with file type & size validation for match screenshot evidence
-- **Deployments**: Vercel (Frontend SPA) + Render (Backend Web Service)
+A modern, mobile-responsive, production-ready competitive Free Fire esports platform built exclusively for students of **Roland Institute of Technology (RIT), Berhampur, Odisha**. Features custom room management, OTP-free squad/solo registrations, automated Brevo room credential dispatch, observer score verification, real-time Redis-cached leaderboards, and instant UPI payouts.
 
 ---
 
-## ⚡ Core Features & Workflows
+## 🌐 Live Production Deployments
 
-1. **Tournaments & Formats**:
-   - Squad (4v4) and Solo tournaments with configurable entry fees (₹29 Squad / ₹14 Solo) and prize pools.
-   - Dynamic slot capacity meter with atomic reservation preventing race-condition overbooking.
-2. **Registration Without OTP**:
-   - Collects team names, captain contact, college roll numbers, and player Free Fire UIDs.
-   - Generates human-readable reference IDs (`RIT-FF-SQ-XXXXX` / `RIT-FF-SO-XXXXX`).
-   - 1-tap WhatsApp click-to-chat button with pre-filled message for sending UPI payment proof.
-3. **Manual UPI Payment Verification**:
-   - Protected Admin Dashboard to inspect registrations, enter UTR numbers, and approve/reject entries.
-   - Approving an entry automatically sends a Brevo confirmation email and marks it eligible for room details.
-   - Rejecting an entry automatically releases the slot back to the tournament.
-4. **Room ID & Password Distribution via Brevo**:
-   - Securely stored credentials (`select: false` — never exposed in public queries or JSON).
-   - Admin multi-selects verified participants and dispatches credentials via Brevo email.
-   - Real delivery reports tracking message IDs, delivery statuses, and retry buttons for failures.
-5. **Spectator Workspace & Score Recording**:
-   - Official match observers record placement, kills, and Booyah results.
-   - Uploads end-game scoreboard screenshots as supporting evidence.
-   - Captains can also upload dispute evidence screenshots.
-6. **Configurable Kill + Booyah Scoring Engine**:
-   - Formula: `Total Points = (Kills × Kill Point Value) + Booyah Bonus`.
-   - Automated tie-breaker hierarchy: `Booyahs > Kills > Placement`.
-   - Admin reviews, edits, and officially publishes verified scorecards.
-7. **Leaderboards & Hall of Fame**:
-   - Real-time Squad and Individual leaderboards.
-   - Public Winners Showcase honoring champions and cash prize awards.
-   - Strict privacy: never exposes player phone numbers, personal emails, or payment transaction IDs.
-8. **Cash Prize Management**:
-   - Offline payout tracking for 1st, 2nd, 3rd, and MVP positions with internal transaction references.
-9. **Security & Auditability**:
-   - Role-Based Access Control (`superadmin`, `admin`, `spectator`).
-   - Comprehensive audit trail recording all administrative actions.
+- **Frontend Application**: [https://rittournament.vercel.app](https://rittournament.vercel.app)
+- **Backend API**: [https://freefire-tournament-hlu5.onrender.com](https://freefire-tournament-hlu5.onrender.com)
+- **API Health Check**: `https://freefire-tournament-hlu5.onrender.com/api/health`
+- **Sitemap**: `https://rittournament.vercel.app/sitemap.xml`
+- **Robots.txt**: `https://rittournament.vercel.app/robots.txt`
 
 ---
 
-## 🚀 Quick Start Guide
+## 🎮 Tech Stack & Architecture
 
-### 1. Install Dependencies
+### Frontend (Client)
+- **Framework**: React 18, Vite 6, Tailwind CSS
+- **Code Splitting**: Route-level `React.lazy()` + `<Suspense>` with custom branded loading fallback (Initial bundle **<85 kB** gzipped)
+- **UI & Icons**: Lucide React, Rajdhani & Inter esports typography
+- **SEO & Social**: Dynamic page metadata hook (`usePageMeta.js`), OpenGraph tags, Apple touch icon, Favicon set, `robots.txt`, and `sitemap.xml`
+- **Analytics**: `@vercel/analytics` integrated for real-time performance tracking
+- **Mobile Optimizations**: Tap highlight removal (`-webkit-tap-highlight-color: transparent`), above-the-fold CTA buttons on 360×800 screens, streamlined 2-column mobile footer
+
+### Backend (Server)
+- **Runtime**: Node.js (ESM), Express.js
+- **Security**: Helmet, CORS, Joi payload validation, MongoDB atomic `$inc` with `$expr` concurrency guards
+- **Caching & Rate Limiting**: Redis Cloud (`ioredis`) with automatic in-memory fallback:
+  - High-speed 30-second read-through caching for `GET /api/tournaments` (~2ms response)
+  - Non-blocking selective cache invalidation (`delPattern('tournaments:*')`, `delPattern('leaderboard:*')`)
+  - Distributed IP rate limiters using `rate-limit-redis`
+- **Email Service**: Brevo (Sendinblue) Transactional API for automated room credentials and payment approvals
+- **File Uploads**: Multer with MIME-type and 5MB size validation for dispute/scoreboard screenshots
+
+---
+
+## ⚡ Core Platform Workflows
+
+```
+   [ Student Registration ]               [ Admin Verification ]            [ Match Day Execution ]
+ ┌───────────────────────────┐         ┌───────────────────────────┐     ┌───────────────────────────┐
+ │ • Select Squad or Solo    │         │ • Inspect UTR & Proof     │     │ • Match Observer records  │
+ │ • Free Fire UIDs + Rolls  │ ──────► │ • 1-Click UPI Verify      │ ──► │   Placement + Kill points │
+ │ • Pre-filled WhatsApp CTA │         │ • Auto-generate Room Code │     │ • Booyah bonus calculated │
+ │ • Instant Slot Reserved   │         │ • Brevo Email Dispatch    │     │ • Redis Leaderboard live  │
+ └───────────────────────────┘         └───────────────────────────┘     └───────────────────────────┘
+```
+
+1. **OTP-Free Student Registration**:
+   - Students register with Captain details, College Roll Number, and Free Fire UIDs.
+   - Generates human-readable reference IDs: `RIT-FF-SQ-XXXXX` (Squad) or `RIT-FF-SO-XXXXX` (Solo).
+   - Generates dynamic scannable UPI QR codes and a 1-tap WhatsApp click-to-chat button with pre-filled payment details.
+2. **Atomic Slot Reservation**:
+   - Concurrency-safe slot holds prevent race condition overbooking when registrations open.
+   - Registrations instantly bust the Redis tournament cache so live slot counts update across devices.
+3. **Brevo Room Dispatch**:
+   - Custom Room ID and Password are encrypted and protected (`select: false` in queries).
+   - Admin dispatches credentials via Brevo to verified participants with live delivery status tracking.
+4. **Spectator Workspace & Score Engine**:
+   - Official observers input placements, kills, and upload scoreboard evidence.
+   - Configurable formula: `Points = (Kills × KillValue) + BooyahBonus`.
+   - Automated tie-breaker: `Booyahs > Kills > Placement`.
+
+---
+
+## 🖼️ Curated 16:9 Tournament Banners
+
+All tournament banners are optimized to standard **16:9 widescreen WebP** (saving 95% bandwidth):
+- `/images/ff-banner.webp`: Squad Battle Crimson (16:9)
+- `/images/ff-banner-2.webp`: Elite Squad Clash (16:9)
+- `/images/ff-banner-hayato.webp`: Championship Hayato (16:9, fully framed)
+- `/images/ff-banner-kelly.webp`: Solo Gunslinger Kelly (16:9)
+- `/images/ff-banner-chrono.webp`: Chrono Time Turner (16:9)
+- `/images/ff-banner-moco.webp`: Cyber Moco Hacker (16:9)
+- `/images/ff-banner-flame.webp`: Booyah Flame Champion (16:9)
+- `/images/arena-stage.webp`: Grand Arena Stage (16:9)
+- `/images/esports-setup.webp`: RGB Battle Stations (16:9)
+
+---
+
+## 🛠️ Local Development & Setup
+
+### 1. Prerequisites
+- Node.js 18+ (Tested on Node 20 & 24)
+- MongoDB Atlas database or local MongoDB instance
+- Redis Cloud instance (Optional, falls back to in-memory cache)
+- Brevo API Key (Optional in dev, falls back to local console logger)
+
+### 2. Installation
 ```bash
-# Install root, server, and client dependencies
+# Clone the repository
+git clone git@github.com:chandan0000001/freeFire_tournament.git
+cd freeFire_tournament
+
+# Install server and client dependencies
 npm install
 npm --prefix server install
 npm --prefix client install
 ```
 
-### 2. Configure Environment Variables
-Copy `.env.example` in both `server/` and `client/`:
-```bash
-cp server/.env.example server/.env
-cp client/.env.example client/.env
+### 3. Environment Variables
+Create `.env` in both `server/` and `client/`:
+
+**`server/.env`**:
+```env
+PORT=5000
+NODE_ENV=development
+CLIENT_URL=http://localhost:5173,https://rittournament.vercel.app
+MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/rit_esports?retryWrites=true&w=majority
+JWT_SECRET=your_super_secret_jwt_key_here
+REDIS_URL=redis://default:<password>@<host>:<port>
+BREVO_API_KEY=your_brevo_api_key_here
+EMAIL_FROM=rittournament01@gmail.com
+EMAIL_FROM_NAME=RIT Esports Arena
+ADMIN_WHATSAPP_NUMBER=918114603994
+WHATSAPP_COMMUNITY_URL=https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2
+ADMIN_UPI_ID=srikantap571-1@okaxis
+ADMIN_UPI_NAME=Srikant Panda
 ```
 
-Ensure `server/.env` contains your `MONGODB_URI`, `JWT_SECRET`, and `BREVO_API_KEY`.
+**`client/.env`**:
+```env
+VITE_API_BASE_URL=https://freefire-tournament-hlu5.onrender.com/api
+```
 
-### 3. Seed Database with Initial Admin & Tournaments
+### 4. Seed Initial Data
 ```bash
 npm run seed
 ```
-This populates:
+Seeds initial admin accounts:
 - **Superadmin**: `admin@ritesports.in` / `Admin@RIT2026!`
 - **Spectator**: `spectator@ritesports.in` / `Spectator@RIT2026!`
-- Initial Squad and Solo Free Fire tournaments and college settings.
 
-### 4. Run Development Servers
+### 5. Start Servers
 ```bash
-# Run both Backend (Port 5000) and Frontend (Port 5173) concurrently:
+# Run backend and frontend concurrently
 npm run dev
 ```
-
-- Public Platform: `http://localhost:5173`
-- Admin Dashboard: `http://localhost:5173/admin/login`
-- Spectator Workspace: `http://localhost:5173/spectator/login`
+- Frontend: `http://localhost:5173`
+- Admin Portal: `http://localhost:5173/admin/login`
+- Spectator Portal: `http://localhost:5173/spectator/login`
 - Backend API: `http://localhost:5000/api`
 
-### 5. Run Automated Tests
+### 6. Run Unit & Concurrency Tests
 ```bash
 npm test
 ```
-Executes scoring calculations, tie-breaker evaluation, and slot concurrency atomicity tests.
 
 ---
 
-## 🌐 Production Deployment
+## 📡 Key API Endpoints
 
-### Frontend (Vercel)
-1. Import repository into Vercel and set Root Directory to `client`.
-2. Framework Preset: **Vite**.
-3. Environment Variables:
-   - `VITE_API_BASE_URL`: `https://your-backend-api.onrender.com/api`
-4. The included `client/vercel.json` automatically manages client-side SPA routing rewrites.
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| `GET` | `/api/health` | Service health, MongoDB & Redis status | Public |
+| `GET` | `/api/tournaments` | List public tournaments (Redis cached 30s) | Public |
+| `GET` | `/api/tournaments/:slug` | Tournament details & rulebook | Public |
+| `POST` | `/api/registrations/squad` | Register 4v4 squad + reserve slot | Public |
+| `POST` | `/api/registrations/solo` | Register solo player + reserve slot | Public |
+| `GET` | `/api/registrations/status/:ref`| Track verification & room details | Public |
+| `GET` | `/api/leaderboards` | Campus standings & top fraggers | Public |
+| `POST` | `/api/auth/login` | Admin & Spectator JWT authentication | Public |
+| `POST` | `/api/admin/rooms/distribute` | Send Room ID & Pass via Brevo | Admin |
+| `POST` | `/api/results/:matchId/publish`| Publish verified match scorecard | Admin |
 
-### Backend (Render)
-1. Create a new **Web Service** on Render and set Root Directory to `server`.
-2. Build Command: `npm install`
-3. Start Command: `npm start`
-4. Environment Variables:
-   - `NODE_ENV`: `production`
-   - `PORT`: `5000`
-   - `CLIENT_URL`: `https://your-frontend.vercel.app`
-   - `MONGODB_URI`: `<Your MongoDB Atlas Connection String>`
-   - `JWT_SECRET`: `<Secure 64-character secret>`
-   - `BREVO_API_KEY`: `<Your Brevo API Key>`
-   - `EMAIL_FROM`: `<Your verified Brevo sender email>`
-   - `ADMIN_WHATSAPP_NUMBER`: `<WhatsApp Contact>`
-   - `WHATSAPP_COMMUNITY_URL`: `<Group Invite Link>`
-   - `ADMIN_UPI_ID`: `<College UPI ID>`
+---
+
+## 📜 Campus Policy & Fair Play
+This is a non-commercial student initiative for Roland Institute of Technology. All players must comply with the [RIT Esports Fair Play Policy](https://rittournament.vercel.app/privacy). Free Fire is a trademark of Garena International.

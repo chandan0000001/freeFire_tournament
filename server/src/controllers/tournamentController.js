@@ -101,16 +101,17 @@ export const createTournament = async (req, res, next) => {
         .replace(/(^-|-$)+/g, '') + `-${Date.now().toString().slice(-4)}`;
     }
 
-    // Curated local Free Fire tournament banners pool
+    // Curated high-res 16:9 Free Fire tournament banners pool
     const RANDOM_BANNERS = [
       '/images/ff-banner.webp',
       '/images/ff-banner-2.webp',
-      '/images/arena-stage.jpg',
-      '/images/esports-setup.jpg',
-      '/images/ff-character-1.webp',
-      '/images/ff-character-4.webp',
-      '/images/ff-character-5.webp',
-      '/images/ff-character-6.webp',
+      '/images/ff-banner-hayato.webp',
+      '/images/ff-banner-kelly.webp',
+      '/images/ff-banner-chrono.webp',
+      '/images/ff-banner-moco.webp',
+      '/images/ff-banner-flame.webp',
+      '/images/arena-stage.webp',
+      '/images/esports-setup.webp',
     ];
 
     // If no banner or placeholder is provided, assign a random local banner

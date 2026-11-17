@@ -138,7 +138,7 @@ function TournamentCard({ tournament }) {
           src={tournament.bannerUrl || '/images/ff-banner.webp'}
           alt={tournament.title || 'Free Fire Tournament Banner'}
           loading="lazy"
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-95"
+          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-95"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#121722] via-[#121722]/40 to-transparent"></div>
 
