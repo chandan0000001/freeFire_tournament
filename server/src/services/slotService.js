@@ -1,5 +1,6 @@
 import { Tournament } from '../models/Tournament.js';
 import { TOURNAMENT_STATUS } from '../constants/statuses.js';
+import { cache } from '../config/redis.js';
 
 /**
  * Atomically reserve a slot in a tournament.
@@ -46,6 +47,10 @@ export const reserveSlot = async (tournamentId) => {
     await tournament.save();
   }
 
+  // Bust tournament list and detail cache so live slot counts update in real-time
+  await cache.delPattern('tournaments:*');
+  await cache.del(`tournament:slug:${tournament.slug}`);
+
   return tournament;
 };
 
@@ -63,6 +68,9 @@ export const releaseSlot = async (tournamentId) => {
       tournament.status = TOURNAMENT_STATUS.REGISTRATION_OPEN;
     }
     await tournament.save();
+    // Bust tournament list and detail cache
+    await cache.delPattern('tournaments:*');
+    await cache.del(`tournament:slug:${tournament.slug}`);
   }
 
   return tournament;

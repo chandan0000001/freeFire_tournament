@@ -84,6 +84,29 @@ export const cache = {
     memoryCache.delete(key);
   },
 
+  async delPattern(pattern) {
+    if (redisClient && redisClient.status === 'ready') {
+      try {
+        const stream = redisClient.scanStream({ match: pattern, count: 100 });
+        stream.on('data', async (keys) => {
+          if (keys && keys.length > 0) {
+            const pipeline = redisClient.pipeline();
+            keys.forEach((k) => pipeline.del(k));
+            await pipeline.exec();
+          }
+        });
+      } catch (e) {
+        console.warn(`[Redis Notice] delPattern error for ${pattern}:`, e.message);
+      }
+    }
+    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
+    for (const k of memoryCache.keys()) {
+      if (regex.test(k)) {
+        memoryCache.delete(k);
+      }
+    }
+  },
+
   async flush() {
     if (redisClient && redisClient.status === 'ready') {
       try {

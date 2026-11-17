@@ -184,8 +184,9 @@ export const publishMatchResult = async (req, res, next) => {
       }
     }
 
-    // Flush cache so live leaderboard updates
-    await cache.flush();
+    // Selectively invalidate leaderboard and tournament caches so fresh standings load
+    await cache.delPattern('leaderboard:*');
+    await cache.delPattern('tournaments:*');
 
     await logAudit({
       action: 'RESULT_PUBLISHED',

@@ -10,6 +10,16 @@ import { cache } from '../config/redis.js';
 export const getTournaments = async (req, res, next) => {
   try {
     const { status, format, search, limit } = req.query;
+    const cacheKey = `tournaments:list:${status || 'all'}:${format || 'all'}:${search || 'none'}:${limit || 'none'}`;
+
+    const cached = await cache.get(cacheKey);
+    if (cached) {
+      return res.json({
+        ...cached,
+        cached: true,
+      });
+    }
+
     const query = { isPublic: true };
 
     if (status) {
@@ -40,11 +50,16 @@ export const getTournaments = async (req, res, next) => {
       remainingSlots: t.status === TOURNAMENT_STATUS.FULL ? 0 : Math.max(0, t.maxSlots - t.registeredSlots),
     }));
 
-    res.json({
+    const responsePayload = {
       success: true,
       count: formatted.length,
       tournaments: formatted,
-    });
+    };
+
+    // Cache list for 30s in Redis
+    await cache.set(cacheKey, responsePayload, 30);
+
+    res.json(responsePayload);
   } catch (error) {
     next(error);
   }
@@ -104,7 +119,7 @@ export const createTournament = async (req, res, next) => {
     }
 
     const tournament = await Tournament.create(data);
-    await cache.del(`tournament:slug:${tournament.slug}`);
+    await cache.delPattern('tournaments:*');
 
     await logAudit({
       action: 'TOURNAMENT_CREATED',
@@ -138,6 +153,7 @@ export const updateTournament = async (req, res, next) => {
       runValidators: true,
     });
 
+    await cache.delPattern('tournaments:*');
     await cache.del(`tournament:slug:${existing.slug}`);
     if (updated.slug !== existing.slug) {
       await cache.del(`tournament:slug:${updated.slug}`);
@@ -181,6 +197,7 @@ export const updateTournamentStatus = async (req, res, next) => {
     tournament.status = status;
     await tournament.save();
 
+    await cache.delPattern('tournaments:*');
     await cache.del(`tournament:slug:${tournament.slug}`);
 
     await logAudit({
@@ -219,6 +236,7 @@ export const deleteTournament = async (req, res, next) => {
       Tournament.findByIdAndDelete(id),
     ]);
 
+    await cache.delPattern('tournaments:*');
     await cache.del(`tournament:slug:${tournament.slug}`);
     await cache.flush();
 
