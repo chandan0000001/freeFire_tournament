@@ -27,27 +27,29 @@ export default function AdminTournaments() {
   // Curated high-res 16:9 widescreen Free Fire tournament banners
   const BANNER_OPTIONS = [
     { label: '🎲 Random Auto-Select', value: '' },
-    { label: 'Squad Battle Crimson (16:9)', value: '/images/ff-banner.webp' },
-    { label: 'Elite Squad Clash (16:9)', value: '/images/ff-banner-2.webp' },
-    { label: 'Championship Hayato (16:9)', value: '/images/ff-banner-hayato.webp' },
-    { label: 'Solo Gunslinger Kelly (16:9)', value: '/images/ff-banner-kelly.webp' },
-    { label: 'Chrono Time Turner (16:9)', value: '/images/ff-banner-chrono.webp' },
-    { label: 'Cyber Moco Hacker (16:9)', value: '/images/ff-banner-moco.webp' },
-    { label: 'Booyah Flame Champion (16:9)', value: '/images/ff-banner-flame.webp' },
-    { label: 'Grand Arena Stage (16:9)', value: '/images/arena-stage.webp' },
-    { label: 'RGB Battle Stations (16:9)', value: '/images/esports-setup.webp' },
+    { label: '🔥 Official Squad Battle (16:9)', value: '/images/ff-banner-squad.webp' },
+    { label: '⚡ Solo Firestorm Champion (16:9)', value: '/images/ff-banner-solo.webp' },
+    { label: '⚔️ Rampage Battleground (16:9)', value: '/images/ff-banner-rampage.webp' },
+    { label: '👑 Championship Hayato (16:9)', value: '/images/ff-banner-hayato.webp' },
+    { label: '🎯 Solo Gunslinger Kelly (16:9)', value: '/images/ff-banner-kelly.webp' },
+    { label: '🛡️ Chrono Time Turner (16:9)', value: '/images/ff-banner-chrono.webp' },
+    { label: '🌐 Cyber Paradox Clash (16:9)', value: '/images/ff-banner-paradox.webp' },
+    { label: '💥 High Octane Combat (16:9)', value: '/images/ff-banner-battle.webp' },
+    { label: '🏆 Booyah Flame Champion (16:9)', value: '/images/ff-banner-flame.webp' },
+    { label: '🏟️ Grand Arena Stage (16:9)', value: '/images/arena-stage.webp' },
   ];
 
   const RANDOM_BANNERS = [
-    '/images/ff-banner.webp',
-    '/images/ff-banner-2.webp',
+    '/images/ff-banner-squad.webp',
+    '/images/ff-banner-solo.webp',
+    '/images/ff-banner-rampage.webp',
     '/images/ff-banner-hayato.webp',
     '/images/ff-banner-kelly.webp',
     '/images/ff-banner-chrono.webp',
-    '/images/ff-banner-moco.webp',
+    '/images/ff-banner-paradox.webp',
+    '/images/ff-banner-battle.webp',
     '/images/ff-banner-flame.webp',
     '/images/arena-stage.webp',
-    '/images/esports-setup.webp',
   ];
 
   // Form state

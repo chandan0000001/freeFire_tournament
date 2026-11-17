@@ -133,14 +133,14 @@ function TournamentCard({ tournament }) {
     <div className="bg-[#121722] rounded-xl border border-[#1F293D] overflow-hidden flex flex-col hover:border-brand-orange/60 hover:shadow-glow-orange transition-all duration-300 group">
       
       {/* Banner & Header Image */}
-      <div className="relative h-44 w-full bg-slate-900 overflow-hidden">
+      <div className="relative h-48 sm:h-52 w-full bg-slate-900 overflow-hidden">
         <img
-          src={tournament.bannerUrl || '/images/ff-banner.webp'}
+          src={tournament.bannerUrl || '/images/ff-banner-squad.webp'}
           alt={tournament.title || 'Free Fire Tournament Banner'}
           loading="lazy"
-          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 opacity-80 group-hover:opacity-95"
+          className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500 opacity-90 group-hover:opacity-100"
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#121722] via-[#121722]/40 to-transparent"></div>
+        <div className="absolute inset-0 bg-gradient-to-t from-[#121722] via-[#121722]/30 to-transparent"></div>
 
         {/* Top Floating Badges */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">

@@ -85,9 +85,9 @@ export default function TournamentDetailPage() {
         {/* Background Banner */}
         <div className="relative h-64 sm:h-80 w-full bg-slate-900">
           <img
-            src={tournament.bannerUrl || '/images/ff-banner.webp'}
+            src={tournament.bannerUrl || '/images/ff-banner-squad.webp'}
             alt={tournament.title}
-            className="w-full h-full object-cover object-center opacity-60"
+            className="w-full h-full object-cover object-center opacity-75"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#121722] via-[#121722]/60 to-transparent"></div>
           
