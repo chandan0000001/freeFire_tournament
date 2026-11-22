@@ -43,11 +43,11 @@ const AdminWithdrawals = lazy(() => import('./pages/admin/AdminWithdrawals.jsx')
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings.jsx'));
 const AdminAuditLogs = lazy(() => import('./pages/admin/AdminAuditLogs.jsx'));
 
-// Protected Admin Guard (Unified single login path)
+// Protected Admin Guard
 function ProtectedAdminRoute({ children }) {
   const { user, loading, isAdmin } = useAuth();
   if (loading) return <PageLoadingFallback />;
-  if (!user || !isAdmin) return <Navigate to="/login?redirect=/admin/dashboard" replace />;
+  if (!user || !isAdmin) return <Navigate to="/login" replace />;
   return children;
 }
 
@@ -113,8 +113,7 @@ export default function App() {
               <Route path="/forgot-password" element={<PublicShell><ForgotPasswordPage /></PublicShell>} />
               <Route path="/reset-password" element={<PublicShell><ResetPasswordPage /></PublicShell>} />
 
-              {/* Unified Admin Redirect & Dashboard */}
-              <Route path="/admin/login" element={<Navigate to="/login?redirect=/admin/dashboard" replace />} />
+              {/* Protected Admin Workspace */}
               <Route
                 path="/admin"
                 element={

@@ -40,7 +40,7 @@ export default function AdminLayout() {
       <div className="admin-sidebar-bottom">
         <Link className="admin-site-link" to="/"><Globe size={17}/> View public website</Link>
         <div className="admin-user"><span className="admin-user-icon"><ShieldCheck size={18}/></span><div><strong>{user?.name || 'Organizer'}</strong><small>{user?.email}</small></div></div>
-        <button className="admin-signout" onClick={() => { logout(); navigate('/admin/login'); }}><LogOut size={16}/>Sign out</button>
+        <button className="admin-signout" onClick={() => { logout(); navigate('/login'); }}><LogOut size={16}/>Sign out</button>
       </div>
     </aside>
     <div className="admin-workspace">
