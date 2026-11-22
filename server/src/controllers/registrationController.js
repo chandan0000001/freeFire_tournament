@@ -319,13 +319,21 @@ export const getMyRegistrations = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Authentication required' });
     }
 
-    const registrations = await Registration.find({ userId: user._id })
+    const orConditions = [
+      { userId: user._id },
+    ];
+    if (user.email) {
+      orConditions.push({ userId: null, 'captain.email': user.email.toLowerCase().trim() });
+      orConditions.push({ userId: { $exists: false }, 'captain.email': user.email.toLowerCase().trim() });
+    }
+
+    const registrations = await Registration.find({ $or: orConditions })
       .populate('tournamentId', 'title format entryFee prizePool matchDate status bannerUrl map')
       .sort({ createdAt: -1 });
 
     res.json({
       success: true,
-      registrations,
+      registrations: registrations || [],
     });
   } catch (error) {
     next(error);

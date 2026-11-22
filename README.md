@@ -11,9 +11,9 @@ Frontend is built with React, Vite, and Tailwind CSS. Backend is powered by Node
 ### 1. Odisha + Free Fire Identity & Responsive Media Pipeline
 - Sambalpuri-inspired geometric borders, lac red, vermilion, brass, and Konark wheel motifs.
 - Distinct Free Fire battle artwork curated per format and tournament:
-  - Squad battle hero: `odisha-squad` WebP variants (480w, 768w, 1280w, 1672w).
-  - Solo competition: `chilika-solo` WebP variants (480w, 768w, 1280w, 1672w).
-  - Account and auth: `arena-account` WebP variants (480w, 768w, 1280w, 1672w).
+  - Squad battle hero: `odisha-squad.webp`.
+  - Solo competition: `chilika-solo.webp`.
+  - Account and auth: `arena-account.webp`.
 - `ResponsiveImage` component leverages asynchronous image decoding, priority fetching, and browser-native responsive srcset selection for low-bandwidth mobile devices.
 
 ### 2. High-Performance Redis Caching & Invalidation

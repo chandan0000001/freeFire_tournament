@@ -40,6 +40,8 @@ router.post('/wallet/withdraw', authenticate, ownWallet, registrationLimiter, tr
 router.post('/registrations/squad', authenticate, registrationLimiter, transactional(registerSquad));
 router.post('/registrations/solo', authenticate, registrationLimiter, transactional(registerSolo));
 router.get('/registrations/my', authenticate, getMyRegistrations);
+router.get('/registrations/mine', authenticate, getMyRegistrations);
+router.get('/my-registrations', authenticate, getMyRegistrations);
 router.get('/registrations/check/:ref', checkRegistrationStatus);
 router.post('/registrations/evidence', authenticate, upload.single('screenshot'), submitCaptainEvidence);
 

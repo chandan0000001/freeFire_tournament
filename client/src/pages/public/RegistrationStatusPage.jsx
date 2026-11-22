@@ -54,6 +54,7 @@ export default function RegistrationStatusPage() {
 
     // 2. Fetch authenticated user's registrations
     const fetchRegistrations = async () => {
+      if (!user) return;
       setLoading(true);
       setError('');
       try {
@@ -69,7 +70,7 @@ export default function RegistrationStatusPage() {
     };
 
     fetchRegistrations();
-  }, [refreshVersion]);
+  }, [user, refreshVersion]);
 
   const copyToClipboard = (text, id) => {
     if (!text) return;
