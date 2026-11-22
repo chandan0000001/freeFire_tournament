@@ -24,6 +24,10 @@ const RulesPage = lazy(() => import('./pages/public/RulesPage.jsx'));
 const PrivacyPolicyPage = lazy(() => import('./pages/public/PrivacyPolicyPage.jsx'));
 const ContactPage = lazy(() => import('./pages/public/ContactPage.jsx'));
 const WalletPage = lazy(() => import('./pages/public/WalletPage.jsx'));
+const LoginPage = lazy(() => import('./pages/public/LoginPage.jsx'));
+const RegisterPage = lazy(() => import('./pages/public/RegisterPage.jsx'));
+const ForgotPasswordPage = lazy(() => import('./pages/public/ForgotPasswordPage.jsx'));
+const ResetPasswordPage = lazy(() => import('./pages/public/ResetPasswordPage.jsx'));
 const NotFoundPage = lazy(() => import('./pages/public/NotFoundPage.jsx'));
 
 // Lazy-loaded Admin Pages
@@ -85,6 +89,10 @@ export default function App() {
                   <Route path="/contact" element={<PublicShell><ContactPage /></PublicShell>} />
                   <Route path="/privacy" element={<PublicShell><PrivacyPolicyPage /></PublicShell>} />
                   <Route path="/wallet" element={<PublicShell><WalletPage /></PublicShell>} />
+                  <Route path="/login" element={<PublicShell><LoginPage /></PublicShell>} />
+                  <Route path="/register" element={<PublicShell><RegisterPage /></PublicShell>} />
+                  <Route path="/forgot-password" element={<PublicShell><ForgotPasswordPage /></PublicShell>} />
+                  <Route path="/reset-password" element={<PublicShell><ResetPasswordPage /></PublicShell>} />
 
                   {/* Admin Auth & Dashboard */}
                   <Route path="/admin/login" element={<PublicShell><AdminLoginPage /></PublicShell>} />

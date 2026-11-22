@@ -161,3 +161,46 @@ export const sendRoomCredentialsEmail = async ({ to, captainName, tournamentTitl
     htmlContent,
   });
 };
+
+/**
+ * Template: Password Reset Link via Brevo
+ */
+export const sendPasswordResetEmail = async ({ to, name, resetUrl }) => {
+  const subject = 'Rahul Esports - Password Reset Request';
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; background-color: #0b0e14; color: #f1f5f9; padding: 25px; border-radius: 8px; max-width: 580px; margin: 0 auto; border: 1px solid #1f293d;">
+      <h2 style="color: #ff5722; margin-top: 0; text-transform: uppercase; letter-spacing: 1px;">Rahul Esports Arena</h2>
+      <p style="font-size: 15px; color: #cbd5e1;">Hello <strong>${name || 'Player'}</strong>,</p>
+      <p style="font-size: 14px; color: #94a3b8; line-height: 1.5;">
+        We received a request to reset the password for your Rahul Esports account. Click the button below to set a new password:
+      </p>
+      
+      <div style="text-align: center; margin: 30px 0;">
+        <a href="${resetUrl}" style="background: linear-gradient(135deg, #ff5500, #ff8800); color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: bold; font-size: 14px; text-transform: uppercase; letter-spacing: 1px; display: inline-block; box-shadow: 0 4px 15px rgba(255, 85, 0, 0.4);">
+          Reset Your Password
+        </a>
+      </div>
+
+      <div style="background-color: #121722; padding: 15px; border-radius: 6px; border-left: 4px solid #ff5722; margin: 20px 0;">
+        <p style="margin: 0; font-size: 12px; color: #94a3b8;">
+          <strong>Security Notice:</strong> This link is valid for <strong>15 minutes only</strong> and can be used once. If you did not request this password reset, please ignore this email. Your account remains completely secure.
+        </p>
+      </div>
+
+      <p style="font-size: 12px; color: #64748b; word-break: break-all; margin-top: 20px;">
+        If the button above does not work, copy and paste this URL into your browser:<br/>
+        <a href="${resetUrl}" style="color: #ff5722;">${resetUrl}</a>
+      </p>
+
+      <p style="margin-top: 30px; font-size: 12px; color: #64748b; border-top: 1px solid #1f293d; padding-top: 15px;">
+        Rahul Esports Arena · Free Fire Competitive League · Odisha
+      </p>
+    </div>
+  `;
+
+  return sendEmail({
+    to,
+    subject,
+    htmlContent,
+  });
+};

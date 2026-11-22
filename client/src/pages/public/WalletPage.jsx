@@ -1,7 +1,9 @@
 import { site } from '../../config/site.js';
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import api from '../../services/api.js';
 import usePageMeta from '../../hooks/usePageMeta.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { 
   Coins, 
   ArrowDownLeft, 
@@ -24,7 +26,8 @@ export default function WalletPage() {
     'Manage your tournament coins, deposit entry coins via UPI, and withdraw your match winnings directly to your UPI ID.'
   );
 
-  const [emailInput, setEmailInput] = useState(() => localStorage.getItem('re_player_email') || '');
+  const { user, wallet: authWallet, setWallet: setAuthWallet } = useAuth();
+  const [emailInput, setEmailInput] = useState(() => user?.email || localStorage.getItem('re_player_email') || '');
   const [activeTab, setActiveTab] = useState('deposit'); // 'deposit' | 'withdraw' | 'history'
   const [wallet, setWallet] = useState(null);
   const [transactions, setTransactions] = useState([]);
@@ -40,8 +43,8 @@ export default function WalletPage() {
   // Deposit Form State (Default minimum: 50 coins)
   const [depositCoins, setDepositCoins] = useState(0);
   const [utrNumber, setUtrNumber] = useState('');
-  const [playerName, setPlayerName] = useState('');
-  const [phone, setPhone] = useState('');
+  const [playerName, setPlayerName] = useState(() => user?.name || '');
+  const [phone, setPhone] = useState(() => user?.mobileNumber || '');
   const [depositLoading, setDepositLoading] = useState(false);
 
   // Dynamic UPI Deep Link & QR Code for Deposit
@@ -51,7 +54,7 @@ export default function WalletPage() {
   // Withdrawal Form State
   const [withdrawCoins, setWithdrawCoins] = useState('');
   const [upiId, setUpiId] = useState('');
-  const [ffUid, setFfUid] = useState('');
+  const [ffUid, setFfUid] = useState(() => user?.freeFireUid || '');
   const [withdrawLoading, setWithdrawLoading] = useState(false);
 
   // Fetch admin UPI setting
@@ -70,9 +73,20 @@ export default function WalletPage() {
       .catch(() => setError('Payment configuration could not be loaded. Please reload before making a payment.'));
   }, []);
 
-  // Auto load wallet if email is already in localStorage
+  // Sync with logged in user
   useEffect(() => {
-    if (emailInput.trim()) {
+    if (user?.email) {
+      setEmailInput(user.email);
+      if (user.name) setPlayerName(user.name);
+      if (user.mobileNumber) setPhone(user.mobileNumber);
+      if (user.freeFireUid) setFfUid(user.freeFireUid);
+      fetchWallet(user.email);
+    }
+  }, [user]);
+
+  // Auto load wallet if email is already in localStorage and no user
+  useEffect(() => {
+    if (!user && emailInput.trim()) {
       fetchWallet(emailInput.trim());
     }
   }, []);
@@ -87,6 +101,7 @@ export default function WalletPage() {
       const res = await api.get(`/wallet/${encodeURIComponent(email.toLowerCase().trim())}`);
       if (res.success) {
         setWallet(res.wallet);
+        if (setAuthWallet) setAuthWallet(res.wallet);
         setTransactions(res.transactions || []);
         setPendingWithdrawal(res.pendingWithdrawal || null);
         localStorage.setItem('re_player_email', email.toLowerCase().trim());
@@ -210,28 +225,79 @@ export default function WalletPage() {
         </p>
       </div>
 
+      {/* Sign-in Banner for Guests */}
+      {!user && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-brand-orange/20 via-amber-500/10 to-transparent border border-brand-orange/40 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
+          <div className="text-left space-y-0.5">
+            <span className="font-display font-extrabold text-sm text-white uppercase tracking-wider block">
+              Protect Your Wallet with a Player Account
+            </span>
+            <p className="text-xs text-slate-300">
+              Sign in or create an account to tie your coins, UTR top-ups, and match winnings permanently to your verified login.
+            </p>
+          </div>
+          <div className="flex items-center gap-2.5 shrink-0 w-full sm:w-auto">
+            <Link
+              to="/login?redirect=/wallet"
+              className="flex-1 sm:flex-none text-center px-4 py-2 rounded-xl bg-brand-orange text-white font-bold text-xs uppercase tracking-wider hover:brightness-110 shadow-md"
+            >
+              Sign In
+            </Link>
+            <Link
+              to="/register?redirect=/wallet"
+              className="flex-1 sm:flex-none text-center px-4 py-2 rounded-xl bg-[#1b1017] text-slate-300 hover:text-white border border-[#49303a] font-bold text-xs uppercase tracking-wider"
+            >
+              Register
+            </Link>
+          </div>
+        </div>
+      )}
+
       {/* Account / Email Selector Bar */}
       <div className="p-4 sm:p-5 rounded-2xl bg-[#24171e] border border-[#49303a] shadow-lg">
-        <form onSubmit={handleLookupSubmit} className="flex flex-col sm:flex-row items-center gap-3">
-          <div className="flex-1 w-full relative">
-            <input
-              type="email"
-              required
-              value={emailInput}
-              onChange={(e) => setEmailInput(e.target.value)}
-              placeholder="Enter your registered Captain / Player Email"
-              className="w-full px-4 py-2.5 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-xs sm:text-sm focus:outline-none focus:border-brand-orange"
-            />
+        {user ? (
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <CheckCircle className="w-4 h-4" />
+              </div>
+              <div>
+                <span className="text-[10px] uppercase font-bold text-slate-400 block">Verified Player Account</span>
+                <strong className="text-sm text-white">{user.name} ({user.email})</strong>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => fetchWallet(user.email)}
+              disabled={loading}
+              className="px-4 py-1.5 rounded-xl bg-[#1b1017] border border-[#49303a] text-xs font-bold text-slate-300 hover:text-white flex items-center gap-1.5 self-end sm:self-auto"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
+              <span>Refresh Balance</span>
+            </button>
           </div>
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber font-display font-bold uppercase text-white text-xs sm:text-sm tracking-wider hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2"
-          >
-            {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Coins className="w-4 h-4" />}
-            <span>Load Wallet</span>
-          </button>
-        </form>
+        ) : (
+          <form onSubmit={handleLookupSubmit} className="flex flex-col sm:flex-row items-center gap-3">
+            <div className="flex-1 w-full relative">
+              <input
+                type="email"
+                required
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                placeholder="Enter your registered Captain / Player Email"
+                className="w-full px-4 py-2.5 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-xs sm:text-sm focus:outline-none focus:border-brand-orange"
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full sm:w-auto px-6 py-2.5 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber font-display font-bold uppercase text-white text-xs sm:text-sm tracking-wider hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Coins className="w-4 h-4" />}
+              <span>Load Wallet</span>
+            </button>
+          </form>
+        )}
       </div>
 
       {/* Alerts */}

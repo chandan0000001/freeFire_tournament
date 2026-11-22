@@ -47,7 +47,7 @@ export const cache = {
         const val = await redisClient.get(key);
         return val ? JSON.parse(val) : null;
       } catch (e) {
-        // Fallback
+        // Fallback to memory
       }
     }
     const item = memoryCache.get(key);
@@ -66,13 +66,34 @@ export const cache = {
         await redisClient.set(key, serialized, 'EX', ttlSeconds);
         return;
       } catch (e) {
-        // Fallback
+        // Fallback to memory
       }
     }
     memoryCache.set(key, {
       value,
       expires: Date.now() + ttlSeconds * 1000,
     });
+  },
+
+  async incr(key, ttlSeconds = 60) {
+    if (redisClient && redisClient.status === 'ready') {
+      try {
+        const multi = redisClient.multi();
+        multi.incr(key);
+        multi.expire(key, ttlSeconds);
+        const results = await multi.exec();
+        return results?.[0]?.[1] || 1;
+      } catch (e) {
+        // Fallback
+      }
+    }
+    const current = memoryCache.get(key);
+    const count = current ? (current.value || 0) + 1 : 1;
+    memoryCache.set(key, {
+      value: count,
+      expires: current?.expires || (Date.now() + ttlSeconds * 1000),
+    });
+    return count;
   },
 
   async del(key) {
@@ -117,4 +138,63 @@ export const cache = {
   },
 };
 
+/**
+ * High-performance Redis helpers for Auth, Wallet, and Password Reset
+ */
+export const redisAuth = {
+  // Store user profile cache (TTL: 1 hour)
+  async cacheUser(user, ttl = 3600) {
+    if (!user?._id && !user?.id) return;
+    const uid = user._id || user.id;
+    await cache.set(`user:${uid}`, user, ttl);
+  },
+
+  async getCachedUser(userId) {
+    return cache.get(`user:${userId}`);
+  },
+
+  async invalidateUser(userId) {
+    await cache.del(`user:${userId}`);
+  },
+
+  // Store password reset token with 15-minute expiration (900 seconds)
+  async storeResetToken(token, data, ttlSeconds = 900) {
+    await cache.set(`pwd_reset:${token}`, data, ttlSeconds);
+  },
+
+  async getResetToken(token) {
+    return cache.get(`pwd_reset:${token}`);
+  },
+
+  async clearResetToken(token) {
+    await cache.del(`pwd_reset:${token}`);
+  },
+
+  // Wallet caching (TTL: 5 minutes, invalidated immediately on coin update)
+  async cacheWallet(key, wallet, ttl = 300) {
+    await cache.set(`wallet:${key}`, wallet, ttl);
+  },
+
+  async getCachedWallet(key) {
+    return cache.get(`wallet:${key}`);
+  },
+
+  async invalidateWallet(keys = []) {
+    for (const k of keys) {
+      if (k) await cache.del(`wallet:${k}`);
+    }
+  },
+
+  // Rate Limiting via Redis (e.g., max 5 login attempts per 15 minutes)
+  async rateLimit(key, maxAttempts = 5, windowSeconds = 900) {
+    const attempts = await cache.incr(`ratelimit:${key}`, windowSeconds);
+    return {
+      allowed: attempts <= maxAttempts,
+      current: attempts,
+      max: maxAttempts,
+    };
+  },
+};
+
+export { redisClient };
 export default redisClient;

@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { tournamentAvailability } from '../../utils/tournament.js';
 import api from '../../services/api.js';
 import usePageMeta from '../../hooks/usePageMeta.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { 
   Users, 
   ShieldAlert, 
@@ -18,6 +19,7 @@ import {
 export default function SquadRegisterPage() {
   usePageMeta('Squad Registration (4 Players) | Rahul Esports', 'Register your 4-player Free Fire squad using in-app wallet coins. Room ID & password dispatched to Team Leader WhatsApp.');
   const { tournamentId } = useParams();
+  const { user } = useAuth();
 
   const [tournament, setTournament] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,17 +28,17 @@ export default function SquadRegisterPage() {
   const [successData, setSuccessData] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  // Form state
+  // Form state pre-filled from user profile if logged in
   const [teamName, setTeamName] = useState('');
   const [captain, setCaptain] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    collegeRollNo: '',
+    name: user?.name || '',
+    email: user?.email || '',
+    phone: user?.mobileNumber || '',
+    collegeRollNo: user?.location || '',
   });
 
   const [players, setPlayers] = useState([
-    { name: '', inGameName: '', freeFireUid: '', isConsentPublic: false },
+    { name: user?.name || '', inGameName: user?.inGameName || '', freeFireUid: user?.freeFireUid || '', isConsentPublic: false },
     { name: '', inGameName: '', freeFireUid: '', isConsentPublic: false },
     { name: '', inGameName: '', freeFireUid: '', isConsentPublic: false },
     { name: '', inGameName: '', freeFireUid: '', isConsentPublic: false },
@@ -47,6 +49,26 @@ export default function SquadRegisterPage() {
   // Live Wallet Balance State
   const [walletBalance, setWalletBalance] = useState(null);
   const [walletLoading, setWalletLoading] = useState(false);
+
+  // Auto-sync with logged in user
+  useEffect(() => {
+    if (user) {
+      setCaptain((prev) => ({
+        ...prev,
+        name: prev.name || user.name || '',
+        email: user.email || prev.email,
+        phone: prev.phone || user.mobileNumber || '',
+        collegeRollNo: prev.collegeRollNo || user.location || '',
+      }));
+      setPlayers((prev) => {
+        const copy = [...prev];
+        if (!copy[0].inGameName && user.inGameName) copy[0].inGameName = user.inGameName;
+        if (!copy[0].freeFireUid && user.freeFireUid) copy[0].freeFireUid = user.freeFireUid;
+        if (!copy[0].name && user.name) copy[0].name = user.name;
+        return copy;
+      });
+    }
+  }, [user]);
 
   useEffect(() => {
     const fetchTournament = async () => {

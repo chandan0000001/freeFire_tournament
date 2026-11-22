@@ -2,6 +2,12 @@ import mongoose from 'mongoose';
 
 const walletSchema = new mongoose.Schema(
   {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      sparse: true,
+      index: true,
+    },
     userEmail: {
       type: String,
       required: [true, 'User email is required'],

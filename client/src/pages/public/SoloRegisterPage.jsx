@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { tournamentAvailability } from '../../utils/tournament.js';
 import api from '../../services/api.js';
 import usePageMeta from '../../hooks/usePageMeta.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { 
   User, 
   ShieldAlert, 
@@ -18,6 +19,7 @@ import {
 export default function SoloRegisterPage() {
   usePageMeta('Solo Registration (1 Player) | Rahul Esports', 'Register as a solo Free Fire player using in-app wallet coins. Room ID & password dispatched to Player WhatsApp.');
   const { tournamentId } = useParams();
+  const { user } = useAuth();
 
   const [tournament, setTournament] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,15 +28,27 @@ export default function SoloRegisterPage() {
   const [successData, setSuccessData] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  // Form state
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [location, setLocation] = useState('');
-  const [inGameName, setInGameName] = useState('');
-  const [freeFireUid, setFreeFireUid] = useState('');
+  // Form state pre-filled from user profile if logged in
+  const [name, setName] = useState(() => user?.name || '');
+  const [email, setEmail] = useState(() => user?.email || '');
+  const [phone, setPhone] = useState(() => user?.mobileNumber || '');
+  const [location, setLocation] = useState(() => user?.location || '');
+  const [inGameName, setInGameName] = useState(() => user?.inGameName || '');
+  const [freeFireUid, setFreeFireUid] = useState(() => user?.freeFireUid || '');
   const [isConsentPublic, setIsConsentPublic] = useState(false);
   const [agreed, setAgreed] = useState(false);
+
+  // Auto-sync with logged in user
+  useEffect(() => {
+    if (user) {
+      if (!name && user.name) setName(user.name);
+      if (!email && user.email) setEmail(user.email);
+      if (!phone && user.mobileNumber) setPhone(user.mobileNumber);
+      if (!location && user.location) setLocation(user.location);
+      if (!inGameName && user.inGameName) setInGameName(user.inGameName);
+      if (!freeFireUid && user.freeFireUid) setFreeFireUid(user.freeFireUid);
+    }
+  }, [user]);
 
   // Live Wallet Balance State
   const [walletBalance, setWalletBalance] = useState(null);

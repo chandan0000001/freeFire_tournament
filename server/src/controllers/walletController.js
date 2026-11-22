@@ -10,6 +10,7 @@ import { generateRegistrationRef, generateWalletRef } from '../utils/refGenerato
 import { logAudit } from '../services/auditService.js';
 import { PAYMENT_STATUS, TOURNAMENT_FORMAT } from '../constants/statuses.js';
 import { sendRegistrationEmail } from '../services/emailService.js';
+import { redisAuth } from '../config/redis.js';
 
 /**
  * Get or create wallet for a user/captain by email.
@@ -306,6 +307,7 @@ export const joinTournamentWithCoins = async (req, res, next) => {
     wallet.depositCoins -= deductDeposit;
     wallet.winningCoins -= deductWinning;
     await wallet.save();
+    await redisAuth.invalidateWallet([wallet.userId?.toString(), email]);
 
     const regFormat = format === 'solo' ? TOURNAMENT_FORMAT.SOLO : TOURNAMENT_FORMAT.SQUAD;
     const refCode = generateRegistrationRef(regFormat);

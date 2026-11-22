@@ -17,17 +17,50 @@ const userSchema = new mongoose.Schema(
       lowercase: true,
       trim: true,
       match: [/^\S+@\S+\.\S+$/, 'Please provide a valid email address'],
+      index: true,
+    },
+    mobileNumber: {
+      type: String,
+      trim: true,
+      default: '',
+      index: true,
     },
     password: {
       type: String,
       required: [true, 'Password is required'],
-      minlength: [6, 'Password must be at least 6 characters'],
+      minlength: [8, 'Password must be at least 8 characters'],
       select: false,
     },
     role: {
       type: String,
       enum: ALL_ROLES,
-      default: ROLES.ADMIN,
+      default: ROLES.PLAYER,
+      index: true,
+    },
+    freeFireUid: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    inGameName: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    location: {
+      type: String,
+      trim: true,
+      default: '',
+    },
+    resetPasswordToken: {
+      type: String,
+      default: null,
+      select: false,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+      select: false,
     },
     isActive: {
       type: Boolean,
@@ -41,6 +74,11 @@ const userSchema = new mongoose.Schema(
     timestamps: true,
   }
 );
+
+// Virtual for fullName
+userSchema.virtual('fullName').get(function () {
+  return this.name;
+});
 
 // Hash password before saving
 userSchema.pre('save', async function (next) {
