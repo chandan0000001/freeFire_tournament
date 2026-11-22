@@ -63,7 +63,9 @@ input[type=checkbox],input[type=radio] { accent-color:var(--arena-accent); }
 main { min-width:0; }
 main .text-xs { font-size:.875rem; }
 main [class*='text-[10px]'],main [class*='text-[11px]'] { font-size:.8125rem; }
-main h1,main h2,main h3 { letter-spacing:-.025em; }
+main h1,main h2,main h3 { letter-spacing:-.025em; text-wrap:balance; overflow-wrap:break-word; }
+main h1 { text-transform:none; line-height:1.15; }
+main p { text-wrap:pretty; }
 main table { min-width:600px; }
 .font-display { font-family:Inter,system-ui,sans-serif; }
 .shadow-glow-orange,.shadow-glow-cyan { box-shadow:none; }

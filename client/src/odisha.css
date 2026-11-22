@@ -274,3 +274,109 @@ main button[class*='from-brand-orange']:hover,main a[class*='from-brand-orange']
 .play-home .community-art { width:100%; aspect-ratio:16/10; height:auto; object-fit:cover; border-radius:8px; }
 @media(max-width:1000px) { .play-home .community-with-art { grid-template-columns:180px 1fr; } .play-home .community-with-art>.arena-button { grid-column:2; justify-self:start; } }
 @media(max-width:600px) { .play-home .community-with-art { grid-template-columns:1fr; padding:20px; } .play-home .community-with-art>.arena-button { grid-column:auto; } }
+
+/* Shared visual rhythm: readable type, restrained surfaces and comfortable controls. */
+:root { --arena-muted:#c4b8bf; --arena-soft-border:#44353e; }
+.brand strong { font-weight:700; letter-spacing:-.025em; }
+.brand small { letter-spacing:.065em; }
+.desktop-nav { gap:24px; font-size:.875rem; font-weight:500; }
+.eyebrow { font-size:.6875rem; letter-spacing:.11em; font-weight:600; }
+.arena-button { border-radius:10px; box-shadow:0 1px 2px #08040840; font-weight:600; line-height:1.4; padding:12px 20px; }
+.arena-button:hover { box-shadow:0 4px 14px #08040840; }
+.arena-button:active { transform:translateY(0); box-shadow:none; }
+.arena-button.secondary { background:#251c23; border-color:#68515e; }
+.arena-button svg { flex-shrink:0; }
+.play-home .play-hero { border-radius:20px; min-height:520px; }
+.play-home .hero-content { padding:52px 48px; }
+.play-home .hero-content h1 { font-family:Inter,system-ui,sans-serif; font-size:clamp(3.25rem,5.5vw,5rem); font-weight:800; line-height:1.04; letter-spacing:-.055em; margin:24px 0; }
+.play-home .hero-content p { color:#e5d9df; line-height:1.65; margin-bottom:0; }
+.play-home .hero-actions { margin:28px 0 0; align-items:center; gap:20px; }
+.play-home .hero-caption { margin-top:28px; font-size:.6875rem; letter-spacing:.09em; }
+.mode-card { border-radius:16px; border-color:var(--arena-soft-border); min-height:200px; padding:24px; }
+.mode-card h2 { font-weight:700; font-size:2rem; letter-spacing:-.035em; line-height:1.15; }
+.mode-card p { margin-top:6px; color:#e0d2d9; }
+.play-home .section-heading h2 { font-size:clamp(1.6rem,2.6vw,2rem); font-weight:700; line-height:1.2; letter-spacing:-.035em; }
+.format-tabs { display:inline-flex; padding:4px; gap:4px; border:1px solid var(--arena-soft-border); border-radius:12px; background:#1e171d; }
+.format-tabs button { min-height:40px; padding:8px 20px; background:transparent; border-color:transparent; border-radius:8px; font-weight:500; }
+.format-tabs .active { background:#42303a; color:#f8ddb5; border-color:#65505a; }
+.tournament-card { border-radius:16px; border-color:var(--arena-soft-border); background:#1d181d; }
+.tournament-card .card-art { overflow:hidden; }
+.tournament-card .card-content { display:flex; flex-direction:column; gap:16px; padding:22px; }
+.tournament-card .card-content h3 { font-size:1.125rem; line-height:1.4; font-weight:650; }
+.tournament-card .card-meta { color:var(--arena-muted); font-size:.8125rem; line-height:1.55; gap:8px 16px; }
+.card-meta svg { flex-shrink:0; }
+.tournament-card .card-metrics { margin:0; padding:16px 0; border-color:var(--arena-soft-border); }
+.card-metrics small { font-size:.75rem; color:var(--arena-muted); margin-bottom:4px; }
+.tournament-card .card-metrics strong { font-size:1.4rem; line-height:1.3; font-weight:650; font-variant-numeric:tabular-nums; }
+.tournament-card .slot-label { font-size:.75rem; color:var(--arena-muted); }
+.tournament-card progress { height:4px; margin:-7px 0 2px; }
+.tournament-card .arena-button { margin-top:auto; }
+.match-status,.match-format { font-size:.6875rem; font-weight:500; padding:5px 9px; border-radius:7px; backdrop-filter:blur(8px); }
+.play-shortcuts { border-color:var(--arena-soft-border); }
+.play-shortcuts a { font-weight:500; min-height:56px; }
+.play-home .community-panel { border-color:#62434b; border-radius:16px; background:linear-gradient(120deg,#2b1b24,#341e27); }
+.play-home .community-panel h2 { font-weight:650; letter-spacing:-.035em; }
+.play-home .community-panel::after { height:3px; opacity:.65; }
+.organizer-inline { line-height:1.5; }
+.organizer-inline img { flex-shrink:0; }
+.match-browser { padding-top:36px; }
+.match-browser>div:first-child h1 { font-family:Inter,system-ui,sans-serif; font-size:clamp(1.8rem,3vw,2.5rem); font-weight:700; line-height:1.2; }
+.match-toolbar { border:1px solid var(--arena-soft-border); border-radius:16px; background:#1c161c; padding:16px; display:grid; gap:16px; }
+.match-status-tabs { display:flex; gap:6px; overflow-x:auto; padding-bottom:4px; }
+.match-status-tabs button { white-space:nowrap; min-height:44px; padding:10px 16px; font-size:.875rem; border-radius:9px; color:var(--arena-muted); }
+.match-status-tabs button[aria-pressed=true] { color:#f7dab2; background:#3d2c34; }
+.match-toolbar-controls { display:flex; align-items:center; justify-content:space-between; gap:16px; padding-top:16px; border-top:1px solid var(--arena-soft-border); }
+.match-format-toggle { display:flex; gap:4px; padding:4px; border:1px solid var(--arena-soft-border); border-radius:10px; }
+.match-format-toggle button { display:flex; align-items:center; justify-content:center; gap:6px; min-height:40px; padding:8px 14px; border-radius:7px; font-size:.8125rem; color:var(--arena-muted); }
+.match-format-toggle button[aria-pressed=true] { color:#291820; background:#edbd78; }
+.match-search { position:relative; width:min(100%,320px); }
+.match-search>svg { position:absolute; left:14px; top:50%; transform:translateY(-50%); color:#bba9b2; pointer-events:none; }
+.match-search input { width:100%; padding:10px 14px 10px 42px; border:1px solid var(--arena-soft-border); color:#f3e9ee; }
+.admin-login { box-shadow:0 18px 48px #08040840; border-radius:18px; }
+.admin-login-form h1 { font-weight:700; letter-spacing:-.035em; line-height:1.2; }
+.admin-login-form label { text-transform:none; letter-spacing:0; font-size:.875rem; font-weight:500; }
+.admin-login-form form { gap:20px; }
+.admin-login-form input { min-height:48px; }
+.admin-login-form>p { line-height:1.65; }
+.login-notice { line-height:1.6; color:#bcabb4; }
+.admin-content h1 { font-weight:700; line-height:1.25; }
+.admin-content button { border-radius:9px; font-weight:500; }
+.admin-content table { font-variant-numeric:tabular-nums; }
+.admin-content table td { line-height:1.6; }
+.footer-grid h2 { font-weight:600; }
+.footer-grid>div>a:not(.brand) { line-height:1.8; }
+@media(max-width:600px) {
+  .brand strong { font-size:.9375rem; }
+  .brand small { font-size:.5625rem; letter-spacing:.04em; }
+  .play-home .play-hero { min-height:480px; border-radius:16px; }
+  .play-home .hero-content { padding:32px 24px; }
+  .play-home .hero-content h1 { font-size:clamp(2.65rem,11.5vw,3.8rem); line-height:1.05; letter-spacing:-.05em; }
+  .play-home .hero-content p { font-size:.9375rem; max-width:270px; }
+  .play-home .hero-actions { gap:10px; margin-top:24px; }
+  .play-home .hero-actions .arena-button { width:auto; flex:1; padding-inline:14px; }
+  .hero-quiet-link { padding-inline:4px; font-size:.8125rem; }
+  .play-home .hero-caption { font-size:.625rem; line-height:1.7; }
+  .mode-grid { gap:12px; margin-top:16px; }
+  .mode-card { min-height:180px; padding:18px 14px; border-radius:12px; }
+  .mode-card h2 { font-size:1.45rem; }
+  .mode-card span { font-size:.625rem; letter-spacing:.06em; }
+  .mode-card p { font-size:.8125rem; line-height:1.5; }
+  .tournament-card .card-content { padding:20px; }
+  .match-browser { padding-top:24px; }
+  .match-toolbar { padding:12px; gap:12px; }
+  .match-status-tabs button { padding-inline:12px; font-size:.8125rem; }
+  .match-toolbar-controls { flex-direction:column; align-items:stretch; gap:12px; padding-top:12px; }
+  .match-format-toggle button { flex:1; }
+  .match-search { width:100%; }
+  .admin-login-form { padding:28px 24px; }
+  .footer-grid { padding-block:32px; }
+}
+@media(max-width:360px) {
+  .play-home .hero-content { padding:28px 20px; }
+  .play-home .hero-actions { align-items:stretch; flex-direction:column; }
+  .hero-quiet-link { text-align:center; }
+  .mode-card { padding:16px 12px; }
+}
+.card-sessions { background:#211a20; border-color:var(--arena-soft-border); }
+.card-sessions span:first-child { font-size:.6875rem; font-weight:500; text-transform:none; color:var(--arena-muted); }
+.card-sessions span:last-child { font-family:inherit; font-size:.75rem; font-weight:600; font-variant-numeric:tabular-nums; color:#e8cfad; }

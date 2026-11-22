@@ -140,6 +140,6 @@ Build `client/` with `npm run build`, serve `client/dist`, and retain the SPA fa
 
 ## Community match experience
 
-The home page uses visual Solo/Squad shortcuts, three featured matches and concise community links. Format shortcuts persist in the tournament URL; cards retain entry fees, prize pools, dates and availability. New home artwork supports `VITE_ART_BERHAMPUR_SQUAD`, `VITE_ART_PARADIP_SOLO` and `VITE_ART_ODISHA_COMMUNITY` overrides. Local variants use responsive WebP sources.
+The home page uses visual Solo/Squad shortcuts, three featured matches and concise community links. Format shortcuts persist in the tournament URL; cards retain entry fees, prize pools, dates and availability. The shared typography and controls cover public pages, account forms and organizer tools. Tournament filters expose selected states with aria-pressed, and browser checks cover home/listing widths of 320, 768 and 1440 pixels. New home artwork supports `VITE_ART_BERHAMPUR_SQUAD`, `VITE_ART_PARADIP_SOLO` and `VITE_ART_ODISHA_COMMUNITY` overrides. Local variants use responsive WebP sources.
 
 The privacy page describes independent friendly custom-room matches and actual data handling. This wording is not legal certification: entry fees, prizes and operation remain subject to Indian law and publisher terms. Review the event model before operating paid matches.

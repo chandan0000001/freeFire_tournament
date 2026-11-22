@@ -89,70 +89,21 @@ export default function TournamentsPage() {
         </div>
       </div>
 
-      {/* GBArena Inspired Filter & Control Bar */}
-      <div className="p-3 sm:p-4 rounded-2xl bg-[#1c1b1e]/95 border border-[#393236] flex flex-col lg:flex-row items-center justify-between gap-4 top-20 z-30 shadow-2xl backdrop-blur-md">
-        {/* Status Filter Tabs (GBArena Style) */}
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full lg:w-auto scrollbar-none pb-1 lg:pb-0">
-          {[
-            { label: 'ALL', val: '' },
-            { label: 'UPCOMING', val: 'upcoming' },
-            { label: 'OPEN', val: 'registration_open' },
-            { label: 'LIVE', val: 'live' },
-            { label: 'FINISHED', val: 'completed' },
-          ].map((st) => (
-            <button
-              key={st.val}
-              type="button"
-              onClick={() => setStatusFilter(st.val)}
-              className={`px-3.5 py-2 rounded-xl text-xs font-extrabold uppercase tracking-wider transition-all whitespace-nowrap ${
-                statusFilter === st.val
-                  ? 'bg-gradient-to-r from-brand-orange to-amber-500 text-white shadow-[0_2px_12px_rgba(255,85,0,0.35)]'
-                  : 'bg-[#1b1017] text-slate-400 hover:text-white border border-[#412a34]'
-              }`}
-            >
-              {st.label}
-            </button>
-          ))}
+      <div className="match-toolbar">
+        <div className="match-status-tabs" aria-label="Match status">
+          {[['', 'All matches'], ['registration_open', 'Open'], ['upcoming', 'Upcoming'], ['live', 'Live'], ['completed', 'Finished']].map(([value, label]) =>
+            <button type="button" key={value} aria-pressed={statusFilter === value} onClick={() => setStatusFilter(value)}>{label}</button>
+          )}
         </div>
-
-        {/* Secondary: Format Toggle & Search */}
-        <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
-          {/* Format Toggle */}
-          <div className="flex items-center gap-1 p-1 rounded-xl bg-[#1b1017] border border-[#412a34] w-full sm:w-auto justify-center">
-            {[
-              { label: 'ALL', val: '', icon: null },
-              { label: 'SQUAD', val: 'squad', icon: Users },
-              { label: 'SOLO', val: 'solo', icon: User },
-            ].map((fmt) => {
-              const Icon = fmt.icon;
-              return (
-                <button
-                  key={fmt.val}
-                  type="button"
-                  onClick={() => setFormatFilter(fmt.val)}
-                  className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all flex items-center gap-1.5 ${
-                    formatFilter === fmt.val
-                      ? 'bg-brand-orange text-white'
-                      : 'text-slate-400 hover:text-white'
-                  }`}
-                >
-                  {Icon && <Icon className="w-3.5 h-3.5" />}
-                  <span>{fmt.label}</span>
-                </button>
-              );
-            })}
+        <div className="match-toolbar-controls">
+          <div className="match-format-toggle" aria-label="Play style">
+            {[['', 'All', null], ['squad', 'Squad', Users], ['solo', 'Solo', User]].map(([value, label, Icon]) =>
+              <button type="button" key={value} aria-pressed={formatFilter === value} onClick={() => setFormatFilter(value)}>{Icon && <Icon size={15}/>} {label}</button>
+            )}
           </div>
-
-          {/* Search Input */}
-          <form onSubmit={handleSearchSubmit} className="relative w-full sm:w-64">
-            <input
-              type="text"
-              aria-label="Search tournaments" placeholder="Search tournaments..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="w-full pl-9 pr-4 py-2 rounded-xl bg-[#1b1017] border border-[#412a34] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-orange transition-colors"
-            />
-            <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
+          <form onSubmit={handleSearchSubmit} className="match-search">
+            <Search size={18} aria-hidden="true"/>
+            <input type="search" aria-label="Search tournaments" placeholder="Find a match…" value={search} onChange={e => setSearch(e.target.value)}/>
           </form>
         </div>
       </div>

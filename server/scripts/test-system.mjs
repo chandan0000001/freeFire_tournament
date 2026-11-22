@@ -222,7 +222,7 @@ try {
         await publicPage.locator('.mode-card[href="/tournaments?format=solo"]').click();
         await publicPage.waitForURL('**/tournaments?format=solo');
         await publicPage.waitForTimeout(600);
-        assert.ok(await publicPage.getByRole('button', { name: 'SOLO', exact: true }).evaluate(el => el.className.includes('bg-brand-orange')));
+        assert.ok(await publicPage.getByRole('button', { name: 'Solo', exact: true }).evaluate(el => el.getAttribute('aria-pressed') === 'true'));
         await publicPage.goto(origin + '/privacy');
         await publicPage.getByRole('heading', { name: 'Privacy & friendly play.' }).waitFor();
 
@@ -233,6 +233,16 @@ try {
           assert.ok(await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `mobile overflow: ${path}`);
           assert.ok(!(await phone.locator('body').innerText()).includes('Something went wrong'), path);
         }
+        for (const width of [320, 768, 1440]) {
+          await phone.setViewportSize({ width, height: 1000 });
+          for (const route of ['/', '/tournaments']) {
+            await phone.goto(origin + route); await phone.waitForTimeout(450);
+            assert.ok(await phone.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1), route + ' overflow at ' + width);
+          }
+        }
+        await phone.setViewportSize({ width: 390, height: 844 });
+        await phone.goto(origin + '/tournaments'); await phone.waitForTimeout(500);
+        await phone.screenshot({ path: '/tmp/arena-tournaments-mobile.png', fullPage: true });
         await phone.goto(origin + '/register'); await phone.waitForTimeout(400);
         await phone.screenshot({ path: '/tmp/arena-register-mobile.png', fullPage: true });
         for (const width of [320, 768, 1440]) {
@@ -242,6 +252,11 @@ try {
         await phone.screenshot({ path: '/tmp/arena-register-desktop.png', fullPage: true });
         await phone.setViewportSize({ width: 390, height: 844 });
         await phone.goto(origin); await phone.waitForTimeout(500);
+        for (const img of await phone.locator('main img').all()) {
+          await img.scrollIntoViewIfNeeded();
+          await img.evaluate(el => el.decode());
+        }
+        await phone.evaluate(() => scrollTo(0, 0));
         await phone.screenshot({ path: '/tmp/arena-home-mobile.png', fullPage: true });
         const image = await phone.locator('.hero-image').evaluate(img => ({ src: img.currentSrc, loaded: img.complete && img.naturalWidth > 0 }));
         assert.ok(image.loaded); assert.ok(image.src.includes('odisha-squad.webp'), image.src);
