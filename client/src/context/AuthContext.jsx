@@ -10,7 +10,7 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let isMounted = true;
     const checkAuth = async () => {
-      const token = localStorage.getItem('rit_token');
+      const token = localStorage.getItem('re_token') || localStorage.getItem('rit_token');
       if (!token) {
         if (isMounted) setLoading(false);
         return;
@@ -21,12 +21,14 @@ export const AuthProvider = ({ children }) => {
           if (res.success && res.user) {
             setUser(res.user);
           } else {
+            localStorage.removeItem('re_token');
             localStorage.removeItem('rit_token');
             setUser(null);
           }
         }
       } catch (err) {
         if (isMounted) {
+          localStorage.removeItem('re_token');
           localStorage.removeItem('rit_token');
           setUser(null);
         }
@@ -41,6 +43,7 @@ export const AuthProvider = ({ children }) => {
   const login = useCallback(async (endpoint, credentials) => {
     const res = await api.post(endpoint, credentials);
     if (res.success && res.token) {
+      localStorage.setItem('re_token', res.token);
       localStorage.setItem('rit_token', res.token);
       setUser(res.user);
       return res;
@@ -49,6 +52,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const logout = useCallback(() => {
+    localStorage.removeItem('re_token');
     localStorage.removeItem('rit_token');
     setUser(null);
   }, []);

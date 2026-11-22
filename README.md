@@ -1,21 +1,20 @@
-# Rahul Esports Odisha — Official Competitive Free Fire Arena
+# Rahul Esports — Official Competitive Free Fire Arena
 
 [![Live Frontend](https://img.shields.io/badge/Frontend-Vercel-black?logo=vercel&logoColor=white)](https://rittournament.vercel.app)
-[![Firebase Project](https://img.shields.io/badge/Firebase-Rahul--Esports--odisha-FFCA28?logo=firebase&logoColor=black)](https://console.firebase.google.com/project/Rahul-Esports-odisha)
+[![Live Backend](https://img.shields.io/badge/Backend-Render-46E3B7?logo=render&logoColor=white)](https://freefire-tournament-hlu5.onrender.com)
 [![Database](https://img.shields.io/badge/Database-MongoDB%20Atlas-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![Cache & Rate Limit](https://img.shields.io/badge/Cache-Redis%20Cloud-DC382D?logo=redis&logoColor=white)](https://redis.io/)
 [![Email Delivery](https://img.shields.io/badge/Email-Brevo%20API-0092FF?logo=sendinblue&logoColor=white)](https://www.brevo.com/)
 
-A modern, high-performance, mobile-responsive competitive Free Fire esports platform for **Rahul Esports Odisha**. Features custom room management, an integrated in-app **Coin & Wallet system**, instant 1-click tournament registration with coins, automated Brevo room credential dispatch, observer score verification, real-time Redis-cached leaderboards, and an admin withdrawal approval dashboard with UPI UTR disbursement logging.
+A modern, high-performance, mobile-responsive competitive Free Fire esports platform for **Rahul Esports**. Features custom room management, an integrated in-app **Coin & Wallet system**, instant 1-click tournament registration with coins, automated Brevo room credential dispatch, observer score verification, real-time Redis-cached leaderboards, and an admin withdrawal approval dashboard with UPI UTR disbursement logging.
 
 ---
 
 ## Live Deployments & Architectures
 
 - **Frontend Application**: [https://rittournament.vercel.app](https://rittournament.vercel.app) (Hosted on Vercel)
-- **Firebase Project**: `Rahul-Esports-odisha` (Spark Plan / Blaze Plan)
-- **Backend API**: Node.js Express API (Deployable on Render, Vercel Serverless `/api`, or Firebase Functions)
-- **API Health Check**: `/api/health`
+- **Backend API**: [https://freefire-tournament-hlu5.onrender.com](https://freefire-tournament-hlu5.onrender.com) (Node.js Express API on Render)
+- **API Health Check**: `https://freefire-tournament-hlu5.onrender.com/api/health`
 - **Sitemap**: [https://rittournament.vercel.app/sitemap.xml](https://rittournament.vercel.app/sitemap.xml)
 - **Robots.txt**: [https://rittournament.vercel.app/robots.txt](https://rittournament.vercel.app/robots.txt)
 
@@ -158,19 +157,5 @@ npm run dev
 
 ---
 
-## Firebase Setup Guide
-
-For the Firebase project `Rahul-Esports-odisha`:
-1. **Web App Configuration**:
-   - Go to Firebase Console -> Project Overview -> Click the **`</>` (Web)** icon.
-   - Register App Name: `Rahul Esports Web`.
-   - Copy the `firebaseConfig` object and populate `client/src/config/firebase.js` or `.env` variables (`VITE_FIREBASE_API_KEY`, etc.).
-2. **Spark vs. Blaze Plan**:
-   - The project is on the **Spark plan** (Free).
-   - Under the Spark plan, deploy the frontend on **Vercel** and the backend on **Render/Vercel Serverless**, while using Firebase for Authentication, Firestore database, and Cloud Storage.
-   - If deploying backend via Firebase Cloud Functions (`firebase deploy --only functions`), Google Cloud requires upgrading to the pay-as-you-go **Blaze plan** (which includes 2,000,000 free invocations/month).
-
----
-
 ## License & Fair Play
-Rahul Esports Odisha is an esports platform for competitive Free Fire players. All registered participants must comply with our Fair Play and Anti-Cheat Guidelines. Free Fire is a trademark of Garena International.
+Rahul Esports is an esports platform for competitive Free Fire players and squads. All registered participants must comply with our Fair Play and Anti-Cheat Guidelines. Free Fire is a trademark of Garena International.

@@ -6,8 +6,8 @@ import { Trophy, Search, Users, User, Flame, Sparkles } from 'lucide-react';
 
 export default function TournamentsPage() {
   usePageMeta(
-    'Free Fire Tournaments | RIT Esports Arena',
-    'Browse weekly verified Free Fire tournaments for Roland Institute of Technology. Check slot availability, prize pools, and register your squad.'
+    'Free Fire Tournaments | Rahul Esports Arena',
+    'Browse weekly verified Free Fire tournaments. Check slot availability, prize pools, and register your squad or solo entry.'
   );
 
   const [tournaments, setTournaments] = useState([]);
@@ -51,7 +51,7 @@ export default function TournamentsPage() {
         <div>
           <div className="flex items-center gap-2 text-brand-orange text-xs font-bold uppercase tracking-wider mb-1">
             <Trophy className="w-4 h-4" />
-            <span>Official College Esports Hub</span>
+            <span>Official Competitive Esports Hub</span>
           </div>
           <h1 className="font-display text-3xl sm:text-4xl font-extrabold uppercase text-white tracking-wide">
             Tournaments

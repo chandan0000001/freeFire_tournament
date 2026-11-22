@@ -373,7 +373,7 @@ export default function SquadRegisterPage() {
               <input
                 type="text"
                 required
-                placeholder="e.g. RIT Titans"
+                placeholder="e.g. Thunder Strikers"
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
                 className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
@@ -417,11 +417,11 @@ export default function SquadRegisterPage() {
             </div>
 
             <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">College Roll No / Student ID *</label>
+              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">City & State (Location) *</label>
               <input
                 type="text"
                 required
-                placeholder="e.g. 22RIT045"
+                placeholder="e.g. Berhampur, Odisha"
                 value={captain.collegeRollNo}
                 onChange={(e) => setCaptain({ ...captain, collegeRollNo: e.target.value })}
                 className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"

@@ -320,7 +320,7 @@ export default function SoloRegisterPage() {
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Full Student Name *</label>
+            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Full Name (Player) *</label>
             <input
               type="text"
               required
@@ -332,11 +332,11 @@ export default function SoloRegisterPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">College Roll No / Student ID *</label>
+            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">City & State (Location) *</label>
             <input
               type="text"
               required
-              placeholder="e.g. 23RIT112"
+              placeholder="e.g. Bhubaneswar, Odisha"
               value={collegeRollNo}
               onChange={(e) => setCollegeRollNo(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
@@ -348,7 +348,7 @@ export default function SoloRegisterPage() {
             <input
               type="text"
               required
-              placeholder="e.g. RIT_Sniper"
+              placeholder="e.g. Apex_Sniper"
               value={inGameName}
               onChange={(e) => setInGameName(e.target.value)}
               className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"

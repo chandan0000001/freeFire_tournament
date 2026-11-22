@@ -135,7 +135,7 @@ export const registerSquad = async (req, res, next) => {
     const settings = (await SiteSetting.findOne()) || {};
     const adminWhatsApp = settings.adminWhatsAppNumber || process.env.ADMIN_WHATSAPP_NUMBER || '';
     const upiId = settings.upiId || process.env.ADMIN_UPI_ID || 'organizer@upi';
-    const payeeName = settings.upiPayeeName || process.env.ADMIN_UPI_NAME || 'RIT Esports Organizer';
+    const payeeName = settings.upiPayeeName || process.env.ADMIN_UPI_NAME || 'Rahul Esports Organizer';
     const aid = settings.upiAid || process.env.ADMIN_UPI_AID || '';
     const amount = reservedTournament.entryFee;
 
@@ -252,7 +252,7 @@ export const registerSolo = async (req, res, next) => {
     const settings = (await SiteSetting.findOne()) || {};
     const adminWhatsApp = settings.adminWhatsAppNumber || process.env.ADMIN_WHATSAPP_NUMBER || '';
     const upiId = settings.upiId || process.env.ADMIN_UPI_ID || 'organizer@upi';
-    const payeeName = settings.upiPayeeName || process.env.ADMIN_UPI_NAME || 'RIT Esports Organizer';
+    const payeeName = settings.upiPayeeName || process.env.ADMIN_UPI_NAME || 'Rahul Esports Organizer';
     const aid = settings.upiAid || process.env.ADMIN_UPI_AID || '';
     const amount = reservedTournament.entryFee;
 

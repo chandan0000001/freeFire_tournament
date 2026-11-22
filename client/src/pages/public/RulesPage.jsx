@@ -3,7 +3,7 @@ import usePageMeta from '../../hooks/usePageMeta.js';
 import { BookOpen, ShieldCheck, Flame, AlertTriangle, Trophy, CheckCircle } from 'lucide-react';
 
 export default function RulesPage() {
-  usePageMeta('Rules & Fair Play Guidelines | RIT Esports Arena', 'Official competitive Free Fire rules, device eligibility, mobile-only policy, and scoring system for RIT students.');
+  usePageMeta('Rules & Fair Play Guidelines | Rahul Esports Arena', 'Official competitive Free Fire rules, device eligibility, mobile-only policy, and scoring system for players.');
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
       
@@ -17,7 +17,7 @@ export default function RulesPage() {
           Rules & Regulations
         </h1>
         <p className="text-xs text-slate-400 mt-1">
-          RIT Esports Arena competitive rules for weekly Free Fire custom rooms.
+          Rahul Esports Arena competitive rules for weekly Free Fire custom rooms.
         </p>
       </div>
 
@@ -34,7 +34,7 @@ export default function RulesPage() {
             Pure Skill. Zero Exploits.
           </h2>
           <p className="text-xs text-slate-300 leading-relaxed max-w-xl">
-            Every match is hosted in private custom rooms and monitored in real-time by official college referees. Play with integrity, respect fellow gamers, and claim your Booyah on merit.
+            Every match is hosted in private custom rooms and monitored in real-time by official referees. Play with integrity, respect fellow gamers, and claim your Booyah on merit.
           </p>
         </div>
       </div>
@@ -45,20 +45,20 @@ export default function RulesPage() {
         {/* Section 1: Eligibility */}
         <div id="eligibility" className="p-6 rounded-2xl bg-[#121722] border border-[#1F293D] space-y-3">
           <h3 className="font-display text-xl font-bold uppercase text-white flex items-center gap-2">
-            <ShieldCheck className="w-5 h-5 text-emerald-400" /> 1. College Eligibility
+            <ShieldCheck className="w-5 h-5 text-emerald-400" /> 1. Player Eligibility
           </h3>
           <ul className="text-xs text-slate-300 space-y-2 leading-relaxed">
             <li className="flex items-start gap-2">
               <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-              <span>All players in a Squad or Solo tournament must be registered college students.</span>
+              <span>All players in a Squad or Solo tournament must register with their authentic Free Fire IGN and UID.</span>
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-              <span>Admins reserve the right to verify student ID cards / roll numbers before releasing prize money.</span>
+              <span>Admins reserve the right to verify player Free Fire profiles before releasing prize disbursements.</span>
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-              <span>Impersonation or using mercenary players from outside the college will result in permanent team blacklisting.</span>
+              <span>Impersonation, account-sharing, or teaming during solo matches will result in permanent player blacklisting.</span>
             </li>
           </ul>
         </div>

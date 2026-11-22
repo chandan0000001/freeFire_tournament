@@ -11,7 +11,7 @@ const startServer = async () => {
   try {
     await connectDB();
     const server = app.listen(PORT, () => {
-      console.log(`[RIT Esports Arena] Server running on port ${PORT} (${process.env.NODE_ENV || 'development'} mode)`);
+      console.log(`[Rahul Esports Arena] Server running on port ${PORT} (${process.env.NODE_ENV || 'development'} mode)`);
       console.log(`[API Base URL] http://localhost:${PORT}/api`);
     });
 

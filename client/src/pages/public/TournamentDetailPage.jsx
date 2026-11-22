@@ -21,8 +21,8 @@ export default function TournamentDetailPage() {
   const [activeTab, setActiveTab] = useState('overview');
 
   usePageMeta(
-    tournament ? `${tournament.title} | Free Fire Tournament | RIT Esports` : 'Tournament Details | RIT Esports Arena',
-    tournament ? `Join ${tournament.title} with prize pool of ₹${tournament.prizePool || 0}. Format: ${tournament.gameMode || 'Battle Royale'}, Entry: ₹${tournament.entryFee || 0}. Exclusively for Roland Institute of Technology.` : 'View Free Fire tournament details, schedules, scoring system, and prize breakdown for RIT college students.'
+    tournament ? `${tournament.title} | Free Fire Tournament | Rahul Esports` : 'Tournament Details | Rahul Esports Arena',
+    tournament ? `Join ${tournament.title} with prize pool of ₹${tournament.prizePool || 0}. Format: ${tournament.gameMode || 'Battle Royale'}, Entry: ₹${tournament.entryFee || 0}. Open to all competitive players.` : 'View Free Fire tournament details, schedules, scoring system, and prize breakdown.'
   );
 
   useEffect(() => {
@@ -270,7 +270,7 @@ export default function TournamentDetailPage() {
               <div className="pt-4 border-t border-[#1F293D] space-y-3 text-xs text-slate-300">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>College students only</span>
+                  <span>Open to all verified mobile players</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />

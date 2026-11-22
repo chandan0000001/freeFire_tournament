@@ -17,21 +17,22 @@ export const getPublicSettings = async (req, res, next) => {
     let setting = await SiteSetting.findOne().lean();
     if (!setting) {
       setting = {
-        collegeName: 'RIT Esports Arena',
+        collegeName: 'Rahul Esports Arena',
         whatsappCommunityUrl: process.env.WHATSAPP_COMMUNITY_URL || '',
         adminWhatsAppNumber: process.env.ADMIN_WHATSAPP_NUMBER || '',
         upiId: process.env.ADMIN_UPI_ID || 'organizer@upi',
-        upiPayeeName: process.env.ADMIN_UPI_NAME || 'RIT Esports Organizer',
+        upiPayeeName: process.env.ADMIN_UPI_NAME || 'Rahul Esports Organizer',
         upiAid: process.env.ADMIN_UPI_AID || '',
         upiUriTemplate: process.env.ADMIN_UPI_URI || '',
         upiQrCodeUrl: '',
-        announcementBanner: 'Welcome to RIT Esports Arena! Register now for Weekly Free Fire Tournaments!',
-        contactEmail: process.env.EMAIL_FROM || 'admin@ritesports.in',
+        announcementBanner: 'Welcome to Rahul Esports Arena! Register now for Weekly Free Fire Tournaments!',
+        contactEmail: process.env.EMAIL_FROM || 'admin@rahulesports.in',
       };
     } else {
       // Ensure defaults if fields were empty
+      setting.collegeName = setting.collegeName || 'Rahul Esports Arena';
       setting.upiId = setting.upiId || process.env.ADMIN_UPI_ID || 'organizer@upi';
-      setting.upiPayeeName = setting.upiPayeeName || process.env.ADMIN_UPI_NAME || 'RIT Esports Organizer';
+      setting.upiPayeeName = setting.upiPayeeName || process.env.ADMIN_UPI_NAME || 'Rahul Esports Organizer';
       setting.upiAid = setting.upiAid || process.env.ADMIN_UPI_AID || '';
       setting.upiUriTemplate = setting.upiUriTemplate || process.env.ADMIN_UPI_URI || '';
     }
@@ -51,7 +52,7 @@ export const getAdminSettings = async (req, res, next) => {
         whatsappCommunityUrl: process.env.WHATSAPP_COMMUNITY_URL || '',
         adminWhatsAppNumber: process.env.ADMIN_WHATSAPP_NUMBER || '',
         upiId: process.env.ADMIN_UPI_ID || 'organizer@upi',
-        upiPayeeName: process.env.ADMIN_UPI_NAME || 'RIT Esports Organizer',
+        upiPayeeName: process.env.ADMIN_UPI_NAME || 'Rahul Esports Organizer',
         upiAid: process.env.ADMIN_UPI_AID || '',
         upiUriTemplate: process.env.ADMIN_UPI_URI || '',
       });
@@ -151,9 +152,9 @@ export const sendTestBrevoEmail = async (req, res, next) => {
 
     const emailResult = await sendEmail({
       to: recipient,
-      subject: 'Live Brevo Delivery Test — RIT Esports Arena',
+      subject: 'Live Brevo Delivery Test — Rahul Esports Arena',
       htmlContent: `<div style="font-family: Arial, sans-serif; background-color: #0b0e14; color: #f1f5f9; padding: 25px; border-radius: 8px;">
-        <h2 style="color: #ff5722; margin-top: 0;">RIT Esports Arena — Live Email Delivery Test</h2>
+        <h2 style="color: #ff5722; margin-top: 0;">Rahul Esports Arena — Live Email Delivery Test</h2>
         <p>Hello!</p>
         <p>If you are reading this email, Brevo email dispatch is working with <strong>100% success</strong>!</p>
         <p style="font-size: 13px; color: #94a3b8;">Sent via Brevo API on ${new Date().toLocaleString('en-IN')}</p>

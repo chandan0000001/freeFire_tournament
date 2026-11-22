@@ -40,14 +40,10 @@ function Navbar() {
           
           {/* Logo & Brand: Rahul Esports Odisha */}
           <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full p-0.5 bg-gradient-to-br from-brand-orange to-brand-amber shadow-glow-orange group-hover:scale-105 transition-transform flex items-center justify-center shrink-0">
-              <img
-                src="/images/rit-logo.webp"
-                alt="Rahul Esports Logo"
-                width="44"
-                height="44"
-                className="w-full h-full object-contain rounded-full bg-[#0B0E14]"
-              />
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-brand-orange to-brand-amber p-0.5 shadow-glow-orange group-hover:scale-105 transition-transform flex items-center justify-center shrink-0">
+              <div className="w-full h-full rounded-[10px] bg-[#0B0E14] flex items-center justify-center text-brand-orange">
+                <Trophy className="w-5 h-5 sm:w-6 sm:h-6" />
+              </div>
             </div>
             <div>
               <div className="flex items-center gap-1.5 sm:gap-2">
@@ -55,7 +51,7 @@ function Navbar() {
                   Rahul <span className="text-brand-orange">Esports</span>
                 </span>
                 <span className="bg-brand-orange/20 text-brand-orange text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded border border-brand-orange/40">
-                  Odisha
+                  Arena
                 </span>
               </div>
               <p className="text-[9px] sm:text-[10px] tracking-widest text-slate-400 uppercase font-medium">Free Fire League</p>

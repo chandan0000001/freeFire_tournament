@@ -10,23 +10,24 @@ import {
   ArrowRight, 
   CheckCircle, 
   Users, 
-  Zap,
-  Sparkles,
-  Gamepad2,
-  Mail,
-  Flame,
-  Search,
-  ExternalLink,
-  Smartphone,
-  Award
+  Zap, 
+  Sparkles, 
+  Gamepad2, 
+  Mail, 
+  Flame, 
+  Search, 
+  ExternalLink, 
+  Smartphone, 
+  Award,
+  Coins
 } from 'lucide-react';
 
 // Instant-mount default featured tournaments (renders with 0ms delay on initial paint)
 const DEFAULT_FEATURED = [
   {
     _id: '6afbf6bf37819059e7865025',
-    title: 'RIT Squad Battle — Week 01',
-    slug: 'rit-squad-battle-week-01',
+    title: 'Rahul Squad Battle — Week 01',
+    slug: 'rahul-squad-battle-week-01',
     format: 'squad',
     status: 'registration_open',
     entryFee: 29,
@@ -39,8 +40,8 @@ const DEFAULT_FEATURED = [
   },
   {
     _id: '6afbf6bf37819059e7865026',
-    title: 'RIT Solo Battle — Week 01',
-    slug: 'rit-solo-battle-week-01',
+    title: 'Rahul Solo Battle — Week 01',
+    slug: 'rahul-solo-battle-week-01',
     format: 'solo',
     status: 'upcoming',
     entryFee: 14,
@@ -53,8 +54,8 @@ const DEFAULT_FEATURED = [
   },
   {
     _id: '6afbf6bf37819059e7865027',
-    title: 'RIT Squad Battle — Week 02',
-    slug: 'rit-squad-battle-week-02',
+    title: 'Rahul Squad Battle — Week 02',
+    slug: 'rahul-squad-battle-week-02',
     format: 'squad',
     status: 'upcoming',
     entryFee: 29,
@@ -77,7 +78,7 @@ const FORMAT_TABS = [
 // Static Esports Telemetry HUD metrics
 const HUD_METRICS = [
   { label: 'Active Formats', value: 'Squad & Solo', tag: 'Mobile Only', color: 'text-white' },
-  { label: 'College Entry Fee', value: '₹29 / ₹14', tag: 'Low & Fair', color: 'text-brand-orange' },
+  { label: 'Entry Fee', value: '₹29 / ₹14', tag: 'Low & Fair', color: 'text-brand-orange' },
   { label: 'Season Prize Pool', value: '₹1,100+', tag: 'Guaranteed', color: 'text-brand-amber' },
   { label: 'Prize Payouts', value: 'Instant UPI', tag: 'Post Scorecard', color: 'text-emerald-400' },
 ];
@@ -216,7 +217,7 @@ function HomePage() {
         <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
           <img 
             src="/images/arena-stage.webp" 
-            alt="RIT Free Fire Esports Arena Championship Stage" 
+            alt="Rahul Esports Free Fire Championship Arena" 
             width="1920"
             height="1080"
             loading="eager"
@@ -235,14 +236,8 @@ function HomePage() {
             
             {/* Top Pill with Brand Crest & Live Status */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-orange/10 border border-brand-orange/30 text-brand-orange text-[10px] sm:text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-sm">
-              <img 
-                src="/images/rit-logo.webp" 
-                alt="Rahul Esports Crest" 
-                width="16" 
-                height="16" 
-                className="w-4 h-4 object-contain rounded-full" 
-              />
-              <span>Rahul Esports Free Fire League • Odisha</span>
+              <ShieldCheck className="w-3.5 h-3.5 text-brand-orange" />
+              <span>Rahul Esports Free Fire League • Open Championship</span>
               <span className="w-1.5 h-1.5 rounded-full bg-brand-orange shadow-[0_0_6px_rgba(255,87,34,0.9)]"></span>
             </div>
 
@@ -438,15 +433,15 @@ function HomePage() {
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-6 border-b border-[#1A2234]">
             <div>
               <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest block">
-                Campus Esports Integrity
+                Esports Integrity & Fair Play
               </span>
               <h2 className="font-display text-xl sm:text-2xl font-bold uppercase text-white mt-0.5">
-                RIT Esports League Standards
+                Rahul Esports League Standards
               </h2>
             </div>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-950/60 border border-emerald-500/40 text-emerald-400 text-xs font-semibold">
               <ShieldCheck className="w-4 h-4" />
-              <span>Certified Campus Referees</span>
+              <span>Certified Match Referees</span>
             </div>
           </div>
 
@@ -488,13 +483,13 @@ function HomePage() {
           <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-6">
             <div className="space-y-2.5 max-w-xl text-center md:text-left">
               <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold uppercase tracking-wider border border-emerald-500/30 inline-block">
-                Join 500+ College Gamers
+                Join 1,000+ Competitive Gamers
               </span>
               <h2 className="font-display text-2xl sm:text-3xl font-bold uppercase text-white tracking-wide">
                 Official Free Fire WhatsApp Group
               </h2>
               <p className="text-xs sm:text-sm text-slate-300">
-                Get notified instantly when new tournament slots open, receive match schedule reminders, and connect with other RIT college squads.
+                Get notified instantly when new tournament slots open, receive match schedule reminders, and connect with top Free Fire squads and solo champions.
               </p>
             </div>
 

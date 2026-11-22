@@ -15,13 +15,13 @@ const seedDatabase = async () => {
     console.log('[Seed] Connected successfully.');
 
     // 1. Seed Superadmin
-    const adminEmail = (process.env.ADMIN_BOOTSTRAP_EMAIL || 'admin@ritesports.in').toLowerCase();
-    const adminPassword = process.env.ADMIN_BOOTSTRAP_PASSWORD || 'Admin@RIT2026!';
+    const adminEmail = (process.env.ADMIN_BOOTSTRAP_EMAIL || 'admin@rahulesports.in').toLowerCase();
+    const adminPassword = process.env.ADMIN_BOOTSTRAP_PASSWORD || 'Admin@RE2026!';
     
     let admin = await User.findOne({ email: adminEmail });
     if (!admin) {
       admin = await User.create({
-        name: 'RIT Chief Administrator',
+        name: 'Rahul Esports Administrator',
         email: adminEmail,
         password: adminPassword,
         role: ROLES.SUPERADMIN,
@@ -36,15 +36,16 @@ const seedDatabase = async () => {
     let settings = await SiteSetting.findOne();
     if (!settings) {
       settings = await SiteSetting.create({
-        collegeName: 'RIT Esports Arena',
+        collegeName: 'Rahul Esports Arena',
         whatsappCommunityUrl: process.env.WHATSAPP_COMMUNITY_URL || '',
         adminWhatsAppNumber: process.env.ADMIN_WHATSAPP_NUMBER || '',
         upiId: process.env.ADMIN_UPI_ID || 'organizer@upi',
-        announcementBanner: 'Welcome to RIT Esports Arena! Registrations for Week 01 Squad & Solo Battles are now OPEN!',
-        contactEmail: process.env.EMAIL_FROM || 'admin@ritesports.in',
+        announcementBanner: 'Welcome to Rahul Esports Arena! Registrations for Week 01 Squad & Solo Battles are now OPEN!',
+        contactEmail: process.env.EMAIL_FROM || 'admin@rahulesports.in',
       });
       console.log('[Seed] Site settings created with WhatsApp and UPI configurations.');
     } else {
+      settings.collegeName = 'Rahul Esports Arena';
       settings.whatsappCommunityUrl = process.env.WHATSAPP_COMMUNITY_URL || settings.whatsappCommunityUrl;
       settings.adminWhatsAppNumber = process.env.ADMIN_WHATSAPP_NUMBER || settings.adminWhatsAppNumber;
       settings.upiId = process.env.ADMIN_UPI_ID || settings.upiId;
@@ -60,9 +61,9 @@ const seedDatabase = async () => {
 
     const tournamentsData = [
       {
-        title: 'RIT Squad Battle — Week 01',
-        slug: 'rit-squad-battle-week-01',
-        description: 'The premier weekly 4v4 Free Fire Squad showdown for RIT students. Battle for the Booyah and prize pool!',
+        title: 'Rahul Squad Battle — Week 01',
+        slug: 'rahul-squad-battle-week-01',
+        description: 'The premier weekly 4v4 Free Fire Squad showdown. Battle for the Booyah and cash prize pool!',
         format: TOURNAMENT_FORMAT.SQUAD,
         entryFee: 29,
         maxSlots: 12, // 12 Squads = 48 players in one custom room
@@ -85,14 +86,14 @@ const seedDatabase = async () => {
           totalPool: 1100,
           terms: 'Cash prizes transferred via UPI directly by admin within 24 hours of verified results.',
         },
-        rules: '1. Only verified RIT students.\n2. No PC/Emulators allowed; mobile only.\n3. Custom Room ID & Password sent via email 20 mins prior.\n4. Toxic behaviour or hacking results in permanent ban.',
+        rules: '1. Mobile devices only (No PC/Emulators allowed).\n2. Custom Room ID & Password sent via email 20 mins prior.\n3. Toxic behaviour or hacking results in permanent ban.',
         bannerUrl: '/images/ff-banner.webp',
         isPublic: true,
       },
       {
-        title: 'RIT Solo Battle — Week 01',
-        slug: 'rit-solo-battle-week-01',
-        description: 'Prove your individual gun skill and survival instincts in the RIT Free Fire Solo arena!',
+        title: 'Rahul Solo Battle — Week 01',
+        slug: 'rahul-solo-battle-week-01',
+        description: 'Prove your individual gun skill and survival instincts in the Rahul Esports Free Fire Solo arena!',
         format: TOURNAMENT_FORMAT.SOLO,
         entryFee: 14,
         maxSlots: 48, // 48 Solo players
@@ -120,8 +121,8 @@ const seedDatabase = async () => {
         isPublic: true,
       },
       {
-        title: 'RIT Squad Battle — Week 02',
-        slug: 'rit-squad-battle-week-02',
+        title: 'Rahul Squad Battle — Week 02',
+        slug: 'rahul-squad-battle-week-02',
         description: 'Prepare for Week 02 clash! Registrations open soon after Week 01 concludes.',
         format: TOURNAMENT_FORMAT.SQUAD,
         entryFee: 29,

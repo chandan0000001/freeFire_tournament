@@ -73,7 +73,7 @@ export const sendRegistrationEmail = async (registration, tournament, upiId) => 
   const subject = `Registration Received: ${tournament.title} [${registration.referenceId}]`;
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; background-color: #0b0e14; color: #f1f5f9; padding: 25px; border-radius: 8px;">
-      <h2 style="color: #ff5722; margin-top: 0;">RIT Esports Arena</h2>
+      <h2 style="color: #ff5722; margin-top: 0;">Rahul Esports Arena</h2>
       <p>Hello <strong>${registration.captain.name}</strong>,</p>
       <p>Your registration for <strong>${tournament.title}</strong> has been received!</p>
       
@@ -88,7 +88,7 @@ export const sendRegistrationEmail = async (registration, tournament, upiId) => 
       <p>Please pay <strong>₹${tournament.entryFee}</strong> to our official UPI ID: <strong style="color: #fff; background: #222d42; padding: 3px 8px; border-radius: 4px;">${upiId}</strong></p>
       <p>After paying, send your payment screenshot & UTR reference along with Reference ID <strong>${registration.referenceId}</strong> to the official Admin WhatsApp contact.</p>
       
-      <p style="margin-top: 25px; font-size: 13px; color: #94a3b8;">See you on the battleground!<br/>RIT Esports Arena Team</p>
+      <p style="margin-top: 25px; font-size: 13px; color: #94a3b8;">See you on the battleground!<br/>Rahul Esports Arena Team</p>
     </div>
   `;
 
@@ -117,7 +117,7 @@ export const sendPaymentVerifiedEmail = async (registration, tournament) => {
       </div>
 
       <p><strong>Note:</strong> Custom Room ID and Password will be sent to this email address 15–30 minutes before match time.</p>
-      <p style="margin-top: 25px; font-size: 13px; color: #94a3b8;">RIT Esports Arena Team</p>
+      <p style="margin-top: 25px; font-size: 13px; color: #94a3b8;">Rahul Esports Arena Team</p>
     </div>
   `;
 
@@ -151,7 +151,7 @@ export const sendRoomCredentialsEmail = async ({ to, captainName, tournamentTitl
         <p style="color: #f87171; margin: 0; font-size: 13px;"><strong>CONFIDENTIALITY WARNING:</strong> Do not share these credentials with unauthorized players. Joining with unauthorized Free Fire accounts will lead to immediate disqualification without refund.</p>
       </div>
 
-      <p style="margin-top: 25px; font-size: 13px; color: #94a3b8;">Good luck and Booyah!<br/>RIT Esports Arena Team</p>
+      <p style="margin-top: 25px; font-size: 13px; color: #94a3b8;">Good luck and Booyah!<br/>Rahul Esports Arena Team</p>
     </div>
   `;
 

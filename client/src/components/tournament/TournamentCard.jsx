@@ -188,14 +188,8 @@ function TournamentCard({ tournament }) {
           {/* Organizer / Host Pill (GBArena Style) */}
           <div className="flex items-center justify-between mb-2 pb-2 border-b border-[#1A2234]">
             <div className="flex items-center gap-2">
-              <div className="w-5 h-5 rounded-full p-0.5 bg-brand-orange/20 border border-brand-orange/40 shrink-0">
-                <img
-                  src="/images/rit-logo.webp"
-                  alt="Rahul Esports"
-                  width="20"
-                  height="20"
-                  className="w-full h-full object-contain rounded-full"
-                />
+              <div className="w-5 h-5 rounded bg-brand-orange/20 border border-brand-orange/40 flex items-center justify-center text-brand-orange shrink-0">
+                <Trophy className="w-3 h-3" />
               </div>
               <span className="text-[11px] uppercase tracking-wider font-bold text-slate-300 truncate">
                 Rahul Esports Arena

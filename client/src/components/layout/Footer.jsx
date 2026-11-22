@@ -13,24 +13,22 @@ function Footer() {
           {/* Brand Info with Official Seal */}
           <div className="space-y-3 sm:col-span-2 md:col-span-1">
             <Link to="/" className="inline-flex items-center gap-2.5 group">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full p-0.5 bg-gradient-to-br from-brand-orange to-brand-amber shadow-glow-orange shrink-0">
-                <img
-                  src="/images/rit-logo.webp"
-                  alt="Rahul Esports"
-                  className="w-full h-full object-contain rounded-full bg-[#0B0E14]"
-                />
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-brand-orange to-brand-amber p-0.5 shadow-glow-orange shrink-0">
+                <div className="w-full h-full rounded-[10px] bg-[#0B0E14] flex items-center justify-center text-brand-orange">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
               </div>
               <div>
                 <span className="font-display font-bold text-base sm:text-lg text-white uppercase tracking-wider group-hover:text-brand-orange transition-colors">
                   Rahul <span className="text-brand-orange">Esports</span>
                 </span>
                 <span className="block text-[9px] uppercase tracking-widest text-slate-500 font-semibold">
-                  Odisha Free Fire League
+                  Free Fire League
                 </span>
               </div>
             </Link>
             <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed max-w-sm">
-              The official competitive Free Fire arena by Rahul Esports Odisha. Weekly custom rooms, pure skill-based scoring, in-app coin wallet, and verified UPI cash prizes.
+              The official competitive Free Fire arena by Rahul Esports. Weekly custom rooms, skill-based scoring, in-app coin wallet, and verified UPI cash prizes for individual players and squads.
             </p>
             <span className="inline-block bg-slate-800/80 text-brand-orange text-[10px] font-bold px-2 py-0.5 rounded border border-brand-orange/30">
               Verified Gaming Platform
@@ -44,7 +42,7 @@ function Footer() {
             </h4>
             <ul className="space-y-1.5 text-[11px] sm:text-xs">
               <li><Link to="/tournaments" className="hover:text-brand-orange transition-colors">Active Tournaments</Link></li>
-              <li><Link to="/wallet" className="text-amber-400 hover:text-amber-300 font-semibold transition-colors">🪙 Player Coin Wallet</Link></li>
+              <li><Link to="/wallet" className="text-amber-400 hover:text-amber-300 font-semibold transition-colors">Player Coin Wallet</Link></li>
               <li><Link to="/leaderboard" className="hover:text-brand-orange transition-colors">Leaderboard Standings</Link></li>
               <li><Link to="/results" className="hover:text-brand-orange transition-colors">Match Results</Link></li>
               <li><Link to="/winners" className="hover:text-brand-orange transition-colors">Hall of Fame</Link></li>
@@ -99,8 +97,8 @@ function Footer() {
 
         {/* Minimal Bottom Bar */}
         <div className="border-t border-[#1F293D] mt-6 sm:mt-8 pt-4 sm:pt-6 flex flex-col sm:flex-row items-center justify-between text-[10px] sm:text-[11px] text-slate-500 gap-2 text-center sm:text-left">
-          <p>© {new Date().getFullYear()} Roland Institute of Technology (RIT) Esports Arena. Built for campus students.</p>
-          <p>Non-commercial campus tournament. Not affiliated with Garena Free Fire.</p>
+          <p>© {new Date().getFullYear()} Rahul Esports Arena. The premier competitive Free Fire platform.</p>
+          <p>Individual and squad esports tournament. Free Fire is a trademark of Garena International.</p>
         </div>
 
       </div>
