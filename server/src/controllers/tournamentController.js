@@ -31,15 +31,36 @@ export const getTournaments = async (req, res, next) => {
       query.title = { $regex: escapeRegex(search.trim()), $options: 'i' };
     }
 
-    let tournamentQuery = Tournament.find(query).sort({ matchDate: 1 });
-    if (limit) {
-      tournamentQuery = tournamentQuery.limit(Math.max(1, Math.min(100, Number(limit) || 100)));
-    }
-
+    let tournamentQuery = Tournament.find(query);
     const tournaments = await tournamentQuery.lean();
 
+    const STATUS_PRIORITY = {
+      registration_open: 1,
+      upcoming: 2,
+      live: 3,
+      room_ready: 4,
+      full: 5,
+      registration_closed: 6,
+      completed: 7,
+      cancelled: 8,
+    };
+
+    // Prioritize open registrations in 1st position, followed by nearest upcoming matches
+    tournaments.sort((a, b) => {
+      const rankA = STATUS_PRIORITY[a.status] || 99;
+      const rankB = STATUS_PRIORITY[b.status] || 99;
+      if (rankA !== rankB) return rankA - rankB;
+      const dateA = new Date(a.matchDate || 0).getTime();
+      const dateB = new Date(b.matchDate || 0).getTime();
+      return dateA - dateB;
+    });
+
+    const sliced = limit
+      ? tournaments.slice(0, Math.max(1, Math.min(100, Number(limit) || 100)))
+      : tournaments;
+
     // Trust denormalized registeredSlots maintained atomically by syncTournamentSlots/reserveSlot
-    const formatted = tournaments.map((t) => {
+    const formatted = sliced.map((t) => {
       const slots = t.registeredSlots || 0;
       return {
         ...t,

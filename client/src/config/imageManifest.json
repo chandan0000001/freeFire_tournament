@@ -1,5 +1,5 @@
 {
-  "/images/odisha-squad.webp": {
+  "/images/arena-account.webp": {
     "width": 1280,
     "height": 720
   },
@@ -7,7 +7,51 @@
     "width": 1280,
     "height": 720
   },
-  "/images/arena-account.webp": {
+  "/images/ff-odisha-airdrop-crate.webp": {
+    "width": 1280,
+    "height": 720
+  },
+  "/images/ff-odisha-captain-sunset.webp": {
+    "width": 1280,
+    "height": 720
+  },
+  "/images/ff-odisha-chilika-solo.webp": {
+    "width": 1280,
+    "height": 720
+  },
+  "/images/ff-odisha-cliff-squad.webp": {
+    "width": 1280,
+    "height": 720
+  },
+  "/images/ff-odisha-coastal-arena.webp": {
+    "width": 1280,
+    "height": 720
+  },
+  "/images/ff-odisha-coastal-vista.webp": {
+    "width": 1280,
+    "height": 720
+  },
+  "/images/ff-odisha-heavy-flanker.webp": {
+    "width": 1280,
+    "height": 720
+  },
+  "/images/ff-odisha-konark-wheel.webp": {
+    "width": 1280,
+    "height": 720
+  },
+  "/images/ff-odisha-scout-sunset.webp": {
+    "width": 1280,
+    "height": 720
+  },
+  "/images/ff-odisha-temple-sniper.webp": {
+    "width": 1280,
+    "height": 720
+  },
+  "/images/ff-odisha-temple-squad.webp": {
+    "width": 1280,
+    "height": 720
+  },
+  "/images/ff-odisha-top-fragger.webp": {
     "width": 1280,
     "height": 720
   },
@@ -15,12 +59,24 @@
     "width": 1280,
     "height": 720
   },
+  "/images/logo.webp": {
+    "width": 256,
+    "height": 256
+  },
+  "/images/odisha-arena.webp": {
+    "width": 1672,
+    "height": 941
+  },
   "/images/odisha-champion.webp": {
     "width": 1086,
     "height": 1448
   },
+  "/images/odisha-squad.webp": {
+    "width": 1280,
+    "height": 720
+  },
   "/images/rahul.webp": {
-    "width": 1024,
-    "height": 1024
+    "width": 687,
+    "height": 1031
   }
 }

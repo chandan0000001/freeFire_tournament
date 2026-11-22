@@ -13,7 +13,26 @@ export default function HomePage() {
  const [reload,setReload] = useState(0);
  const [format,setFormat] = useState('');
  usePageMeta('Free Fire tournaments', `Join ${site.name}, ${site.region}’s Free Fire tournament community.`);
- useEffect(() => { let active = true; setState('loading'); api.get('/tournaments?status=registration_open,upcoming,live,room_ready').then(res => { if(active) { if(!res.success) throw new Error(); setTournaments(res.tournaments || []); setState('ready'); } }).catch(() => { if(active) setState('error'); }); return () => { active = false; }; }, [reload]);
+ useEffect(() => {
+  let active = true;
+  setState('loading');
+  api.get('/tournaments?status=registration_open,upcoming,live,room_ready')
+    .then(res => {
+      if (active) {
+        if (!res.success) throw new Error();
+        const statusRank = { registration_open: 1, upcoming: 2, live: 3, room_ready: 4, full: 5 };
+        const sorted = [...(res.tournaments || [])].sort((a, b) => {
+          const diff = (statusRank[a.status] || 99) - (statusRank[b.status] || 99);
+          if (diff !== 0) return diff;
+          return new Date(a.matchDate || 0) - new Date(b.matchDate || 0);
+        });
+        setTournaments(sorted);
+        setState('ready');
+      }
+    })
+    .catch(() => { if (active) setState('error'); });
+  return () => { active = false; };
+}, [reload]);
  useLiveRefresh(() => setReload(value => value + 1));
  const visible = tournaments.filter(t => !format || t.format === format);
  return <div className="arena-container home-page">

@@ -33,7 +33,13 @@ export default function TournamentsPage() {
       const res = await api.get(`/tournaments?${params.toString()}`);
       if (id !== requestId.current) return;
       if (res.success) {
-        setTournaments(res.tournaments || []);
+        const statusRank = { registration_open: 1, upcoming: 2, live: 3, room_ready: 4, full: 5, registration_closed: 6, completed: 7 };
+        const sorted = [...(res.tournaments || [])].sort((a, b) => {
+          const diff = (statusRank[a.status] || 99) - (statusRank[b.status] || 99);
+          if (diff !== 0) return diff;
+          return new Date(a.matchDate || 0) - new Date(b.matchDate || 0);
+        });
+        setTournaments(sorted);
       }
     } catch (err) {
       if (id === requestId.current) { setError(err.message); setTournaments([]); }

@@ -29,16 +29,36 @@ export default function AdminTournaments() {
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // Curated high-res 16:9 widescreen Free Fire tournament banners
+  // Curated photorealistic 16:9 widescreen Free Fire tournament banners
   const BANNER_OPTIONS = [
     { label: 'Odisha squad champions (site default)', value: '' },
-    { label: 'Odisha · Squad arena', value: site.tournamentImage },
-    { label: 'Odisha · Chilika solo champion', value: site.soloImage },
+    { label: 'Cliffside Squad · Sunset (16:9)', value: '/images/ff-odisha-cliff-squad.webp' },
+    { label: 'Temple Steps · Squad (16:9)', value: '/images/ff-odisha-temple-squad.webp' },
+    { label: 'Squad Captain · Sunset (16:9)', value: '/images/ff-odisha-captain-sunset.webp' },
+    { label: 'Scout Operative · Sunset (16:9)', value: '/images/ff-odisha-scout-sunset.webp' },
+    { label: 'Konark Wheel · Coastal Vista (16:9)', value: '/images/ff-odisha-coastal-vista.webp' },
+    { label: 'Heavy Flanker · Ridge (16:9)', value: '/images/ff-odisha-heavy-flanker.webp' },
+    { label: 'Booyah Airdrop · Golden Crate (16:9)', value: '/images/ff-odisha-airdrop-crate.webp' },
+    { label: 'Temple Steps · Sharpshooter (16:9)', value: '/images/ff-odisha-temple-sniper.webp' },
+    { label: 'Konark Sun Temple · Wheel (16:9)', value: '/images/ff-odisha-konark-wheel.webp' },
+    { label: 'Chilika Lake · Solo Recon (16:9)', value: '/images/ff-odisha-chilika-solo.webp' },
+    { label: 'Sun Temple · Ancient Citadel (16:9)', value: '/images/ff-odisha-coastal-arena.webp' },
+    { label: 'Top Fragger · Gunslinger (16:9)', value: '/images/ff-odisha-top-fragger.webp' },
   ];
 
   const RANDOM_BANNERS = [
-    site.tournamentImage,
-    site.soloImage,
+    '/images/ff-odisha-cliff-squad.webp',
+    '/images/ff-odisha-temple-squad.webp',
+    '/images/ff-odisha-captain-sunset.webp',
+    '/images/ff-odisha-scout-sunset.webp',
+    '/images/ff-odisha-coastal-vista.webp',
+    '/images/ff-odisha-heavy-flanker.webp',
+    '/images/ff-odisha-airdrop-crate.webp',
+    '/images/ff-odisha-temple-sniper.webp',
+    '/images/ff-odisha-konark-wheel.webp',
+    '/images/ff-odisha-chilika-solo.webp',
+    '/images/ff-odisha-coastal-arena.webp',
+    '/images/ff-odisha-top-fragger.webp',
   ];
 
   // Form state
