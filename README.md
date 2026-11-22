@@ -51,7 +51,7 @@ Public asset configuration:
 | `VITE_CHAMPION_IMAGE` | `/images/odisha-champion.webp` |
 | `VITE_ORGANIZER_IMAGE` | `/images/rahul.webp` |
 
-`ResponsiveImage` uses `imageManifest.json` to serve 480px, 768px or full-width WebP files, reserve intrinsic dimensions, and lazy-load secondary artwork. Visible hero/auth images receive loading priority. Custom URLs remain supported without inventing nonexistent size variants. Add manifest entries when adding new resized artwork. Rebuild the client after changing frontend environment variables.
+`ResponsiveImage` uses `imageManifest.json` to serve optimized WebP files, reserve intrinsic dimensions, and lazy-load secondary artwork. Visible hero/auth images receive loading priority. Rebuild the client after changing frontend environment variables.
 
 ## Redis and client synchronization
 

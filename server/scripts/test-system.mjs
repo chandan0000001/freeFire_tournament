@@ -237,7 +237,7 @@ try {
         await phone.goto(origin); await phone.waitForTimeout(500);
         await phone.screenshot({ path: '/tmp/arena-home-mobile.png', fullPage: true });
         const image = await phone.locator('.hero-image').evaluate(img => ({ src: img.currentSrc, loaded: img.complete && img.naturalWidth > 0 }));
-        assert.ok(image.loaded); assert.ok(image.src.includes('-480.webp'), image.src);
+        assert.ok(image.loaded); assert.ok(image.src.includes('odisha-squad.webp'), image.src);
         await phone.goto(origin + '/login');
         await phone.getByLabel('Email address', { exact: true }).fill(users[0].email);
         await phone.getByLabel('Password', { exact: true }).fill(password);
