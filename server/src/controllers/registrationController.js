@@ -1,6 +1,7 @@
 import { claimPaymentReference } from '../services/paymentReferenceService.js';
 import { MatchResult } from '../models/MatchResult.js';
 import { Prize } from '../models/Prize.js';
+import { RoomDistribution } from '../models/RoomDistribution.js';
 import { afterCommit } from '../middleware/transactional.js';
 import { Registration } from '../models/Registration.js';
 import { Tournament } from '../models/Tournament.js';
@@ -460,6 +461,7 @@ export const deleteRegistration = async (req, res, next) => {
 
     if (registration.paymentStatus === PAYMENT_STATUS.VERIFIED || await Prize.exists({ winnerRegistrationId: id }) || await MatchResult.exists({ 'entries.registrationId': id })) return res.status(409).json({ success: false, message: 'Confirmed or scored registrations must be retained. Reject an unconfirmed entry before removing it.' });
     await Registration.findByIdAndDelete(id);
+    await RoomDistribution.deleteMany({ registrationId: id });
 
     // Resynchronize slots for the tournament
     if (tournamentId) {

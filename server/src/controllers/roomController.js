@@ -173,9 +173,12 @@ export const distributeRoomCredentials = async (req, res, next) => {
 export const getRoomDeliveryLogs = async (req, res, next) => {
   try {
     const { tournamentId } = req.params;
-    const logs = await RoomDistribution.find({ tournamentId })
+    const rawLogs = await RoomDistribution.find({ tournamentId })
       .populate('registrationId', 'referenceId teamName captain format')
       .sort({ createdAt: -1 });
+
+    // Filter out orphaned logs where the underlying registration was removed
+    const logs = rawLogs.filter((log) => Boolean(log.registrationId));
 
     res.json({
       success: true,
