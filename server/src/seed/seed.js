@@ -40,9 +40,12 @@ const seedDatabase = async () => {
         collegeName: process.env.SITE_NAME || '',
         whatsappCommunityUrl: process.env.WHATSAPP_COMMUNITY_URL || '',
         adminWhatsAppNumber: process.env.ADMIN_WHATSAPP_NUMBER || '',
-        upiId: process.env.ADMIN_UPI_ID || 'organizer@upi',
-        announcementBanner: 'Welcome to Rahul Esports Arena! Registrations for Week 01 Squad & Solo Battles are now OPEN!',
-        contactEmail: process.env.EMAIL_FROM || 'admin@rahulesports.in',
+        upiId: process.env.ADMIN_UPI_ID || '',
+        upiPayeeName: process.env.ADMIN_UPI_NAME || process.env.SITE_NAME || '',
+        upiAid: process.env.ADMIN_UPI_AID || '',
+        upiUriTemplate: process.env.ADMIN_UPI_URI || '',
+        announcementBanner: process.env.SITE_ANNOUNCEMENT || '',
+        contactEmail: process.env.CONTACT_EMAIL || process.env.EMAIL_FROM || '',
       });
       console.log('[Seed] Site settings created with WhatsApp and UPI configurations.');
     } else {
@@ -50,6 +53,10 @@ const seedDatabase = async () => {
       settings.whatsappCommunityUrl = process.env.WHATSAPP_COMMUNITY_URL || settings.whatsappCommunityUrl;
       settings.adminWhatsAppNumber = process.env.ADMIN_WHATSAPP_NUMBER || settings.adminWhatsAppNumber;
       settings.upiId = process.env.ADMIN_UPI_ID || settings.upiId;
+      settings.upiPayeeName = process.env.ADMIN_UPI_NAME || settings.upiPayeeName;
+      settings.upiAid = process.env.ADMIN_UPI_AID || settings.upiAid;
+      settings.upiUriTemplate = process.env.ADMIN_UPI_URI || settings.upiUriTemplate;
+      settings.contactEmail = process.env.CONTACT_EMAIL || process.env.EMAIL_FROM || settings.contactEmail;
       await settings.save();
       console.log('[Seed] Site settings updated.');
     }

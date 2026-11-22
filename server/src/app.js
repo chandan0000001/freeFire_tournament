@@ -74,7 +74,7 @@ app.get('/', (req, res) => {
       wallet: '/api/wallet/:email',
       settings: '/api/settings/public',
     },
-    clientOrigin: process.env.CLIENT_URL || 'https://rittournament.vercel.app',
+    clientOrigin: (process.env.CLIENT_URL || '').split(',')[0].trim() || 'http://localhost:5173',
     timestamp: new Date().toISOString(),
   });
 });

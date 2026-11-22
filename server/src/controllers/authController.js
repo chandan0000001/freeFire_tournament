@@ -267,7 +267,7 @@ export const resolveClientBase = (req) => {
   const trusted = allowed.find(value => process.env.NODE_ENV !== 'production' || value.startsWith('https://'));
   if (trusted) return trusted;
   if (allowed.length > 0) return allowed[0];
-  return process.env.NODE_ENV === 'production' ? 'https://rittournament.vercel.app' : 'http://localhost:5173';
+  return process.env.DEFAULT_CLIENT_URL || (process.env.NODE_ENV === 'production' ? 'https://rittournament.vercel.app' : 'http://localhost:5173');
 };
 
 /**

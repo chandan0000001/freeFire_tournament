@@ -56,6 +56,8 @@ export default function SquadRegisterPage() {
   // Payment state
   const [utrNumber, setUtrNumber] = useState('');
   const [registrationResult, setRegistrationResult] = useState(null);
+  const [upiId, setUpiId] = useState(site.adminUpiId || '');
+  const [upiPayeeName, setUpiPayeeName] = useState(site.adminUpiName || site.name);
 
   // Auto-sync logged in user to Player 1 if empty
   useEffect(() => {
@@ -72,7 +74,10 @@ export default function SquadRegisterPage() {
   useEffect(() => {
     const fetchTournament = async () => {
       try {
-        const res = await api.get('/tournaments');
+        const [res, settingsRes] = await Promise.all([
+          api.get('/tournaments'),
+          api.get('/settings/public').catch(() => null),
+        ]);
         if (res.success) {
           const found = res.tournaments.find((t) => t._id === tournamentId);
           if (found) {
@@ -80,6 +85,10 @@ export default function SquadRegisterPage() {
           } else {
             setError('Tournament not found or inactive');
           }
+        }
+        if (settingsRes?.success && settingsRes.settings) {
+          if (settingsRes.settings.upiId) setUpiId(settingsRes.settings.upiId);
+          if (settingsRes.settings.upiPayeeName) setUpiPayeeName(settingsRes.settings.upiPayeeName);
         }
       } catch (err) {
         setError('Failed to fetch tournament information');
@@ -496,7 +505,7 @@ export default function SquadRegisterPage() {
             <div className="p-6 rounded-2xl bg-[#1b1017] border border-brand-orange/40 flex flex-col md:flex-row items-center gap-6">
               <div className="w-48 h-48 bg-white p-2 rounded-2xl shadow-2xl shrink-0 flex items-center justify-center">
                 <img
-                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`upi://pay?pa=srikantap571-1@okaxis&pn=Rahul%20Esports&am=${tournament.entryFee}&cu=INR`)}`}
+                  src={`${site.qrCodeApiUrl.replace(/\/+$/, '')}/?size=200x200&data=${encodeURIComponent(`upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(upiPayeeName)}&am=${tournament.entryFee}&cu=INR`)}`}
                   alt="UPI QR Code"
                   className="w-full h-full object-contain"
                 />
@@ -515,14 +524,16 @@ export default function SquadRegisterPage() {
 
                 <div className="flex items-center justify-center md:justify-start gap-2 pt-1">
                   <span className="font-mono text-sm font-bold text-brand-amber bg-[#1c1b1e] px-3.5 py-1.5 rounded-xl border border-[#393236]">
-                    srikantap571-1@okaxis
+                    {upiId || 'UPI ID pending admin configuration'}
                   </span>
                   <button
                     type="button"
                     onClick={async () => {
-                      await navigator.clipboard.writeText('srikantap571-1@okaxis');
-                      setCopied(true);
-                      setTimeout(() => setCopied(false), 2000);
+                      if (upiId) {
+                        await navigator.clipboard.writeText(upiId);
+                        setCopied(true);
+                        setTimeout(() => setCopied(false), 2000);
+                      }
                     }}
                     className="p-2 rounded-xl bg-[#1c1b1e] hover:bg-[#292428] text-slate-300 hover:text-white border border-[#393236] transition-colors"
                     title="Copy UPI ID"

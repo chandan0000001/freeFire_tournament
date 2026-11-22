@@ -111,8 +111,9 @@ export const registerSquad = async (req, res, next) => {
     const amount = reservedTournament.entryFee;
 
     // UPI Deep Link & Dynamic QR Code
+    const qrBaseUrl = (process.env.QR_CODE_API_URL || 'https://api.qrserver.com/v1/create-qr-code/').replace(/\/+$/, '');
     const upiDeepLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR`;
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiDeepLink)}`;
+    const qrCodeUrl = `${qrBaseUrl}/?size=250x250&data=${encodeURIComponent(upiDeepLink)}`;
 
     // Build roster text for WhatsApp
     const rosterList = normalizedPlayers
@@ -233,8 +234,9 @@ export const registerSolo = async (req, res, next) => {
     const amount = reservedTournament.entryFee;
 
     // UPI Deep Link & Dynamic QR Code
+    const qrBaseUrl = (process.env.QR_CODE_API_URL || 'https://api.qrserver.com/v1/create-qr-code/').replace(/\/+$/, '');
     const upiDeepLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR`;
-    const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiDeepLink)}`;
+    const qrCodeUrl = `${qrBaseUrl}/?size=250x250&data=${encodeURIComponent(upiDeepLink)}`;
 
     // 5. WhatsApp click-to-chat link
     const prefilledText = encodeURIComponent(

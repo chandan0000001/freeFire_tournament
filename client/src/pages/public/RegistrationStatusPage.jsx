@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import api from '../../services/api.js';
 import usePageMeta from '../../hooks/usePageMeta.js';
 import { useAuth } from '../../context/AuthContext.jsx';
+import { site } from '../../config/site.js';
 import { 
   CheckCircle, 
   Clock, 
@@ -30,7 +31,7 @@ export default function RegistrationStatusPage() {
   const [myRegistrations, setMyRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [adminWhatsApp, setAdminWhatsApp] = useState('918114603994');
+  const [adminWhatsApp, setAdminWhatsApp] = useState(site.adminWhatsAppNumber ? site.adminWhatsAppNumber.replace(/[^0-9]/g, '') : '');
   const [copiedUtr, setCopiedUtr] = useState(null);
 
   // Manual lookup state (fallback / search by Ref ID)

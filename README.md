@@ -86,6 +86,10 @@ VITE_SITE_REGION_NATIVE="ଓଡ଼ିଶା"
 VITE_SITE_TAGLINE="Free Fire Competitive Arena"
 VITE_COMMUNITY_URL="https://chat.whatsapp.com/..."
 VITE_CONTACT_EMAIL="contact@rahulesports.in"
+VITE_ADMIN_UPI_ID="srikantap571-1@okaxis"
+VITE_ADMIN_UPI_NAME="Rahul Esports"
+VITE_ADMIN_WHATSAPP_NUMBER="918114603994"
+VITE_QR_CODE_API_URL="https://api.qrserver.com/v1/create-qr-code/"
 ```
 
 #### Backend (`server/.env`)
@@ -93,16 +97,20 @@ VITE_CONTACT_EMAIL="contact@rahulesports.in"
 PORT=5000
 NODE_ENV=development
 CLIENT_URL=http://localhost:5173
+DEFAULT_CLIENT_URL=http://localhost:5173
 MONGODB_URI=mongodb+srv://<user>:<password>@cluster0.mongodb.net/rahul_esports
 JWT_SECRET=your_jwt_secret_key_minimum_32_characters
 REDIS_URL=redis://default:<password>@<host>:<port>
-REDIS_KEY_PREFIX=thff:
+REDIS_KEY_PREFIX=rahul-arena:
 BREVO_API_KEY=xkeysib-...
 EMAIL_FROM=contact@rahulesports.in
-EMAIL_FROM_NAME="Rahul Esports"
+EMAIL_FROM_NAME="Rahul Esports Arena"
+ADMIN_WHATSAPP_NUMBER=918114603994
 ADMIN_UPI_ID=srikantap571-1@okaxis
 ADMIN_UPI_NAME="Rahul Esports"
-ADMIN_WHATSAPP_NUMBER=919999999999
+QR_CODE_API_URL=https://api.qrserver.com/v1/create-qr-code/
+ADMIN_BOOTSTRAP_EMAIL=admin@rahulesports.in
+ADMIN_BOOTSTRAP_PASSWORD=Admin@RIT2026!
 ```
 
 ### Running Locally
