@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Trophy, CreditCard, KeyRound, FileCheck, Gift, Settings, ScrollText, LogOut, Menu, X, ShieldCheck, Globe } from 'lucide-react';
+import { LayoutDashboard, Trophy, CalendarDays, CreditCard, KeyRound, FileCheck, Gift, Settings, ScrollText, LogOut, Menu, X, ShieldCheck, Globe } from 'lucide-react';
 import { site } from '../../config/site.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 const navItems = [
   ['Dashboard', '/admin/dashboard', LayoutDashboard],
   ['Tournaments', '/admin/tournaments', Trophy],
+  ['Match Sessions', '/admin/seasons', CalendarDays],
   ['Registrations', '/admin/registrations', CreditCard],
   ['Room management', '/admin/rooms', KeyRound],
   ['Results & review', '/admin/results', FileCheck],

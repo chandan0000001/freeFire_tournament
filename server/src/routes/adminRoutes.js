@@ -7,6 +7,7 @@ import { ROLES } from '../constants/roles.js';
 import {
   createTournament,
   updateTournament,
+  updateTournamentSessions,
   updateTournamentStatus,
   deleteTournament,
 } from '../controllers/tournamentController.js';
@@ -64,6 +65,7 @@ router.get('/dashboard/stats', getDashboardStats);
 router.get('/tournaments', getAdminTournaments);
 router.post('/tournaments', transactional(createTournament));
 router.patch('/tournaments/:id', transactional(updateTournament));
+router.patch('/tournaments/:id/sessions', transactional(updateTournamentSessions));
 router.patch('/tournaments/:id/status', transactional(updateTournamentStatus));
 router.delete('/tournaments/:id', transactional(deleteTournament));
 

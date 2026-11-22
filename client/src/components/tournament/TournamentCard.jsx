@@ -17,6 +17,9 @@ export default function TournamentCard({ tournament: t }) {
         year: 'numeric',
       });
   const recipientLabel = t.format === 'squad' ? 'Team Leader' : 'Player';
+  const morning = t.matchSessions?.morning || { totalMatches: 5, completedMatches: 0 };
+  const afternoon = t.matchSessions?.afternoon || { totalMatches: 4, completedMatches: 0 };
+  const evening = t.matchSessions?.evening || { totalMatches: 4, completedMatches: 0 };
 
   return (
     <article className="tournament-card">
@@ -46,6 +49,28 @@ export default function TournamentCard({ tournament: t }) {
             <MapPin size={15} />
             {t.map || 'Map pending'}
           </span>
+        </div>
+
+        {/* Match Sessions Progress (Morning 5, Afternoon 4, Evening 4) */}
+        <div className="grid grid-cols-3 gap-1.5 my-2.5 p-2 rounded-xl bg-[#140b10] border border-[#39242d] text-center">
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-slate-400">Morning</span>
+            <span className="text-[11px] font-mono font-bold text-amber-300">
+              {morning.completedMatches}/{morning.totalMatches} done
+            </span>
+          </div>
+          <div className="flex flex-col border-x border-[#39242d]">
+            <span className="text-[10px] uppercase font-bold text-slate-400">Afternoon</span>
+            <span className="text-[11px] font-mono font-bold text-brand-orange">
+              {afternoon.completedMatches}/{afternoon.totalMatches} done
+            </span>
+          </div>
+          <div className="flex flex-col">
+            <span className="text-[10px] uppercase font-bold text-slate-400">Evening</span>
+            <span className="text-[11px] font-mono font-bold text-emerald-400">
+              {evening.completedMatches}/{evening.totalMatches} done
+            </span>
+          </div>
         </div>
 
         <div className="card-metrics">

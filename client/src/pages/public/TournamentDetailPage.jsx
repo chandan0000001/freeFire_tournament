@@ -78,6 +78,9 @@ export default function TournamentDetailPage() {
   }
 
   const availability = tournamentAvailability(tournament);
+  const morning = tournament.matchSessions?.morning || { totalMatches: 5, completedMatches: 0, timeRange: '10:00 AM – 12:30 PM' };
+  const afternoon = tournament.matchSessions?.afternoon || { totalMatches: 4, completedMatches: 0, timeRange: '2:00 PM – 4:30 PM' };
+  const evening = tournament.matchSessions?.evening || { totalMatches: 4, completedMatches: 0, timeRange: '6:00 PM – 8:30 PM' };
   const isMarkedFull = tournament.status === 'full' || tournament.registeredSlots >= tournament.maxSlots;
   const displayRegisteredSlots = availability.registered;
   const remaining = availability.remaining;
@@ -231,6 +234,56 @@ export default function TournamentDetailPage() {
               <p className="text-sm text-slate-300 leading-relaxed">
                 {tournament.description || 'Welcome to this week’s official Free Fire tournament! Bring your best gameplay and battle for the Booyah.'}
               </p>
+            </div>
+
+            {/* Match Sessions Progress */}
+            <div className="p-6 rounded-xl bg-[#1c1b1e] border border-[#393236] space-y-4">
+              <h3 className="font-display text-xl font-bold uppercase text-white flex items-center gap-2">
+                <Clock className="w-5 h-5 text-brand-orange" /> Match Sessions Progress
+              </h3>
+              <p className="text-xs text-slate-400">
+                Matches are hosted across 3 time windows. Check completed matches versus open games available for registration.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                <div className="p-4 rounded-xl bg-[#111214] border border-amber-500/30">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="font-bold text-amber-300 uppercase">Morning</span>
+                    <span className="text-[10px] text-slate-400 font-mono">10:00 AM – 12:30 PM</span>
+                  </div>
+                  <div className="font-display text-xl font-extrabold text-white">
+                    {morning.completedMatches} / {morning.totalMatches} <span className="text-xs font-normal text-slate-400">done</span>
+                  </div>
+                  <span className="text-[11px] text-amber-300/80 mt-1 block">
+                    {Math.max(0, morning.totalMatches - morning.completedMatches)} matches open
+                  </span>
+                </div>
+
+                <div className="p-4 rounded-xl bg-[#111214] border border-brand-orange/30">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="font-bold text-brand-orange uppercase">Afternoon</span>
+                    <span className="text-[10px] text-slate-400 font-mono">2:00 PM – 4:30 PM</span>
+                  </div>
+                  <div className="font-display text-xl font-extrabold text-white">
+                    {afternoon.completedMatches} / {afternoon.totalMatches} <span className="text-xs font-normal text-slate-400">done</span>
+                  </div>
+                  <span className="text-[11px] text-brand-orange/80 mt-1 block">
+                    {Math.max(0, afternoon.totalMatches - afternoon.completedMatches)} matches open
+                  </span>
+                </div>
+
+                <div className="p-4 rounded-xl bg-[#111214] border border-emerald-500/30">
+                  <div className="flex items-center justify-between text-xs mb-1">
+                    <span className="font-bold text-emerald-300 uppercase">Evening</span>
+                    <span className="text-[10px] text-slate-400 font-mono">6:00 PM – 8:30 PM</span>
+                  </div>
+                  <div className="font-display text-xl font-extrabold text-white">
+                    {evening.completedMatches} / {evening.totalMatches} <span className="text-xs font-normal text-slate-400">done</span>
+                  </div>
+                  <span className="text-[11px] text-emerald-300/80 mt-1 block">
+                    {Math.max(0, evening.totalMatches - evening.completedMatches)} matches open
+                  </span>
+                </div>
+              </div>
             </div>
 
             {/* Prize Breakdown */}

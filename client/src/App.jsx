@@ -35,6 +35,7 @@ const ResetPasswordPage = lazy(() => import('./pages/public/ResetPasswordPage.js
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout.jsx'));
 const AdminDashboardOverview = lazy(() => import('./pages/admin/AdminDashboardOverview.jsx'));
 const AdminTournaments = lazy(() => import('./pages/admin/AdminTournaments.jsx'));
+const AdminSeasons = lazy(() => import('./pages/admin/AdminSeasons.jsx'));
 const AdminRegistrations = lazy(() => import('./pages/admin/AdminRegistrations.jsx'));
 const AdminRooms = lazy(() => import('./pages/admin/AdminRooms.jsx'));
 const AdminResultsReview = lazy(() => import('./pages/admin/AdminResultsReview.jsx'));
@@ -152,6 +153,7 @@ export default function App() {
                 <Route index element={<Navigate to="/admin/dashboard" replace />} />
                 <Route path="dashboard" element={<AdminDashboardOverview />} />
                 <Route path="tournaments" element={<AdminTournaments />} />
+                <Route path="seasons" element={<AdminSeasons />} />
                 <Route path="registrations" element={<AdminRegistrations />} />
                 <Route path="rooms" element={<AdminRooms />} />
                 <Route path="results" element={<AdminResultsReview />} />

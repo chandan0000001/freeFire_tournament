@@ -245,32 +245,6 @@ export default function SoloRegisterPage() {
         </div>
       </div>
 
-      {/* Instant WhatsApp Support & 100% Refund Guarantee */}
-      <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
-        <div className="flex items-start sm:items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5 sm:mt-0">
-            <MessageCircle className="w-4 h-4" />
-          </div>
-          <div className="text-xs space-y-0.5">
-            <strong className="text-emerald-300 block font-bold uppercase tracking-wider">
-              Slot Support & Instant Refund Assistance
-            </strong>
-            <p className="text-emerald-200/70 leading-relaxed">
-              Session full or need help registering? WhatsApp Admin at +91 81146 03994. If unable to enter the match, immediate 100% UPI refund is sent to your account.
-            </p>
-          </div>
-        </div>
-        <a
-          href={`https://wa.me/918114603994?text=${encodeURIComponent(`Hello Rahul Esports Admin! I am registering for "${tournament.title}". Please guide me on open solo slots or refund if slot is unavailable.`)}`}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider transition-colors shrink-0 shadow-lg"
-        >
-          <MessageCircle className="w-4 h-4" />
-          <span>WhatsApp Admin</span>
-        </a>
-      </div>
-
       {/* Error Alert */}
       {error && (
         <div className="p-4 rounded-xl bg-rose-950/80 border border-rose-500/40 text-rose-300 text-xs sm:text-sm flex items-center gap-2.5">
@@ -292,13 +266,36 @@ export default function SoloRegisterPage() {
                 Select Preferred Match Session
               </h2>
               <p className="text-xs text-slate-400 mt-1">
-                Choose the time window you prefer. If a section is full, Admin will coordinate with your WhatsApp.
+                Choose the time window you prefer. Track how many matches are completed versus open.
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-              {TIME_SLOTS.map((slot) => {
+              {[
+                {
+                  id: 'morning',
+                  label: 'Morning Slot',
+                  time: tournament.matchSessions?.morning?.timeRange || '10:00 AM – 12:30 PM',
+                  total: tournament.matchSessions?.morning?.totalMatches ?? 5,
+                  completed: tournament.matchSessions?.morning?.completedMatches ?? 0,
+                },
+                {
+                  id: 'afternoon',
+                  label: 'Afternoon Slot',
+                  time: tournament.matchSessions?.afternoon?.timeRange || '2:00 PM – 4:30 PM',
+                  total: tournament.matchSessions?.afternoon?.totalMatches ?? 4,
+                  completed: tournament.matchSessions?.afternoon?.completedMatches ?? 0,
+                },
+                {
+                  id: 'evening',
+                  label: 'Evening Slot',
+                  time: tournament.matchSessions?.evening?.timeRange || '6:00 PM – 8:30 PM',
+                  total: tournament.matchSessions?.evening?.totalMatches ?? 4,
+                  completed: tournament.matchSessions?.evening?.completedMatches ?? 0,
+                },
+              ].map((slot) => {
                 const isSelected = preferredSlot === slot.id;
+                const remainingMatches = Math.max(0, slot.total - slot.completed);
                 return (
                   <button
                     key={slot.id}
@@ -320,7 +317,7 @@ export default function SoloRegisterPage() {
                       {slot.time}
                     </div>
                     <span className="text-[11px] text-slate-400 block mt-1">
-                      {slot.matches} scheduled
+                      {slot.total} Matches · <strong className="text-amber-300 font-mono">{slot.completed} done</strong> ({remainingMatches} open)
                     </span>
                   </button>
                 );

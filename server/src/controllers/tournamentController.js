@@ -246,6 +246,66 @@ export const deleteTournament = async (req, res, next) => {
   }
 };
 
+export const updateTournamentSessions = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const tournament = await Tournament.findById(id);
+    if (!tournament) {
+      return res.status(404).json({ success: false, message: 'Tournament not found' });
+    }
+
+    const sessions = req.body.matchSessions || req.body;
+    if (!sessions || typeof sessions !== 'object') {
+      return res.status(400).json({ success: false, message: 'Invalid match sessions payload' });
+    }
+
+    const currentSessions = tournament.matchSessions || {};
+
+    const updatedSessions = {
+      morning: {
+        totalMatches: Math.max(1, Number(sessions.morning?.totalMatches ?? currentSessions.morning?.totalMatches ?? 5)),
+        completedMatches: Math.max(0, Number(sessions.morning?.completedMatches ?? currentSessions.morning?.completedMatches ?? 0)),
+        timeRange: sessions.morning?.timeRange || currentSessions.morning?.timeRange || '10:00 AM – 12:30 PM',
+        isOpen: sessions.morning?.isOpen !== undefined ? Boolean(sessions.morning.isOpen) : (currentSessions.morning?.isOpen ?? true),
+      },
+      afternoon: {
+        totalMatches: Math.max(1, Number(sessions.afternoon?.totalMatches ?? currentSessions.afternoon?.totalMatches ?? 4)),
+        completedMatches: Math.max(0, Number(sessions.afternoon?.completedMatches ?? currentSessions.afternoon?.completedMatches ?? 0)),
+        timeRange: sessions.afternoon?.timeRange || currentSessions.afternoon?.timeRange || '2:00 PM – 4:30 PM',
+        isOpen: sessions.afternoon?.isOpen !== undefined ? Boolean(sessions.afternoon.isOpen) : (currentSessions.afternoon?.isOpen ?? true),
+      },
+      evening: {
+        totalMatches: Math.max(1, Number(sessions.evening?.totalMatches ?? currentSessions.evening?.totalMatches ?? 4)),
+        completedMatches: Math.max(0, Number(sessions.evening?.completedMatches ?? currentSessions.evening?.completedMatches ?? 0)),
+        timeRange: sessions.evening?.timeRange || currentSessions.evening?.timeRange || '6:00 PM – 8:30 PM',
+        isOpen: sessions.evening?.isOpen !== undefined ? Boolean(sessions.evening.isOpen) : (currentSessions.evening?.isOpen ?? true),
+      },
+    };
+
+    tournament.matchSessions = updatedSessions;
+    await tournament.save();
+
+    await logAudit({
+      action: 'TOURNAMENT_SESSIONS_UPDATED',
+      performedBy: req.user,
+      targetEntity: 'Tournament',
+      targetId: id,
+      details: `Updated match sessions for "${tournament.title}": Morning ${updatedSessions.morning.completedMatches}/${updatedSessions.morning.totalMatches}, Afternoon ${updatedSessions.afternoon.completedMatches}/${updatedSessions.afternoon.totalMatches}, Evening ${updatedSessions.evening.completedMatches}/${updatedSessions.evening.totalMatches}`,
+      changes: updatedSessions,
+      ipAddress: req.ip,
+    });
+
+    res.json({
+      success: true,
+      message: 'Tournament match sessions updated successfully',
+      tournament,
+      matchSessions: updatedSessions,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getAdminTournaments = async (req, res, next) => {
   try {
     const tournaments = await Tournament.find().sort({ matchDate: -1 }).lean();
@@ -254,6 +314,6 @@ export const getAdminTournaments = async (req, res, next) => {
 };
 
 function editableTournament(body) {
-  const fields = ['title', 'slug', 'description', 'format', 'entryFee', 'maxSlots', 'registrationStart', 'registrationEnd', 'matchDate', 'status', 'scoringConfig', 'prizeConfig', 'rules', 'map', 'bannerUrl', 'isPublic'];
+  const fields = ['title', 'slug', 'description', 'format', 'entryFee', 'maxSlots', 'registrationStart', 'registrationEnd', 'matchDate', 'status', 'scoringConfig', 'prizeConfig', 'rules', 'map', 'bannerUrl', 'isPublic', 'matchSessions'];
   return Object.fromEntries(fields.filter(key => Object.hasOwn(body, key)).map(key => [key, body[key]]));
 }

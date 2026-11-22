@@ -39,6 +39,34 @@ const prizeConfigSchema = new mongoose.Schema(
   { _id: false }
 );
 
+const sessionSlotSchema = new mongoose.Schema(
+  {
+    totalMatches: { type: Number, default: 5, min: 1 },
+    completedMatches: { type: Number, default: 0, min: 0 },
+    timeRange: { type: String, default: '' },
+    isOpen: { type: Boolean, default: true },
+  },
+  { _id: false }
+);
+
+const matchSessionsSchema = new mongoose.Schema(
+  {
+    morning: {
+      type: sessionSlotSchema,
+      default: () => ({ totalMatches: 5, completedMatches: 0, timeRange: '10:00 AM – 12:30 PM', isOpen: true }),
+    },
+    afternoon: {
+      type: sessionSlotSchema,
+      default: () => ({ totalMatches: 4, completedMatches: 0, timeRange: '2:00 PM – 4:30 PM', isOpen: true }),
+    },
+    evening: {
+      type: sessionSlotSchema,
+      default: () => ({ totalMatches: 4, completedMatches: 0, timeRange: '6:00 PM – 8:30 PM', isOpen: true }),
+    },
+  },
+  { _id: false }
+);
+
 const tournamentSchema = new mongoose.Schema(
   {
     title: {
@@ -121,6 +149,10 @@ const tournamentSchema = new mongoose.Schema(
     isPublic: {
       type: Boolean,
       default: true,
+    },
+    matchSessions: {
+      type: matchSessionsSchema,
+      default: () => ({}),
     },
   },
   {
