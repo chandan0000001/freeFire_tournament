@@ -38,7 +38,7 @@ Players and administrators sign in at `/login`. Configure `ADMIN_BOOTSTRAP_EMAIL
 
 ## Artwork and responsive layout
 
-The approved squad hero, Chilika artwork, account artwork and Rahul portrait are preserved. New Konark squad artwork replaces legacy game banners, and a centred champion portrait fits the registration panel. On phones, the registration image and caption occupy separate rows.
+The approved squad hero, Chilika artwork, account artwork and Rahul portrait are preserved. Legacy generic game banners, character images and the unused social-preview image have been removed from the public asset folder. New Konark squad artwork replaces legacy game banners, and a centred champion portrait fits the registration panel. On phones, the registration image and caption occupy separate rows.
 
 Public asset configuration:
 

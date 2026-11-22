@@ -37,8 +37,8 @@ export default function AdminTournaments() {
   ];
 
   const RANDOM_BANNERS = [
-    '/images/odisha-squad.webp',
-    '/images/chilika-solo.webp',
+    site.tournamentImage,
+    site.soloImage,
   ];
 
   // Form state

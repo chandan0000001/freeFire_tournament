@@ -27,6 +27,6 @@ export const site = Object.freeze({
 
 export function tournamentArtwork(tournament) {
   const banner = tournament?.bannerUrl;
-  if (banner && !/^\/images\/(?:odisha-arena|ff-banner(?:-[\w-]+)?)\.webp$/.test(banner)) return banner;
+  if (banner && !/^\/images\/(?:odisha-arena|og-image|ff-(?:banner|character)(?:-[\w-]+)?)\.webp$/.test(banner)) return banner;
   return tournament?.format === 'solo' ? site.soloImage : site.tournamentImage;
 }
