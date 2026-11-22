@@ -11,11 +11,13 @@ import {
   Copy, 
   ExternalLink,
   Zap,
+  Coins,
+  CreditCard,
   QrCode
 } from 'lucide-react';
 
 export default function SquadRegisterPage() {
-  usePageMeta('Squad Registration (4 Players) | RIT Esports Arena', 'Register your 4-player Free Fire squad for the upcoming RIT tournament. Instant UPI reservation and room credential dispatch.');
+  usePageMeta('Squad Registration (4 Players) | Rahul Esports Odisha', 'Register your 4-player Free Fire squad for the upcoming tournament. In-app coin entry and room credential dispatch.');
   const { tournamentId } = useParams();
   const navigate = useNavigate();
 
@@ -25,6 +27,7 @@ export default function SquadRegisterPage() {
   const [error, setError] = useState('');
   const [successData, setSuccessData] = useState(null);
   const [copied, setCopied] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState('WALLET_COINS'); // 'WALLET_COINS' | 'MANUAL_UPI'
 
   // Form state
   const [teamName, setTeamName] = useState('');
@@ -148,12 +151,20 @@ export default function SquadRegisterPage() {
         players: sanitizedPlayers,
       };
 
-      const res = await api.post('/registrations/squad', payload);
+      const endpoint = paymentMethod === 'WALLET_COINS'
+        ? `/tournaments/${tournamentId}/join-with-coins`
+        : '/registrations/squad';
+
+      const res = await api.post(endpoint, payload);
       if (res.success) {
         setSuccessData(res);
       }
     } catch (err) {
-      setError(err.message || 'Squad registration failed. Please check your inputs.');
+      if (err.message && err.message.includes('Insufficient coins')) {
+        setError(`${err.message} You can top up coins in your Player Wallet.`);
+      } else {
+        setError(err.message || 'Squad registration failed. Please check your inputs.');
+      }
     } finally {
       setSubmitting(false);
     }
@@ -177,6 +188,8 @@ export default function SquadRegisterPage() {
   // Success Modal State after Submission
   if (successData) {
     const { registration, paymentInstructions } = successData;
+    const isCoinsPaid = registration?.paymentStatus === 'verified';
+
     return (
       <div className="max-w-xl mx-auto px-4 py-10">
         <div className="p-6 sm:p-8 rounded-2xl bg-[#121722] border border-emerald-500/40 text-center space-y-6 shadow-2xl">
@@ -185,12 +198,14 @@ export default function SquadRegisterPage() {
           </div>
 
           <div>
-            <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">Slot Reserved — Payment Required</span>
+            <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">
+              {isCoinsPaid ? 'Slot Confirmed & Payment Verified' : 'Slot Reserved — Payment Required'}
+            </span>
             <h2 className="font-display text-2xl sm:text-3xl font-extrabold uppercase text-white mt-1">
-              {registration.teamName}
+              {registration?.teamName}
             </h2>
             <p className="text-xs text-slate-300 mt-0.5">
-              Tournament: <strong>{registration.tournamentTitle}</strong>
+              Tournament: <strong>{registration?.tournamentTitle || tournament?.title}</strong>
             </p>
           </div>
 
@@ -198,10 +213,10 @@ export default function SquadRegisterPage() {
           <div className="p-4 rounded-xl bg-[#0B0E14] border border-[#1F293D] flex items-center justify-between">
             <div className="text-left">
               <p className="text-[10px] uppercase font-bold text-slate-400">Registration Reference ID</p>
-              <p className="font-mono text-xl font-bold text-brand-orange">{registration.referenceId}</p>
+              <p className="font-mono text-xl font-bold text-brand-orange">{registration?.referenceId}</p>
             </div>
             <button
-              onClick={() => copyToClipboard(registration.referenceId)}
+              onClick={() => copyToClipboard(registration?.referenceId || '')}
               className="px-3 py-1.5 rounded-lg bg-[#161B26] text-xs text-slate-300 hover:text-white flex items-center gap-1.5 border border-[#1F293D]"
             >
               <Copy className="w-3.5 h-3.5" />
@@ -209,78 +224,102 @@ export default function SquadRegisterPage() {
             </button>
           </div>
 
+          {/* Wallet Coins Paid Instant Notice */}
+          {isCoinsPaid && (
+            <div className="p-5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-center space-y-2">
+              <span className="font-display font-extrabold text-base text-emerald-400 uppercase">
+                🪙 Paid with {tournament?.entryFee || 29} Wallet Coins
+              </span>
+              <p className="text-xs text-slate-300">
+                Your squad slot is officially verified and locked. Custom Room ID and Password will be dispatched directly to <strong>{captain.email}</strong> before match kick-off.
+              </p>
+              <div className="pt-2">
+                <Link
+                  to="/tournaments"
+                  className="inline-block px-5 py-2 rounded-xl bg-brand-orange hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-wider"
+                >
+                  Return to Tournaments
+                </Link>
+              </div>
+            </div>
+          )}
+
           {/* UPI Payment Instructions Card */}
-          <div className="p-5 rounded-xl bg-[#0B0E14] border border-brand-amber/30 text-left space-y-4">
-            <div className="flex items-center justify-between border-b border-[#1F293D] pb-3">
-              <div>
-                <span className="text-[10px] font-bold uppercase text-brand-amber">Payment Details</span>
-                <p className="text-xs text-slate-300">
-                  Payee: <strong className="text-white">{paymentInstructions.payeeName || 'Srikant Panda'}</strong>
-                </p>
-              </div>
-              <div className="text-right">
-                <span className="text-[10px] font-bold uppercase text-slate-400">Amount</span>
-                <p className="font-display text-xl font-extrabold text-emerald-400">₹{registration.entryFee}</p>
-              </div>
-            </div>
-
-            {/* UPI ID with 1-click copy */}
-            <div className="flex items-center justify-between p-3 rounded-lg bg-[#161B26] border border-[#1F293D]">
-              <div>
-                <span className="text-[10px] uppercase font-bold text-slate-400 block">UPI ID</span>
-                <span className="font-mono font-bold text-sm text-cyan-400">{paymentInstructions.upiId}</span>
-              </div>
-              <button
-                onClick={() => copyToClipboard(paymentInstructions.upiId)}
-                className="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 flex items-center gap-1"
-              >
-                <Copy className="w-3 h-3" /> Copy UPI
-              </button>
-            </div>
-
-            {/* Scannable Dynamic QR Code */}
-            {paymentInstructions.qrCodeUrl && (
-              <div className="text-center py-2 space-y-2">
-                <div className="inline-block p-2 rounded-xl bg-white shadow-md">
-                  <img
-                    src={paymentInstructions.qrCodeUrl}
-                    alt="Scan UPI QR Code"
-                    className="w-44 h-44 object-contain mx-auto"
-                  />
+          {!isCoinsPaid && paymentInstructions && (
+            <>
+              <div className="p-5 rounded-xl bg-[#0B0E14] border border-brand-amber/30 text-left space-y-4">
+                <div className="flex items-center justify-between border-b border-[#1F293D] pb-3">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase text-brand-amber">Payment Details</span>
+                    <p className="text-xs text-slate-300">
+                      Payee: <strong className="text-white">{paymentInstructions.payeeName || 'Admin'}</strong>
+                    </p>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-[10px] font-bold uppercase text-slate-400">Amount</span>
+                    <p className="font-display text-xl font-extrabold text-emerald-400">₹{registration.entryFee}</p>
+                  </div>
                 </div>
-                <p className="text-[11px] text-slate-400">
-                  Scan with <strong>Google Pay</strong>, <strong>PhonePe</strong>, or <strong>Paytm</strong>
-                </p>
+
+                {/* UPI ID with 1-click copy */}
+                <div className="flex items-center justify-between p-3 rounded-lg bg-[#161B26] border border-[#1F293D]">
+                  <div>
+                    <span className="text-[10px] uppercase font-bold text-slate-400 block">UPI ID</span>
+                    <span className="font-mono font-bold text-sm text-cyan-400">{paymentInstructions.upiId}</span>
+                  </div>
+                  <button
+                    onClick={() => copyToClipboard(paymentInstructions.upiId)}
+                    className="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 flex items-center gap-1"
+                  >
+                    <Copy className="w-3 h-3" /> Copy UPI
+                  </button>
+                </div>
+
+                {/* Scannable Dynamic QR Code */}
+                {paymentInstructions.qrCodeUrl && (
+                  <div className="text-center py-2 space-y-2">
+                    <div className="inline-block p-2 rounded-xl bg-white shadow-md">
+                      <img
+                        src={paymentInstructions.qrCodeUrl}
+                        alt="Scan UPI QR Code"
+                        className="w-44 h-44 object-contain mx-auto"
+                      />
+                    </div>
+                    <p className="text-[11px] text-slate-400">
+                      Scan with <strong>Google Pay</strong>, <strong>PhonePe</strong>, or <strong>Paytm</strong>
+                    </p>
+                  </div>
+                )}
+
+                {/* 1-Tap Mobile UPI App Link */}
+                {paymentInstructions.upiDeepLink && (
+                  <a
+                    href={paymentInstructions.upiDeepLink}
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-110 text-white font-display font-bold uppercase tracking-wider text-xs shadow-md transition-all flex items-center justify-center gap-2"
+                  >
+                    <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+                    Pay ₹{registration.entryFee} via Any UPI App (Mobile Only)
+                  </a>
+                )}
               </div>
-            )}
 
-            {/* 1-Tap Mobile UPI App Link */}
-            {paymentInstructions.upiDeepLink && (
-              <a
-                href={paymentInstructions.upiDeepLink}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-110 text-white font-display font-bold uppercase tracking-wider text-xs shadow-md transition-all flex items-center justify-center gap-2"
-              >
-                <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
-                Pay ₹{registration.entryFee} via Any UPI App (Mobile Only)
-              </a>
-            )}
-          </div>
-
-          {/* 1-Tap WhatsApp CTA Button */}
-          <div className="space-y-2">
-            <p className="text-xs text-slate-400 text-left">
-              After payment, click below to send your screenshot & UTR to the admin:
-            </p>
-            <a
-              href={paymentInstructions.whatsappChatUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold uppercase tracking-wider text-sm transition-all shadow-lg flex items-center justify-center gap-2"
-            >
-              <MessageCircle className="w-5 h-5 fill-slate-950" />
-              Send Payment Screenshot on WhatsApp
-            </a>
-          </div>
+              {/* 1-Tap WhatsApp CTA Button */}
+              <div className="space-y-2">
+                <p className="text-xs text-slate-400 text-left">
+                  After payment, click below to send your screenshot & UTR to the admin:
+                </p>
+                <a
+                  href={paymentInstructions.whatsappChatUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold uppercase tracking-wider text-sm transition-all shadow-lg flex items-center justify-center gap-2"
+                >
+                  <MessageCircle className="w-5 h-5 fill-slate-950" />
+                  Send Payment Screenshot on WhatsApp
+                </a>
+              </div>
+            </>
+          )}
 
           <div className="pt-1">
             <Link to="/status" className="text-xs text-slate-400 hover:text-brand-orange underline">
@@ -457,6 +496,60 @@ export default function SquadRegisterPage() {
           </div>
         </div>
 
+        {/* Section 3: Payment Method Selection */}
+        <div className="space-y-3 pt-2">
+          <label className="block text-xs font-bold text-slate-300 uppercase">
+            3. Select Entry Fee Payment Method
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <button
+              type="button"
+              onClick={() => setPaymentMethod('WALLET_COINS')}
+              className={`p-4 rounded-xl border text-left transition-all ${
+                paymentMethod === 'WALLET_COINS'
+                  ? 'border-brand-orange bg-brand-orange/15 shadow-glow-orange'
+                  : 'border-[#1F293D] bg-[#0B0E14] hover:border-slate-600'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-display font-bold text-sm text-white flex items-center gap-1.5">
+                  <Coins className="w-4 h-4 text-brand-orange" />
+                  <span>Pay with Wallet Coins</span>
+                </span>
+                <span className="text-[10px] bg-emerald-950/80 text-emerald-300 font-bold px-2 py-0.5 rounded border border-emerald-500/30">
+                  Instant Verification
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1">
+                Deduct {tournament?.entryFee || 29} Coins from your wallet. 0ms wait, instant slot confirmation!
+              </p>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setPaymentMethod('MANUAL_UPI')}
+              className={`p-4 rounded-xl border text-left transition-all ${
+                paymentMethod === 'MANUAL_UPI'
+                  ? 'border-brand-amber bg-brand-amber/15 shadow-md'
+                  : 'border-[#1F293D] bg-[#0B0E14] hover:border-slate-600'
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="font-display font-bold text-sm text-white flex items-center gap-1.5">
+                  <CreditCard className="w-4 h-4 text-brand-amber" />
+                  <span>Manual UPI Transfer</span>
+                </span>
+                <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">
+                  Manual Review
+                </span>
+              </div>
+              <p className="text-[11px] text-slate-400 mt-1">
+                Pay ₹{tournament?.entryFee || 29} via GPay/PhonePe and submit your 12-digit UTR.
+              </p>
+            </button>
+          </div>
+        </div>
+
         {/* Agreement Checkbox */}
         <div className="pt-2">
           <label className="flex items-start gap-2.5 cursor-pointer">
@@ -467,7 +560,7 @@ export default function SquadRegisterPage() {
               className="mt-1 w-4 h-4 rounded text-brand-orange focus:ring-0 bg-[#0B0E14] border-[#1F293D]"
             />
             <span className="text-xs text-slate-300 leading-relaxed">
-              I certify that all players are legitimate RIT college students, will play only on mobile devices (no PC emulators/hacks), and agree to send the ₹29 entry fee via UPI to confirm our slot.
+              I certify that all players will play only on mobile devices (no PC emulators/hacks) and agree to Rahul Esports official tournament rules.
             </span>
           </label>
         </div>
@@ -478,7 +571,11 @@ export default function SquadRegisterPage() {
           disabled={submitting}
           className="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber font-display font-bold uppercase tracking-wider text-white text-base shadow-glow-orange hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
         >
-          {submitting ? 'Reserving Squad Slot...' : `Submit Squad Registration (₹${tournament?.entryFee || 29})`}
+          {submitting ? 'Confirming Squad Slot...' : (
+            paymentMethod === 'WALLET_COINS'
+              ? `Confirm Slot with ${tournament?.entryFee || 29} Coins (Instant)`
+              : `Reserve Slot & Pay via UPI (₹${tournament?.entryFee || 29})`
+          )}
         </button>
 
       </form>

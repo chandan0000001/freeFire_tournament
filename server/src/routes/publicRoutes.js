@@ -9,6 +9,12 @@ import {
 import { getLeaderboards, getWinners, getPlayerProfile } from '../controllers/leaderboardController.js';
 import { getPublishedResults } from '../controllers/resultController.js';
 import { getPublicSettings } from '../controllers/settingController.js';
+import {
+  getWalletByEmail,
+  createDepositRequest,
+  createWithdrawalRequest,
+  joinTournamentWithCoins,
+} from '../controllers/walletController.js';
 import { upload } from '../middleware/upload.js';
 import { registrationLimiter } from '../middleware/rateLimiter.js';
 
@@ -17,6 +23,13 @@ const router = express.Router();
 // Tournaments
 router.get('/tournaments', getTournaments);
 router.get('/tournaments/:slug', getTournamentBySlug);
+router.post('/tournaments/:id/join-with-coins', joinTournamentWithCoins);
+
+// Wallet & Coins (Player Facing)
+router.get('/wallet/:email', getWalletByEmail);
+router.post('/wallet/lookup', getWalletByEmail);
+router.post('/wallet/deposit', createDepositRequest);
+router.post('/wallet/withdraw', createWithdrawalRequest);
 
 // Registrations (No OTP needed, rate limited)
 router.post('/registrations/squad', registrationLimiter, registerSquad);

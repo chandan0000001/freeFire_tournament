@@ -60,16 +60,17 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Static uploads directory (for screenshot evidence)
 app.use('/uploads', express.static(path.resolve('uploads')));
 
-// Root Welcome & Ping Route (prevents 404 when visiting primary Render URL)
+// Root Welcome & Ping Route (prevents 404 when visiting primary backend URL)
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'RIT Esports Arena API Server is LIVE and healthy',
-    version: '1.0.0',
+    message: 'Rahul Esports Arena API Server is LIVE and healthy',
+    version: '2.0.0',
     endpoints: {
       health: '/api/health',
       tournaments: '/api/tournaments',
       leaderboard: '/api/leaderboards',
+      wallet: '/api/wallet/:email',
       settings: '/api/settings/public',
     },
     clientOrigin: process.env.CLIENT_URL || 'https://rittournament.vercel.app',
@@ -85,7 +86,7 @@ app.head('/', (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    service: 'RIT Esports Arena API',
+    service: 'Rahul Esports Arena API',
     timestamp: new Date().toISOString(),
     environment: process.env.NODE_ENV || 'development',
   });

@@ -138,8 +138,8 @@ const LEAGUE_STANDARDS = [
 
 function HomePage() {
   usePageMeta(
-    'RIT Esports Arena — Official College Free Fire League',
-    'Compete in weekly verified Free Fire tournaments organized exclusively for RIT college students. Custom rooms, Kill + Booyah scoring, and instant UPI cash prizes.'
+    'Rahul Esports Arena — Premier Free Fire League Odisha',
+    'Compete in weekly verified Free Fire tournaments organized by Rahul Esports Odisha. Custom rooms, Kill + Booyah scoring, and instant UPI cash prizes.'
   );
 
   const [tournaments, setTournaments] = useState(DEFAULT_FEATURED);
@@ -233,16 +233,16 @@ function HomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center max-w-3xl mx-auto space-y-4 sm:space-y-6">
             
-            {/* Top Pill with RIT College Crest & Live Status */}
+            {/* Top Pill with Brand Crest & Live Status */}
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-orange/10 border border-brand-orange/30 text-brand-orange text-[10px] sm:text-xs font-bold uppercase tracking-wider backdrop-blur-md shadow-sm">
               <img 
                 src="/images/rit-logo.webp" 
-                alt="RIT Crest" 
+                alt="Rahul Esports Crest" 
                 width="16" 
                 height="16" 
                 className="w-4 h-4 object-contain rounded-full" 
               />
-              <span>Roland Institute of Technology Free Fire League</span>
+              <span>Rahul Esports Free Fire League • Odisha</span>
               <span className="w-1.5 h-1.5 rounded-full bg-brand-orange shadow-[0_0_6px_rgba(255,87,34,0.9)]"></span>
             </div>
 
@@ -256,7 +256,7 @@ function HomePage() {
 
             {/* Sub-headline */}
             <p className="text-xs sm:text-base text-slate-300 leading-relaxed max-w-2xl mx-auto">
-              Weekly verified Free Fire custom rooms organized exclusively for RIT college students. Official Kill + Booyah scoring, observer-monitored anti-cheat, and instant UPI cash prizes.
+              Weekly verified Free Fire custom rooms organized by Rahul Esports Odisha. Official Kill + Booyah scoring, observer-monitored anti-cheat, and instant UPI cash prizes.
             </p>
 
             {/* Value Props Pill Row */}
@@ -265,7 +265,7 @@ function HomePage() {
                 <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> ₹29 Squad / ₹14 Solo
               </span>
               <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#121722]/90 border border-[#1F293D]">
-                <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Email Room Credentials
+                <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> In-App Coin Wallet
               </span>
               <span className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#121722]/90 border border-[#1F293D]">
                 <CheckCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Verified Scorecards
@@ -281,14 +281,22 @@ function HomePage() {
                 <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
                 Browse Tournaments
               </Link>
+
+              <Link
+                to="/wallet"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-[#141A26] text-amber-300 hover:text-white border border-amber-500/40 hover:border-amber-400 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2 shadow-sm"
+              >
+                <Coins className="w-4 h-4 text-brand-amber" />
+                Player Wallet & Coins
+              </Link>
               
               <a
                 href={whatsappUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-900/60 hover:border-emerald-400 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2"
+                className="w-full sm:w-auto px-5 py-3 rounded-xl bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-900/60 hover:border-emerald-400 font-semibold text-xs sm:text-sm transition-all flex items-center justify-center gap-2"
               >
-                <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5" />
+                <MessageCircle className="w-4 h-4" />
                 Join WhatsApp Community
               </a>
 

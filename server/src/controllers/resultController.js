@@ -3,6 +3,9 @@ import { Match } from '../models/Match.js';
 import { Tournament } from '../models/Tournament.js';
 import { Registration } from '../models/Registration.js';
 import { Prize } from '../models/Prize.js';
+import { Wallet } from '../models/Wallet.js';
+import { WalletTransaction, TRANSACTION_TYPES } from '../models/WalletTransaction.js';
+import { generateWalletRef } from '../utils/refGenerator.js';
 import { calculateEntryScore, rankParticipants } from '../services/scoringService.js';
 import { logAudit } from '../services/auditService.js';
 import { RESULT_STATUS, TOURNAMENT_STATUS } from '../constants/statuses.js';
@@ -181,6 +184,44 @@ export const publishMatchResult = async (req, res, next) => {
             },
             { upsert: true, new: true }
           );
+
+          // Auto-credit winning coins to winner's wallet if registration has an email
+          if (winnerEntry.registrationId) {
+            try {
+              const reg = await Registration.findById(winnerEntry.registrationId);
+              if (reg && reg.captain?.email) {
+                const winnerEmail = reg.captain.email.toLowerCase().trim();
+                let wallet = await Wallet.findOne({ userEmail: winnerEmail });
+                if (!wallet) {
+                  wallet = await Wallet.create({
+                    userEmail: winnerEmail,
+                    playerName: reg.captain.name || winnerEntry.participantName,
+                    phone: reg.captain.phone || '',
+                  });
+                }
+                const balBefore = wallet.totalCoins;
+                wallet.winningCoins = (wallet.winningCoins || 0) + tier.amount;
+                wallet.totalWonInr = (wallet.totalWonInr || 0) + tier.amount;
+                await wallet.save();
+
+                await WalletTransaction.create({
+                  walletId: wallet._id,
+                  userEmail: winnerEmail,
+                  type: TRANSACTION_TYPES.TOURNAMENT_WIN,
+                  amount: tier.amount,
+                  coinType: 'WINNING',
+                  status: 'COMPLETED',
+                  balanceBefore: balBefore,
+                  balanceAfter: wallet.totalCoins,
+                  description: `Prize for ${tier.title} in ${tournament.title}`,
+                  referenceId: generateWalletRef('WIN'),
+                  tournamentId: tournament._id,
+                });
+              }
+            } catch (walletErr) {
+              console.warn('Failed to auto-credit wallet prize:', walletErr.message);
+            }
+          }
         }
       }
     }

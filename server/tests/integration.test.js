@@ -54,8 +54,8 @@ test('Integration Test Suite', async (t) => {
     const squadRef = generateRegistrationRef('squad');
     const soloRef = generateRegistrationRef('solo');
 
-    assert.match(squadRef, /^RIT-FF-SQ-[A-Z0-9]{12}$/);
-    assert.match(soloRef, /^RIT-FF-SO-[A-Z0-9]{12}$/);
+    assert.match(squadRef, /^RE-FF-SQ-[A-Z0-9]{12}$/);
+    assert.match(soloRef, /^RE-FF-SO-[A-Z0-9]{12}$/);
   });
 
   await t.test('Room Credentials Security: credentials are never selected by default', async () => {

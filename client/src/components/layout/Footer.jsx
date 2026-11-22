@@ -10,30 +10,30 @@ function Footer() {
         {/* Main Grid: Compact 2-col on mobile, 4-col on desktop */}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 sm:gap-8">
           
-          {/* Brand Info with Official RIT Seal */}
+          {/* Brand Info with Official Seal */}
           <div className="space-y-3 sm:col-span-2 md:col-span-1">
             <Link to="/" className="inline-flex items-center gap-2.5 group">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-full p-0.5 bg-gradient-to-br from-brand-orange to-brand-amber shadow-glow-orange shrink-0">
                 <img
                   src="/images/rit-logo.webp"
-                  alt="Roland Institute of Technology"
+                  alt="Rahul Esports"
                   className="w-full h-full object-contain rounded-full bg-[#0B0E14]"
                 />
               </div>
               <div>
                 <span className="font-display font-bold text-base sm:text-lg text-white uppercase tracking-wider group-hover:text-brand-orange transition-colors">
-                  RIT <span className="text-brand-orange">Esports</span>
+                  Rahul <span className="text-brand-orange">Esports</span>
                 </span>
                 <span className="block text-[9px] uppercase tracking-widest text-slate-500 font-semibold">
-                  Roland Institute of Technology
+                  Odisha Free Fire League
                 </span>
               </div>
             </Link>
             <p className="text-[11px] sm:text-xs text-slate-400 leading-relaxed max-w-sm">
-              The official competitive Free Fire arena for RIT students. Weekly custom rooms, pure skill-based scoring, and verified cash prizes.
+              The official competitive Free Fire arena by Rahul Esports Odisha. Weekly custom rooms, pure skill-based scoring, in-app coin wallet, and verified UPI cash prizes.
             </p>
             <span className="inline-block bg-slate-800/80 text-brand-orange text-[10px] font-bold px-2 py-0.5 rounded border border-brand-orange/30">
-              Campus Exclusive Platform
+              Verified Gaming Platform
             </span>
           </div>
 
@@ -44,7 +44,8 @@ function Footer() {
             </h4>
             <ul className="space-y-1.5 text-[11px] sm:text-xs">
               <li><Link to="/tournaments" className="hover:text-brand-orange transition-colors">Active Tournaments</Link></li>
-              <li><Link to="/leaderboard" className="hover:text-brand-orange transition-colors">College Standings</Link></li>
+              <li><Link to="/wallet" className="text-amber-400 hover:text-amber-300 font-semibold transition-colors">🪙 Player Coin Wallet</Link></li>
+              <li><Link to="/leaderboard" className="hover:text-brand-orange transition-colors">Leaderboard Standings</Link></li>
               <li><Link to="/results" className="hover:text-brand-orange transition-colors">Match Results</Link></li>
               <li><Link to="/winners" className="hover:text-brand-orange transition-colors">Hall of Fame</Link></li>
               <li><Link to="/status" className="hover:text-brand-orange transition-colors">Registration Status</Link></li>

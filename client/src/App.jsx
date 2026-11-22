@@ -22,6 +22,7 @@ const ResultsPage = lazy(() => import('./pages/public/ResultsPage.jsx'));
 const WinnersPage = lazy(() => import('./pages/public/WinnersPage.jsx'));
 const RulesPage = lazy(() => import('./pages/public/RulesPage.jsx'));
 const PrivacyPolicyPage = lazy(() => import('./pages/public/PrivacyPolicyPage.jsx'));
+const WalletPage = lazy(() => import('./pages/public/WalletPage.jsx'));
 const NotFoundPage = lazy(() => import('./pages/public/NotFoundPage.jsx'));
 
 // Lazy-loaded Admin Pages
@@ -33,6 +34,7 @@ const AdminRegistrations = lazy(() => import('./pages/admin/AdminRegistrations.j
 const AdminRooms = lazy(() => import('./pages/admin/AdminRooms.jsx'));
 const AdminResultsReview = lazy(() => import('./pages/admin/AdminResultsReview.jsx'));
 const AdminPrizes = lazy(() => import('./pages/admin/AdminPrizes.jsx'));
+const AdminWithdrawals = lazy(() => import('./pages/admin/AdminWithdrawals.jsx'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings.jsx'));
 const AdminAuditLogs = lazy(() => import('./pages/admin/AdminAuditLogs.jsx'));
 
@@ -80,6 +82,7 @@ export default function App() {
                   <Route path="/rules" element={<PublicShell><RulesPage /></PublicShell>} />
                   <Route path="/contact" element={<PublicShell><RulesPage /></PublicShell>} />
                   <Route path="/privacy" element={<PublicShell><PrivacyPolicyPage /></PublicShell>} />
+                  <Route path="/wallet" element={<PublicShell><WalletPage /></PublicShell>} />
 
                   {/* Admin Auth & Dashboard */}
                   <Route path="/admin/login" element={<PublicShell><AdminLoginPage /></PublicShell>} />
@@ -98,6 +101,7 @@ export default function App() {
                     <Route path="rooms" element={<AdminRooms />} />
                     <Route path="results" element={<AdminResultsReview />} />
                     <Route path="prizes" element={<AdminPrizes />} />
+                    <Route path="withdrawals" element={<AdminWithdrawals />} />
                     <Route path="settings" element={<AdminSettings />} />
                     <Route path="audit-logs" element={<AdminAuditLogs />} />
                   </Route>

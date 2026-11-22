@@ -12,11 +12,13 @@ import {
   X, 
   MessageCircle, 
   Search,
+  Coins,
   ExternalLink
 } from 'lucide-react';
 
 const NAV_LINKS = [
   { name: 'Tournaments', path: '/tournaments', icon: Trophy },
+  { name: 'Wallet & Coins', path: '/wallet', icon: Coins },
   { name: 'Leaderboard', path: '/leaderboard', icon: Award },
   { name: 'Results', path: '/results', icon: Flame },
   { name: 'Winners', path: '/winners', icon: Users },
@@ -36,12 +38,12 @@ function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
-          {/* Logo & Brand with Official RIT Crest */}
+          {/* Logo & Brand: Rahul Esports Odisha */}
           <Link to="/" className="flex items-center gap-2.5 sm:gap-3 group shrink-0">
             <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full p-0.5 bg-gradient-to-br from-brand-orange to-brand-amber shadow-glow-orange group-hover:scale-105 transition-transform flex items-center justify-center shrink-0">
               <img
                 src="/images/rit-logo.webp"
-                alt="Roland Institute of Technology Logo"
+                alt="Rahul Esports Logo"
                 width="44"
                 height="44"
                 className="w-full h-full object-contain rounded-full bg-[#0B0E14]"
@@ -50,10 +52,10 @@ function Navbar() {
             <div>
               <div className="flex items-center gap-1.5 sm:gap-2">
                 <span className="font-display text-lg sm:text-2xl font-extrabold tracking-wider text-white uppercase group-hover:text-brand-orange transition-colors">
-                  RIT <span className="text-brand-orange">Esports</span>
+                  Rahul <span className="text-brand-orange">Esports</span>
                 </span>
                 <span className="bg-brand-orange/20 text-brand-orange text-[9px] sm:text-[10px] font-black uppercase px-1.5 py-0.5 rounded border border-brand-orange/40">
-                  Arena
+                  Odisha
                 </span>
               </div>
               <p className="text-[9px] sm:text-[10px] tracking-widest text-slate-400 uppercase font-medium">Free Fire League</p>
@@ -84,6 +86,16 @@ function Navbar() {
 
           {/* Right Action Buttons */}
           <div className="hidden lg:flex items-center gap-3">
+            {/* Player Wallet Quick Access */}
+            <Link
+              to="/wallet"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-[#161B26] text-amber-300 border border-amber-500/30 hover:border-amber-400 text-xs font-bold transition-all shadow-sm"
+              title="Player Coin Wallet"
+            >
+              <Coins className="w-4 h-4 text-brand-amber" />
+              <span>Wallet</span>
+            </Link>
+
             {/* WhatsApp Community Quick Join */}
             <a
               href="https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2"
@@ -119,6 +131,14 @@ function Navbar() {
 
           {/* Mobile Quick Actions */}
           <div className="flex md:hidden items-center gap-1.5 sm:gap-2">
+            <Link
+              to="/wallet"
+              className="w-9 h-9 flex items-center justify-center rounded-lg bg-[#161B26] text-amber-400 border border-amber-500/30 active:scale-95 transition-transform"
+              aria-label="Player Wallet"
+              title="Player Wallet"
+            >
+              <Coins className="w-4 h-4" />
+            </Link>
             <a
               href="https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2"
               target="_blank"

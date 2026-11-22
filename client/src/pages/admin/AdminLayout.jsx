@@ -9,6 +9,7 @@ import {
   KeyRound, 
   FileCheck, 
   Gift, 
+  Coins,
   Settings, 
   ScrollText, 
   LogOut, 
@@ -35,6 +36,7 @@ export default function AdminLayout() {
     { name: 'Room Credentials (Email)', path: '/admin/rooms', icon: KeyRound },
     { name: 'Match Result Review', path: '/admin/results', icon: FileCheck },
     { name: 'Cash Prizes & Payouts', path: '/admin/prizes', icon: Gift },
+    { name: 'Coin Withdrawals & Wallet', path: '/admin/withdrawals', icon: Coins },
     { name: 'Site Settings', path: '/admin/settings', icon: Settings },
     { name: 'Audit Logs', path: '/admin/audit-logs', icon: ScrollText },
   ];
@@ -69,7 +71,7 @@ export default function AdminLayout() {
               <ShieldCheck className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h2 className="font-display font-bold text-base text-white uppercase tracking-wider">RIT Admin</h2>
+              <h2 className="font-display font-bold text-base text-white uppercase tracking-wider">Rahul Esports Admin</h2>
               <p className="text-[10px] text-purple-400 font-semibold uppercase">{user?.role || 'Administrator'}</p>
             </div>
           </div>

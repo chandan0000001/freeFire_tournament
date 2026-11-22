@@ -191,14 +191,14 @@ function TournamentCard({ tournament }) {
               <div className="w-5 h-5 rounded-full p-0.5 bg-brand-orange/20 border border-brand-orange/40 shrink-0">
                 <img
                   src="/images/rit-logo.webp"
-                  alt="Roland Institute of Technology"
+                  alt="Rahul Esports"
                   width="20"
                   height="20"
                   className="w-full h-full object-contain rounded-full"
                 />
               </div>
               <span className="text-[11px] uppercase tracking-wider font-bold text-slate-300 truncate">
-                RIT Esports Arena
+                Rahul Esports Arena
               </span>
             </div>
             <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400 font-semibold bg-emerald-950/60 border border-emerald-500/30 px-1.5 py-0.5 rounded">
