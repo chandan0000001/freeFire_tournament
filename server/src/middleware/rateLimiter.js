@@ -7,7 +7,7 @@ import redisClient from '../config/redis.js';
  * Falls back safely to in-memory store if Redis is unavailable.
  */
 function createStore(prefix) {
-  if (redisClient && process.env.REDIS_URL) {
+  if (redisClient && process.env.REDIS_URL && redisClient.status === 'ready') {
     try {
       return new RedisStore({
         sendCommand: (...args) => redisClient.call(...args),

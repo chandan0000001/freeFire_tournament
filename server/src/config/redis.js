@@ -6,7 +6,8 @@ const memoryCache = new Map();
 if (process.env.REDIS_URL) {
   try {
     redisClient = new Redis(process.env.REDIS_URL, {
-      maxRetriesPerRequest: 1,
+      maxRetriesPerRequest: null,
+      enableOfflineQueue: true,
       connectTimeout: 5000,
       lazyConnect: true,
       retryStrategy(times) {

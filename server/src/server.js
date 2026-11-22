@@ -6,6 +6,11 @@ import './config/redis.js'; // Initialize Redis/cache
 
 const PORT = process.env.PORT || 5000;
 
+// Process-wide unhandled rejection guard to ensure resilience
+process.on('unhandledRejection', (reason) => {
+  console.warn('[Server Warning] Handled async rejection:', reason?.message || reason);
+});
+
 // Connect to Database and start server
 const startServer = async () => {
   try {
