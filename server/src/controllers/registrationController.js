@@ -359,6 +359,8 @@ export const getAdminRegistrations = async (req, res, next) => {
         { teamName: { $regex: safeSearch, $options: 'i' } },
         { 'captain.name': { $regex: safeSearch, $options: 'i' } },
         { 'captain.email': { $regex: safeSearch, $options: 'i' } },
+        { 'captain.phone': { $regex: safeSearch, $options: 'i' } },
+        { 'paymentDetails.utr': { $regex: safeSearch, $options: 'i' } },
       ];
     }
 

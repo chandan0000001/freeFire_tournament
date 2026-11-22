@@ -11,7 +11,8 @@ import {
   Mail, 
   Users, 
   ShieldCheck, 
-  Clock 
+  Clock,
+  MessageSquare
 } from 'lucide-react';
 
 export default function AdminRooms() {
@@ -316,32 +317,69 @@ export default function AdminRooms() {
             {/* List of Verified Registrations */}
             <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
               {verifiedRegistrations.length > 0 ? (
-                verifiedRegistrations.map((reg) => (
-                  <label
-                    key={reg._id}
-                    className={`flex items-center justify-between p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
-                      selectedRegIds.includes(reg._id)
-                        ? 'bg-purple-950/40 border-purple-500/40 text-white'
-                        : 'bg-[#160e13] border-[#49303a] text-slate-400'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedRegIds.includes(reg._id)}
-                        onChange={() => toggleSelectOne(reg._id)}
-                        className="rounded text-brand-orange"
-                      />
-                      <span className="font-mono font-bold text-brand-orange">{reg.referenceId}</span>
-                      <span className="text-white font-medium">
-                        {reg.format === 'squad' ? reg.teamName : reg.players[0]?.inGameName}
-                      </span>
+                verifiedRegistrations.map((reg) => {
+                  const leader = reg.players?.find((p) => p.isLeader) || reg.players?.[0] || reg.captain || {};
+                  const leaderPhone = leader.phone || reg.captain?.phone;
+                  const selectedTourney = tournaments.find((t) => t._id === selectedTournamentId);
+                  const waText = encodeURIComponent(
+                    `Hello ${leader.name || 'Team Leader'}!\n` +
+                    `Here are your Free Fire room credentials for "${selectedTourney?.title || 'Tournament'}":\n\n` +
+                    `*Room ID:* ${roomId || '[Pending]'}\n` +
+                    `*Room Password:* ${roomPassword || '[Pending]'}\n` +
+                    `*Assigned Slot:* ${reg.slotTime || reg.preferredSlot || 'Scheduled Slot'}\n\n` +
+                    `${customNote}\n\n` +
+                    `Please join your slot promptly. Good luck!`
+                  );
+                  const cleanPhone = leaderPhone ? leaderPhone.replace(/[^0-9]/g, '') : '';
+                  const fullPhone = cleanPhone.length === 10 ? `91${cleanPhone}` : cleanPhone;
+
+                  return (
+                    <div
+                      key={reg._id}
+                      className={`flex items-center justify-between p-2.5 rounded-lg border text-xs transition-colors ${
+                        selectedRegIds.includes(reg._id)
+                          ? 'bg-purple-950/40 border-purple-500/40 text-white'
+                          : 'bg-[#160e13] border-[#49303a] text-slate-400'
+                      }`}
+                    >
+                      <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
+                        <input
+                          type="checkbox"
+                          checked={selectedRegIds.includes(reg._id)}
+                          onChange={() => toggleSelectOne(reg._id)}
+                          className="rounded text-brand-orange"
+                        />
+                        <span className="font-mono font-bold text-brand-orange">{reg.referenceId}</span>
+                        <span className="text-white font-medium truncate">
+                          {reg.format === 'squad' ? reg.teamName : reg.players[0]?.inGameName}
+                        </span>
+                        {reg.preferredSlot && (
+                          <span className="text-[10px] text-amber-300 font-bold uppercase">
+                            ({reg.preferredSlot})
+                          </span>
+                        )}
+                      </label>
+
+                      <div className="flex items-center gap-2 shrink-0">
+                        <span className="text-slate-400 text-[11px] truncate max-w-[120px] hidden sm:inline">
+                          {reg.captain.email}
+                        </span>
+                        {leaderPhone && (
+                          <a
+                            href={`https://wa.me/${fullPhone}?text=${waText}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-emerald-950/80 hover:bg-emerald-800 text-emerald-300 border border-emerald-500/40 text-[10px] font-bold transition-colors"
+                            title="Dispatch Room credentials via WhatsApp"
+                          >
+                            <MessageSquare className="w-2.5 h-2.5" />
+                            <span>WhatsApp</span>
+                          </a>
+                        )}
+                      </div>
                     </div>
-                    <span className="text-slate-400 text-[11px] truncate max-w-[150px]">
-                      {reg.captain.email}
-                    </span>
-                  </label>
-                ))
+                  );
+                })
               ) : (
                 <div className="text-center py-8 text-slate-500 text-xs">
                   No payment-verified registrations yet for this tournament.
