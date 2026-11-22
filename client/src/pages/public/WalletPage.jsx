@@ -31,15 +31,20 @@ export default function WalletPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [adminUpi, setAdminUpi] = useState('rahulesports@upi');
+  const [adminUpi, setAdminUpi] = useState('srikantap571-1@okaxis');
+  const [adminPayeeName, setAdminPayeeName] = useState('Rahul Esports');
   const [copiedUpi, setCopiedUpi] = useState(false);
 
-  // Deposit Form State
-  const [depositCoins, setDepositCoins] = useState(100);
+  // Deposit Form State (Default minimum: 50 coins)
+  const [depositCoins, setDepositCoins] = useState(50);
   const [utrNumber, setUtrNumber] = useState('');
   const [playerName, setPlayerName] = useState('');
   const [phone, setPhone] = useState('');
   const [depositLoading, setDepositLoading] = useState(false);
+
+  // Dynamic UPI Deep Link & QR Code for Deposit
+  const depositUpiUri = `upi://pay?pa=${encodeURIComponent(adminUpi)}&pn=${encodeURIComponent(adminPayeeName)}&am=${depositCoins}&cu=INR&tn=${encodeURIComponent(`Topup ${depositCoins} Coins - ${emailInput || 'Rahul Esports'}`)}`;
+  const depositQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(depositUpiUri)}`;
 
   // Withdrawal Form State
   const [withdrawCoins, setWithdrawCoins] = useState('');
@@ -53,6 +58,9 @@ export default function WalletPage() {
       .then((res) => {
         if (res.success && res.settings?.upiId) {
           setAdminUpi(res.settings.upiId);
+          if (res.settings.upiPayeeName) {
+            setAdminPayeeName(res.settings.upiPayeeName);
+          }
         }
       })
       .catch(() => {});
@@ -101,6 +109,10 @@ export default function WalletPage() {
     e.preventDefault();
     if (!emailInput.trim()) {
       setError('Please enter your email above first.');
+      return;
+    }
+    if (depositCoins < 50) {
+      setError('Minimum deposit is 50 coins (₹50). Please select an allowed package: 50, 100, 200, or 500.');
       return;
     }
     if (!/^\d{12}$/.test(utrNumber.trim())) {
@@ -365,88 +377,163 @@ export default function WalletPage() {
             </div>
           </div>
 
-          {/* Preset Coin Packages */}
-          <div>
-            <label className="block text-xs font-bold text-slate-300 uppercase mb-2">
-              Select Coin Package
-            </label>
+          {/* Step 1: Select Coin Package (Minimum 50) */}
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-bold text-slate-300 uppercase">
+                1. Select Coin Top-Up Package (Minimum 50 Coins)
+              </label>
+              <span className="text-[11px] text-brand-orange font-bold">1 Coin = ₹1 INR</span>
+            </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[50, 100, 200, 500].map((pack) => (
                 <button
                   key={pack}
                   type="button"
                   onClick={() => setDepositCoins(pack)}
-                  className={`p-3.5 rounded-xl border text-center transition-all ${
+                  className={`p-4 rounded-xl border text-center transition-all ${
                     depositCoins === pack
-                      ? 'border-brand-orange bg-brand-orange/15 shadow-glow-orange'
+                      ? 'border-brand-orange bg-brand-orange/20 shadow-glow-orange scale-[1.02]'
                       : 'border-[#1E2638] bg-[#090C12] hover:border-slate-600'
                   }`}
                 >
-                  <span className="text-xl font-display font-black text-white block">
-                    🪙 {pack}
+                  <div className="flex items-center justify-center gap-1.5 text-white">
+                    <Coins className={`w-5 h-5 ${depositCoins === pack ? 'text-brand-orange' : 'text-amber-400'}`} />
+                    <span className="text-2xl font-display font-black">
+                      {pack}
+                    </span>
+                  </div>
+                  <span className="text-xs text-slate-300 font-bold block mt-1">
+                    Pay ₹{pack}
                   </span>
-                  <span className="text-[10px] text-slate-400 font-semibold block mt-0.5">
-                    Pay ₹{pack} via UPI
+                  <span className="text-[10px] text-emerald-400 font-semibold block mt-0.5">
+                    QR Generated
                   </span>
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Deposit Verification Form */}
-          <form onSubmit={handleDepositSubmit} className="space-y-4 pt-2">
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Step 2: DYNAMIC SCANNABLE UPI QR CODE CARD */}
+          <div className="p-5 sm:p-6 rounded-2xl bg-[#090C12] border border-brand-orange/40 space-y-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-[#1A2234] pb-3 text-center sm:text-left">
               <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
-                  Coins to Credit
-                </label>
-                <input
-                  type="number"
-                  min="10"
-                  required
-                  value={depositCoins}
-                  onChange={(e) => setDepositCoins(parseInt(e.target.value, 10) || 10)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-white text-xs sm:text-sm font-bold focus:border-brand-orange"
-                />
+                <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest block">
+                  2. Scan QR Code to Pay ₹{depositCoins}
+                </span>
+                <h4 className="font-display text-lg font-bold text-white uppercase mt-0.5">
+                  Pay Exactly ₹{depositCoins} for {depositCoins} Tournament Coins
+                </h4>
               </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
-                  12-Digit UPI UTR / Ref No.
-                </label>
-                <input
-                  type="text"
-                  required
-                  maxLength="12"
-                  value={utrNumber}
-                  onChange={(e) => setUtrNumber(e.target.value.replace(/\D/g, ''))}
-                  placeholder="e.g. 432198765432"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-white text-xs sm:text-sm font-mono tracking-widest focus:border-brand-orange"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
-                  Phone (Optional)
-                </label>
-                <input
-                  type="tel"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Your WhatsApp number"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-white text-xs sm:text-sm focus:border-brand-orange"
-                />
+              <div className="px-3 py-1 rounded-full bg-emerald-950/80 border border-emerald-500/40 text-emerald-400 text-xs font-bold">
+                Dynamic QR Ready
               </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={depositLoading || !emailInput.trim()}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber font-display font-bold uppercase tracking-wider text-white text-sm hover:brightness-110 active:scale-95 shadow-glow-orange transition-all disabled:opacity-50"
-            >
-              {depositLoading ? 'Submitting Request...' : `Submit Request for ${depositCoins} Coins (₹${depositCoins})`}
-            </button>
-          </form>
+            <div className="flex flex-col md:flex-row items-center gap-6 justify-center py-2">
+              {/* QR Code Container */}
+              <div className="text-center space-y-2 shrink-0">
+                <div className="inline-block p-3 rounded-2xl bg-white shadow-2xl border-4 border-[#1E2638]">
+                  <img
+                    src={depositQrUrl}
+                    alt={`Scan to Pay ₹${depositCoins}`}
+                    className="w-48 h-48 sm:w-52 sm:h-52 object-contain mx-auto"
+                  />
+                </div>
+                <p className="text-[11px] text-slate-400">
+                  Scan with <strong>Google Pay</strong>, <strong>PhonePe</strong>, or <strong>Paytm</strong>
+                </p>
+              </div>
+
+              {/* Instructions & 1-Tap Mobile Link */}
+              <div className="space-y-3.5 max-w-sm text-center md:text-left">
+                <div className="p-3 rounded-xl bg-[#121722] border border-[#1E2638] space-y-1">
+                  <span className="text-[10px] uppercase font-bold text-slate-400 block">Payee Details</span>
+                  <p className="text-xs text-white font-semibold">
+                    UPI ID: <span className="font-mono text-cyan-400">{adminUpi}</span>
+                  </p>
+                  <p className="text-xs text-slate-300">
+                    Amount: <strong className="text-emerald-400 font-mono text-sm">₹{depositCoins}.00</strong>
+                  </p>
+                </div>
+
+                {/* 1-Tap Mobile UPI App Link */}
+                <a
+                  href={depositUpiUri}
+                  className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-110 text-white font-display font-bold uppercase tracking-wider text-xs shadow-md transition-all flex items-center justify-center gap-2"
+                >
+                  <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
+                  Pay ₹{depositCoins} via Any UPI App (Mobile Only)
+                </a>
+
+                <p className="text-[11px] text-slate-400 leading-relaxed">
+                  After completing your ₹{depositCoins} payment, find the <strong>12-digit UTR / UPI Ref No</strong> in your payment app receipt and submit it below for coin credit.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Step 3: Deposit Verification Form */}
+          <div className="space-y-3">
+            <span className="text-xs font-bold text-slate-300 uppercase block">
+              3. Submit 12-Digit UTR for Admin Verification
+            </span>
+            <form onSubmit={handleDepositSubmit} className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
+                    Coins Package Selected
+                  </label>
+                  <div className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-brand-orange font-display font-extrabold text-base flex items-center justify-between">
+                    <span>{depositCoins} Coins</span>
+                    <span className="text-xs text-slate-400 font-mono">₹{depositCoins}</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
+                    12-Digit UPI UTR / Ref No. *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    maxLength="12"
+                    value={utrNumber}
+                    onChange={(e) => setUtrNumber(e.target.value.replace(/\D/g, ''))}
+                    placeholder="e.g. 432198765432"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-white text-xs sm:text-sm font-mono tracking-widest focus:border-brand-orange"
+                  />
+                  {utrNumber && utrNumber.length < 12 && (
+                    <span className="text-[10px] text-rose-400 mt-1 block">
+                      Must be 12 digits ({utrNumber.length}/12)
+                    </span>
+                  )}
+                </div>
+
+                <div>
+                  <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
+                    Phone (WhatsApp Contact)
+                  </label>
+                  <input
+                    type="tel"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="Your WhatsApp number"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-white text-xs sm:text-sm focus:border-brand-orange"
+                  />
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                disabled={depositLoading || !emailInput.trim() || utrNumber.length !== 12}
+                className="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber font-display font-bold uppercase tracking-wider text-white text-sm hover:brightness-110 active:scale-95 shadow-glow-orange transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                <CheckCircle className="w-4 h-4" />
+                {depositLoading ? 'Submitting Verification...' : `Submit Verification for ${depositCoins} Coins (₹${depositCoins})`}
+              </button>
+            </form>
+          </div>
         </div>
       )}
 

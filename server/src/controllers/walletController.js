@@ -95,10 +95,10 @@ export const createDepositRequest = async (req, res, next) => {
 
     const email = userEmail.toLowerCase().trim();
     const coins = parseInt(coinsRequested, 10);
-    if (isNaN(coins) || coins < 10) {
+    if (isNaN(coins) || coins < 50) {
       return res.status(400).json({
         success: false,
-        message: 'Minimum deposit is 10 coins (₹10).',
+        message: 'Minimum deposit is 50 coins (₹50). Allowed packages: 50, 100, 200, 500 coins.',
       });
     }
 
