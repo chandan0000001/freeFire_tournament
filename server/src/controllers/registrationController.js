@@ -77,14 +77,15 @@ export const registerSquad = async (req, res, next) => {
     const registration = await Registration.create({
       referenceId,
       tournamentId,
+      userId: req.user?._id || null,
       format: TOURNAMENT_FORMAT.SQUAD,
       preferredSlot: assignedSlot,
       slotTime: slotTime || slotLabel,
       teamName: teamName.trim(),
       captain: {
         name: leaderName,
-        email: captain?.email?.toLowerCase()?.trim() || '',
-        phone: leaderPhone,
+        email: captain?.email?.toLowerCase()?.trim() || req.user?.email || '',
+        phone: leaderPhone || req.user?.mobileNumber || '',
         collegeRollNo: '',
       },
       players: normalizedPlayers,
@@ -188,19 +189,20 @@ export const registerSolo = async (req, res, next) => {
     const registration = await Registration.create({
       referenceId,
       tournamentId,
+      userId: req.user?._id || null,
       format: TOURNAMENT_FORMAT.SOLO,
       preferredSlot: assignedSlot,
       slotTime: slotTime || slotLabel,
       captain: {
         name: captain.name.trim(),
-        email: captain.email?.toLowerCase()?.trim() || '',
-        phone: captain.phone.trim(),
+        email: captain.email?.toLowerCase()?.trim() || req.user?.email || '',
+        phone: captain.phone.trim() || req.user?.mobileNumber || '',
         collegeRollNo: '',
       },
       players: [
         {
           name: captain.name.trim(),
-          phone: captain.phone.trim(),
+          phone: captain.phone.trim() || req.user?.mobileNumber || '',
           inGameName: (inGameName || captain.name).trim(),
           freeFireUid: (freeFireUid || 'N/A').trim(),
           isLeader: true,
@@ -296,6 +298,34 @@ export const checkRegistrationStatus = async (req, res, next) => {
         roomCredentialStatus: registration.roomCredentialStatus,
         createdAt: registration.createdAt,
       },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMyRegistrations = async (req, res, next) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ success: false, message: 'Authentication required' });
+    }
+
+    const orConditions = [{ userId: user._id }];
+    if (user.email && user.email.trim()) {
+      orConditions.push({ 'captain.email': user.email.toLowerCase().trim() });
+    }
+    if (user.mobileNumber && user.mobileNumber.trim()) {
+      orConditions.push({ 'captain.phone': user.mobileNumber.trim() });
+    }
+
+    const registrations = await Registration.find({ $or: orConditions })
+      .populate('tournamentId', 'title format entryFee prizePool matchDate status bannerUrl map')
+      .sort({ createdAt: -1 });
+
+    res.json({
+      success: true,
+      registrations,
     });
   } catch (error) {
     next(error);

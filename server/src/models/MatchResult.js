@@ -3,8 +3,9 @@ import { RESULT_STATUS } from '../constants/statuses.js';
 
 const playerKillSchema = new mongoose.Schema(
   {
-    playerName: { type: String, required: true },
-    freeFireUid: { type: String, required: true },
+    playerName: { type: String, default: '' },
+    inGameName: { type: String, default: '' },
+    freeFireUid: { type: String, default: '' },
     kills: { type: Number, default: 0, min: 0 },
   },
   { _id: false }
@@ -20,6 +21,18 @@ const matchResultEntrySchema = new mongoose.Schema(
     participantName: {
       type: String,
       required: true,
+    },
+    playerUid: {
+      type: String,
+      default: '',
+    },
+    inGameName: {
+      type: String,
+      default: '',
+    },
+    playerName: {
+      type: String,
+      default: '',
     },
     placement: {
       type: Number,

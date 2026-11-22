@@ -83,7 +83,7 @@ export const getLeaderboards = async (req, res, next) => {
       return res.json({ success: true, ...responsePayload });
     }
 
-    // Individual Leaderboard
+    // Individual / Solo Leaderboard
     const playerMap = new Map();
 
     for (const resDoc of publishedResults) {
@@ -91,11 +91,12 @@ export const getLeaderboards = async (req, res, next) => {
         // If entry has individual player breakdown:
         if (Array.isArray(entry.playerKills) && entry.playerKills.length > 0) {
           for (const pk of entry.playerKills) {
-            const pKey = pk.freeFireUid || pk.playerName;
+            const pKey = pk.freeFireUid || pk.inGameName || pk.playerName;
             if (!playerMap.has(pKey)) {
               playerMap.set(pKey, {
-                playerName: pk.playerName,
-                freeFireUid: pk.freeFireUid,
+                playerName: pk.playerName || pk.inGameName,
+                inGameName: pk.inGameName || pk.playerName,
+                freeFireUid: pk.freeFireUid || 'N/A',
                 squadName: entry.participantName,
                 matchesPlayed: 0,
                 totalKills: 0,
@@ -112,12 +113,14 @@ export const getLeaderboards = async (req, res, next) => {
             }
           }
         } else {
-          // Solo format participant
-          const pKey = entry.participantName;
+          // Solo format participant or direct recorded entry
+          const pKey = entry.playerUid || entry.inGameName || entry.participantName;
           if (!playerMap.has(pKey)) {
             playerMap.set(pKey, {
-              playerName: entry.participantName,
-              squadName: 'Solo',
+              playerName: entry.playerName || entry.participantName,
+              inGameName: entry.inGameName || entry.participantName,
+              freeFireUid: entry.playerUid || 'N/A',
+              squadName: resDoc.tournamentId?.format === 'squad' ? entry.participantName : 'Solo',
               matchesPlayed: 0,
               totalKills: 0,
               booyahCount: 0,
@@ -144,6 +147,8 @@ export const getLeaderboards = async (req, res, next) => {
     const rankedPlayers = rankParticipants(playerList).map((p, idx) => ({
       rank: idx + 1,
       playerName: p.playerName,
+      inGameName: p.inGameName,
+      freeFireUid: p.freeFireUid,
       squadName: p.squadName,
       matchesPlayed: p.matchesPlayed,
       totalKills: p.totalKills,

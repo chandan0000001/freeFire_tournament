@@ -29,6 +29,12 @@ const registrationSchema = new mongoose.Schema(
       required: [true, 'Tournament ID is required'],
       index: true,
     },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      index: true,
+      required: false,
+    },
     format: {
       type: String,
       enum: Object.values(TOURNAMENT_FORMAT),

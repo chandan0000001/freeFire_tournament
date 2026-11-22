@@ -4,6 +4,7 @@ import { useParams, Link } from 'react-router-dom';
 import { tournamentAvailability } from '../../utils/tournament.js';
 import api from '../../services/api.js';
 import usePageMeta from '../../hooks/usePageMeta.js';
+import { useAuth } from '../../context/AuthContext.jsx';
 import { 
   Trophy, 
   Calendar, 
@@ -20,6 +21,7 @@ import {
 
 export default function TournamentDetailPage() {
   const { slug } = useParams();
+  const { user } = useAuth();
   const [tournament, setTournament] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
@@ -160,7 +162,11 @@ export default function TournamentDetailPage() {
                 to={tournament.format === 'squad' ? `/join/squad/${tournament._id}` : `/join/solo/${tournament._id}`}
                 className="w-full md:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber text-white font-display font-bold text-sm uppercase tracking-wider shadow-glow-orange hover:brightness-110 active:scale-95 transition-all text-center flex items-center justify-center gap-2"
               >
-                Register Now (₹{tournament.entryFee})
+                {user
+                  ? tournament.format === 'squad'
+                    ? `Register Squad (₹${tournament.entryFee})`
+                    : `Register Solo (₹${tournament.entryFee})`
+                  : `Sign In & Register (₹${tournament.entryFee})`}
               </Link>
             ) : (
               <button

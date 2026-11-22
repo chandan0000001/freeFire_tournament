@@ -164,21 +164,33 @@ export default function AdminResultsReview() {
       const verifiedList = regRes.registrations || [];
 
       if (verifiedList.length > 0) {
-        const initialEntries = verifiedList.map((r, i) => ({
-          registrationId: r._id,
-          participantName: r.teamName || r.captain?.name || `Participant ${i + 1}`,
-          placement: i + 1,
-          kills: 0,
-          isBooyah: i === 0,
-          calculatedPoints: i === 0 ? (tObj?.scoringConfig?.booyahBonus || 12) : 0,
-        }));
+        const initialEntries = verifiedList.map((r, i) => {
+          const leader = r.players?.find((p) => p.isLeader) || r.players?.[0] || r.captain || {};
+          return {
+            registrationId: r._id,
+            participantName: r.teamName || leader?.name || `Participant ${i + 1}`,
+            playerName: leader?.name || r.captain?.name || '',
+            inGameName: leader?.inGameName || '',
+            playerUid: leader?.freeFireUid || '',
+            placement: i + 1,
+            kills: 0,
+            isBooyah: i === 0,
+            calculatedPoints: i === 0 ? (tObj?.scoringConfig?.booyahBonus || 12) : 0,
+            playerKills: (r.players || []).map((p) => ({
+              playerName: p.name || '',
+              inGameName: p.inGameName || '',
+              freeFireUid: p.freeFireUid || '',
+              kills: 0,
+            })),
+          };
+        });
         setModalEntries(initialEntries);
       } else {
         // Fallback default rows
         setModalEntries([
-          { registrationId: null, participantName: 'Winning Team (Champion)', placement: 1, kills: 8, isBooyah: true, calculatedPoints: 20 },
-          { registrationId: null, participantName: 'Runner Up (2nd Place)', placement: 2, kills: 5, isBooyah: false, calculatedPoints: 5 },
-          { registrationId: null, participantName: '3rd Place Team', placement: 3, kills: 3, isBooyah: false, calculatedPoints: 3 },
+          { registrationId: null, participantName: 'Winning Team (Champion)', playerName: 'Rahul Sharma', inGameName: 'Apex_Sniper', playerUid: '1401364963', placement: 1, kills: 8, isBooyah: true, calculatedPoints: 20 },
+          { registrationId: null, participantName: 'Runner Up (2nd Place)', playerName: 'Manish Das', inGameName: 'Thunder_Op', playerUid: '1592837482', placement: 2, kills: 5, isBooyah: false, calculatedPoints: 5 },
+          { registrationId: null, participantName: '3rd Place Team', playerName: 'Sunil Kumar', inGameName: 'Silent_Kill', playerUid: '1839284719', placement: 3, kills: 3, isBooyah: false, calculatedPoints: 3 },
         ]);
       }
     } catch (err) {
@@ -228,10 +240,14 @@ export default function AdminResultsReview() {
       {
         registrationId: null,
         participantName: `Team ${nextPlacement}`,
+        playerName: '',
+        inGameName: '',
+        playerUid: '',
         placement: nextPlacement,
         kills: 0,
         isBooyah: false,
         calculatedPoints: 0,
+        playerKills: [],
       },
     ]);
   };
@@ -428,6 +444,8 @@ export default function AdminResultsReview() {
                     <tr>
                       <th className="py-3 px-4">Placement</th>
                       <th className="py-3 px-4">Participant / Squad</th>
+                      <th className="py-3 px-4">Player IGN</th>
+                      <th className="py-3 px-4">Free Fire UID</th>
                       <th className="py-3 px-4 text-center">Kills</th>
                       <th className="py-3 px-4 text-center">Booyah?</th>
                       <th className="py-3 px-4 text-right">Points</th>
@@ -448,6 +466,24 @@ export default function AdminResultsReview() {
                         <td className="py-2.5 px-4 font-bold text-white flex items-center gap-2">
                           {entry.placement === 1 && <Crown className="w-4 h-4 text-amber-400 shrink-0" />}
                           <span>{entry.participantName}</span>
+                        </td>
+                        <td className="py-2.5 px-4">
+                          <input
+                            type="text"
+                            placeholder="IGN"
+                            value={entry.inGameName || ''}
+                            onChange={(e) => handleEntryChange(idx, 'inGameName', e.target.value)}
+                            className="w-28 px-2 py-1 rounded bg-[#160e13] border border-[#49303a] text-brand-orange font-mono text-xs"
+                          />
+                        </td>
+                        <td className="py-2.5 px-4">
+                          <input
+                            type="text"
+                            placeholder="UID"
+                            value={entry.playerUid || ''}
+                            onChange={(e) => handleEntryChange(idx, 'playerUid', e.target.value)}
+                            className="w-32 px-2 py-1 rounded bg-[#160e13] border border-[#49303a] text-amber-300 font-mono text-xs"
+                          />
                         </td>
                         <td className="py-2.5 px-4 text-center">
                           <input
@@ -649,7 +685,10 @@ export default function AdminResultsReview() {
                     <thead className="bg-[#24171e] text-[10px] uppercase font-bold text-slate-400 border-b border-[#49303a]">
                       <tr>
                         <th className="py-2.5 px-3">Rank</th>
-                        <th className="py-2.5 px-3">Team / Player Name</th>
+                        <th className="py-2.5 px-3">Team / Participant</th>
+                        <th className="py-2.5 px-3">Player Name</th>
+                        <th className="py-2.5 px-3">In-Game Name (IGN)</th>
+                        <th className="py-2.5 px-3">Free Fire UID</th>
                         <th className="py-2.5 px-3 text-center">Kills</th>
                         <th className="py-2.5 px-3 text-center">Booyah?</th>
                         <th className="py-2.5 px-3 text-right">Points</th>
@@ -675,7 +714,7 @@ export default function AdminResultsReview() {
                               className="w-14 px-2 py-1 rounded bg-[#24171e] border border-[#49303a] text-white font-mono text-center font-bold"
                             />
                           </td>
-                          <td className="py-2 px-3">
+                          <td className="py-2 px-3 min-w-[130px]">
                             <input
                               type="text"
                               value={entry.participantName}
@@ -684,6 +723,39 @@ export default function AdminResultsReview() {
                               }
                               placeholder="e.g. Phoenix Fire"
                               className="w-full px-2.5 py-1 rounded bg-[#24171e] border border-[#49303a] text-white font-semibold"
+                            />
+                          </td>
+                          <td className="py-2 px-3 min-w-[110px]">
+                            <input
+                              type="text"
+                              value={entry.playerName || ''}
+                              onChange={(e) =>
+                                handleModalEntryChange(idx, 'playerName', e.target.value)
+                              }
+                              placeholder="Player Name"
+                              className="w-full px-2 py-1 rounded bg-[#24171e] border border-[#49303a] text-white"
+                            />
+                          </td>
+                          <td className="py-2 px-3 min-w-[110px]">
+                            <input
+                              type="text"
+                              value={entry.inGameName || ''}
+                              onChange={(e) =>
+                                handleModalEntryChange(idx, 'inGameName', e.target.value)
+                              }
+                              placeholder="IGN"
+                              className="w-full px-2 py-1 rounded bg-[#24171e] border border-[#49303a] text-white font-mono text-brand-orange"
+                            />
+                          </td>
+                          <td className="py-2 px-3 min-w-[120px]">
+                            <input
+                              type="text"
+                              value={entry.playerUid || ''}
+                              onChange={(e) =>
+                                handleModalEntryChange(idx, 'playerUid', e.target.value)
+                              }
+                              placeholder="e.g. 1401364963"
+                              className="w-full px-2 py-1 rounded bg-[#24171e] border border-[#49303a] text-white font-mono text-amber-300"
                             />
                           </td>
                           <td className="py-2 px-3 text-center">

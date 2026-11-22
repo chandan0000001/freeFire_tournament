@@ -1,16 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api.js';
 import usePageMeta from '../../hooks/usePageMeta.js';
-import { Award, Trophy, Flame, Users, User, Shield } from 'lucide-react';
+import { Award, Trophy, Flame, Users, User, Shield, Copy, Check } from 'lucide-react';
 
 export default function LeaderboardPage() {
   usePageMeta('Community Leaderboard & Standings | Rahul Esports', 'Official Rahul Esports Free Fire competitive standings. Squad and individual player kill and placement rankings.');
   const [format, setFormat] = useState('squad'); // 'squad' or 'individual'
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [copiedUid, setCopiedUid] = useState(null);
 
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
+
+  const copyToClipboard = (text, id) => {
+    if (!text || text === 'N/A') return;
+    navigator.clipboard.writeText(text);
+    setCopiedUid(id);
+    setTimeout(() => setCopiedUid(null), 2000);
+  };
 
   useEffect(() => {
     let active = true;
@@ -127,52 +135,92 @@ export default function LeaderboardPage() {
           <table className="w-full text-left text-sm">
             <thead className="bg-[#160e13] text-[10px] uppercase font-bold text-slate-400 tracking-wider border-b border-[#49303a]">
               <tr>
-                <th className="py-4 px-6">Rank</th>
-                <th className="py-4 px-6">{format === 'squad' ? 'Squad Name' : 'Player IGN'}</th>
-                {format === 'individual' && <th className="py-4 px-6">Squad</th>}
-                <th className="py-4 px-6 text-center">Matches</th>
-                <th className="py-4 px-6 text-center">Kills</th>
-                <th className="py-4 px-6 text-center">Booyahs</th>
-                <th className="py-4 px-6 text-right">Total Points</th>
+                <th className="py-4 px-5">Rank</th>
+                {format === 'squad' ? (
+                  <th className="py-4 px-5">Squad Name</th>
+                ) : (
+                  <>
+                    <th className="py-4 px-5">Player Name</th>
+                    <th className="py-4 px-5">In-Game Name (IGN)</th>
+                    <th className="py-4 px-5">Free Fire UID</th>
+                    <th className="py-4 px-5">Squad / Category</th>
+                  </>
+                )}
+                <th className="py-4 px-5 text-center">Matches</th>
+                <th className="py-4 px-5 text-center">Kills</th>
+                <th className="py-4 px-5 text-center">Booyahs</th>
+                <th className="py-4 px-5 text-right">Total Points</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#49303a]">
               {loading ? (
                 <tr>
-                  <td colSpan="7" className="py-12 text-center text-slate-500 text-xs">
+                  <td colSpan={format === 'squad' ? 6 : 9} className="py-12 text-center text-slate-500 text-xs">
                     Loading standings...
                   </td>
                 </tr>
               ) : leaderboard.length > 0 ? (
-                leaderboard.map((item) => (
+                leaderboard.map((item, idx) => (
                   <tr
-                    key={item.rank}
+                    key={item.freeFireUid ? `${item.freeFireUid}-${idx}` : `${item.rank}-${idx}`}
                     className="hover:bg-[#301e27] transition-colors"
                   >
-                    <td className="py-4 px-6">{getRankBadge(item.rank)}</td>
-                    <td className="py-4 px-6 font-display font-bold text-base text-white">
-                      {format === 'squad' ? item.squadName : item.playerName}
-                    </td>
-                    {format === 'individual' && (
-                      <td className="py-4 px-6 text-xs text-slate-400">{item.squadName || 'Solo'}</td>
+                    <td className="py-4 px-5">{getRankBadge(item.rank)}</td>
+                    
+                    {format === 'squad' ? (
+                      <td className="py-4 px-5 font-display font-bold text-base text-white">
+                        {item.squadName}
+                      </td>
+                    ) : (
+                      <>
+                        <td className="py-4 px-5 font-bold text-sm text-white">
+                          {item.playerName || 'Player'}
+                        </td>
+                        <td className="py-4 px-5 font-display font-semibold text-sm text-brand-orange">
+                          {item.inGameName || item.playerName || 'Player'}
+                        </td>
+                        <td className="py-4 px-5">
+                          {item.freeFireUid && item.freeFireUid !== 'N/A' ? (
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(item.freeFireUid, `uid-${idx}`)}
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#160e13] hover:bg-[#301e27] border border-[#49303a] font-mono text-xs text-slate-300 transition-colors"
+                              title="Click to copy UID"
+                            >
+                              <span>{item.freeFireUid}</span>
+                              {copiedUid === `uid-${idx}` ? (
+                                <Check className="w-3 h-3 text-emerald-400" />
+                              ) : (
+                                <Copy className="w-3 h-3 text-slate-500" />
+                              )}
+                            </button>
+                          ) : (
+                            <span className="text-slate-500 text-xs font-mono">N/A</span>
+                          )}
+                        </td>
+                        <td className="py-4 px-5 text-xs text-slate-400">
+                          {item.squadName || 'Solo'}
+                        </td>
+                      </>
                     )}
-                    <td className="py-4 px-6 text-center text-xs text-slate-300 font-mono">
+
+                    <td className="py-4 px-5 text-center text-xs text-slate-300 font-mono">
                       {item.matchesPlayed}
                     </td>
-                    <td className="py-4 px-6 text-center text-xs text-slate-300 font-mono font-bold">
+                    <td className="py-4 px-5 text-center text-xs text-slate-300 font-mono font-bold">
                       {item.totalKills}
                     </td>
-                    <td className="py-4 px-6 text-center text-xs text-brand-amber font-mono font-bold">
+                    <td className="py-4 px-5 text-center text-xs text-brand-amber font-mono font-bold">
                       {item.booyahCount}
                     </td>
-                    <td className="py-4 px-6 text-right font-display font-extrabold text-base text-brand-orange">
+                    <td className="py-4 px-5 text-right font-display font-extrabold text-base text-brand-orange">
                       {item.totalPoints} pts
                     </td>
                   </tr>
                 ))
               ) : (
                 <tr>
-                  <td colSpan="7" className="py-16 text-center text-slate-500 text-xs">
+                  <td colSpan={format === 'squad' ? 6 : 9} className="py-16 text-center text-slate-500 text-xs">
                     No verified match results published yet. Join this week's tournament to climb the ranks!
                   </td>
                 </tr>

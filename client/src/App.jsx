@@ -84,18 +84,51 @@ export default function App() {
               {/* Immediate HomePage */}
               <Route path="/" element={<PublicShell><HomePage /></PublicShell>} />
 
-              {/* Public Tournaments & Competitive Info */}
+              {/* Public Tournaments & Competitive Info (Browse Without Sign In) */}
               <Route path="/tournaments" element={<PublicShell><TournamentsPage /></PublicShell>} />
               <Route path="/tournaments/:slug" element={<PublicShell><TournamentDetailPage /></PublicShell>} />
-              <Route path="/join/squad/:tournamentId" element={<PublicShell><SquadRegisterPage /></PublicShell>} />
-              <Route path="/join/solo/:tournamentId" element={<PublicShell><SoloRegisterPage /></PublicShell>} />
-              <Route path="/status" element={<PublicShell><RegistrationStatusPage /></PublicShell>} />
               <Route path="/leaderboard" element={<PublicShell><LeaderboardPage /></PublicShell>} />
               <Route path="/results" element={<PublicShell><ResultsPage /></PublicShell>} />
               <Route path="/winners" element={<PublicShell><WinnersPage /></PublicShell>} />
               <Route path="/rules" element={<PublicShell><RulesPage /></PublicShell>} />
               <Route path="/contact" element={<PublicShell><ContactPage /></PublicShell>} />
               <Route path="/privacy" element={<PublicShell><PrivacyPolicyPage /></PublicShell>} />
+
+              {/* Protected Tournament Registration (Sign In Required) */}
+              <Route
+                path="/join/squad/:tournamentId"
+                element={
+                  <ProtectedPlayerRoute>
+                    <PublicShell><SquadRegisterPage /></PublicShell>
+                  </ProtectedPlayerRoute>
+                }
+              />
+              <Route
+                path="/join/solo/:tournamentId"
+                element={
+                  <ProtectedPlayerRoute>
+                    <PublicShell><SoloRegisterPage /></PublicShell>
+                  </ProtectedPlayerRoute>
+                }
+              />
+
+              {/* Protected My Registrations (Sign In Required) */}
+              <Route
+                path="/status"
+                element={
+                  <ProtectedPlayerRoute>
+                    <PublicShell><RegistrationStatusPage /></PublicShell>
+                  </ProtectedPlayerRoute>
+                }
+              />
+              <Route
+                path="/my-registrations"
+                element={
+                  <ProtectedPlayerRoute>
+                    <PublicShell><RegistrationStatusPage /></PublicShell>
+                  </ProtectedPlayerRoute>
+                }
+              />
 
               {/* Protected Player Wallet (Login Required) */}
               <Route

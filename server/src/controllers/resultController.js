@@ -99,11 +99,14 @@ export const reviewMatchResult = async (req, res, next) => {
         return {
           registrationId: e.registrationId,
           participantName: e.participantName,
+          playerUid: (e.playerUid || '').trim(),
+          inGameName: (e.inGameName || '').trim(),
+          playerName: (e.playerName || '').trim(),
           placement: parseInt(e.placement, 10),
           kills: calculated.kills,
           isBooyah: calculated.isBooyah,
           calculatedPoints: calculated.calculatedPoints,
-          playerKills: e.playerKills || [],
+          playerKills: Array.isArray(e.playerKills) ? e.playerKills : [],
         };
       });
     }
@@ -301,11 +304,21 @@ export const directRecordMatchResult = async (req, res, next) => {
       return {
         registrationId: entry.registrationId || null,
         participantName: (entry.participantName || 'Unknown Team').trim(),
+        playerUid: (entry.playerUid || '').trim(),
+        inGameName: (entry.inGameName || '').trim(),
+        playerName: (entry.playerName || '').trim(),
         placement: parseInt(entry.placement, 10) || 1,
         kills: score.kills,
         isBooyah: score.isBooyah,
         calculatedPoints: score.calculatedPoints,
-        playerKills: entry.playerKills || [],
+        playerKills: Array.isArray(entry.playerKills)
+          ? entry.playerKills.map((pk) => ({
+              playerName: (pk.playerName || '').trim(),
+              inGameName: (pk.inGameName || '').trim(),
+              freeFireUid: (pk.freeFireUid || '').trim(),
+              kills: parseInt(pk.kills, 10) || 0,
+            }))
+          : [],
       };
     });
 
