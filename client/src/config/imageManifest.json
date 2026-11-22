@@ -3,13 +3,45 @@
     "width": 1280,
     "height": 720
   },
+  "/images/arena-command.webp": {
+    "width": 1280,
+    "height": 714
+  },
+  "/images/barabati-fort.webp": {
+    "width": 1280,
+    "height": 714
+  },
+  "/images/bhubaneswar-courtyard.webp": {
+    "width": 1280,
+    "height": 714
+  },
+  "/images/chilika-dawn.webp": {
+    "width": 1280,
+    "height": 714
+  },
   "/images/chilika-solo.webp": {
     "width": 1280,
     "height": 720
   },
+  "/images/gopalpur-beach.webp": {
+    "width": 1280,
+    "height": 714
+  },
+  "/images/hirakud-dam.webp": {
+    "width": 1280,
+    "height": 714
+  },
+  "/images/kalinga-squad.webp": {
+    "width": 1280,
+    "height": 714
+  },
   "/images/konark-squad.webp": {
     "width": 1280,
     "height": 720
+  },
+  "/images/koraput-valley.webp": {
+    "width": 1280,
+    "height": 714
   },
   "/images/logo.webp": {
     "width": 256,
@@ -19,12 +51,32 @@
     "width": 1086,
     "height": 1448
   },
+  "/images/odisha-mvp.webp": {
+    "width": 1280,
+    "height": 714
+  },
   "/images/odisha-squad.webp": {
     "width": 1280,
     "height": 720
   },
+  "/images/paradip-port.webp": {
+    "width": 1280,
+    "height": 714
+  },
+  "/images/puri-coast.webp": {
+    "width": 1280,
+    "height": 714
+  },
   "/images/rahul.webp": {
     "width": 687,
     "height": 1031
+  },
+  "/images/rourkela-citadel.webp": {
+    "width": 1280,
+    "height": 714
+  },
+  "/images/similipal-forest.webp": {
+    "width": 1280,
+    "height": 714
   }
 }

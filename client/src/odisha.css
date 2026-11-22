@@ -119,15 +119,15 @@ main button[class*='from-brand-orange']:hover,main a[class*='from-brand-orange']
 .admin-content [class*='text-[9px]'],.admin-content [class*='text-[10px]'],.admin-content [class*='text-[11px]'] { font-size:.75rem; }
 .admin-content .fixed h3 { font-size:1.25rem; }
 .admin-content .fixed [class*='max-h-'] { scrollbar-gutter:stable; }
-.auth-page-container { display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 160px); padding:clamp(28px,4vh,56px) 16px; width:100%; }
-.admin-login { width:min(1080px,100%); margin:0 auto; display:grid; grid-template-columns:1fr 1.15fr; border:1px solid rgba(237,189,120,0.22); border-radius:20px; overflow:hidden; background:#171316; box-shadow:0 24px 60px -12px rgba(0,0,0,0.8),0 0 30px -10px rgba(237,189,120,0.08); }
-.admin-login-art { position:relative; min-height:540px; background:#351622; }
-.admin-login-art>img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 25%; }
-.admin-login-art::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(20,10,18,0.2) 0%,rgba(20,10,18,0.45) 50%,rgba(20,10,18,0.95) 100%); }
-.admin-login-art>div { position:absolute; bottom:36px; left:32px; right:32px; z-index:1; }
-.admin-login-art h2 { font-size:2.2rem; line-height:1.15; color:#ffe4b6; font-weight:750; margin:12px 0 10px; }
-.admin-login-art p { color:#e2bbc9; font-size:.925rem; line-height:1.5; }
-.admin-login-form { padding:clamp(32px,4vw,48px) clamp(28px,4vw,44px); align-self:center; background:#181417; }
+.auth-page-container { display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 140px); padding:clamp(20px,3.5vh,48px) 16px; width:100%; }
+.admin-login { width:min(980px,100%); margin:0 auto; display:grid; grid-template-columns:1fr 1.12fr; border:1px solid rgba(237,189,120,0.22); border-radius:20px; overflow:hidden; background:#171316; box-shadow:0 24px 60px -12px rgba(0,0,0,0.8),0 0 30px -10px rgba(237,189,120,0.08); }
+.admin-login-art { position:relative; min-height:500px; background:#351622; }
+.admin-login-art>img { position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center 20%; }
+.admin-login-art::after { content:''; position:absolute; inset:0; background:linear-gradient(180deg,rgba(20,10,18,0.08) 0%,rgba(20,10,18,0.3) 48%,rgba(20,10,18,0.92) 86%); }
+.admin-login-art>div { position:absolute; bottom:28px; left:28px; right:28px; z-index:1; }
+.admin-login-art h2 { font-size:clamp(1.4rem,2vw,1.85rem); line-height:1.2; color:#ffe4b6; font-weight:750; margin:8px 0 6px; }
+.admin-login-art p { color:#e2bbc9; font-size:.85rem; line-height:1.45; }
+.admin-login-form { padding:clamp(24px,3.5vw,40px) clamp(24px,3.5vw,38px); align-self:center; background:#181417; }
 .admin-login-form h1 { color:#fff0e7; font-size:1.75rem; font-weight:750; margin:16px 0 6px; }
 .admin-login-form>p { color:#c6a8b6; font-size:.875rem; margin-bottom:24px; }
 .admin-login-form label { display:block; font-size:.8125rem; font-weight:600; color:#ead4dd; text-transform:uppercase; letter-spacing:.04em; margin-bottom:6px; }
@@ -140,8 +140,8 @@ main button[class*='from-brand-orange']:hover,main a[class*='from-brand-orange']
 .login-notice { display:flex; gap:10px; align-items:center; color:#a88999; font-size:.75rem; margin-top:20px; }
 .login-error { color:#ffd4dc; border:1px solid #be6078; border-radius:8px; background:#571e31; padding:12px; margin-bottom:20px; font-size:.875rem; }
 @media(max-width:899px) and (min-width:601px) {
-  .admin-login { grid-template-columns:1fr 1.2fr; width:min(760px,100% - 24px); }
-  .admin-login-form { padding:32px 24px; }
+  .admin-login { grid-template-columns:1fr 1.15fr; width:min(740px,100% - 24px); }
+  .admin-login-form { padding:28px 24px; }
 }
 @media(max-width:1199px) { .admin-content { padding:24px; } .admin-shell { grid-template-columns:240px minmax(0,1fr); } .hero-content h1 { font-size:5rem; } }
 @media(max-width:800px) { .organizer-section { grid-template-columns:230px 1fr; gap:28px; padding:24px; } .organizer-story h2 { font-size:2rem; } .admin-shell { display:block; } .admin-sidebar { position:fixed; z-index:70; width:280px; top:0; bottom:0; left:0; transform:translateX(-100%); transition:transform .2s; } .admin-sidebar.is-open { transform:translateX(0); } .admin-backdrop { position:fixed; inset:0; background:#10060caa; z-index:60; } .admin-menu-toggle,.admin-sidebar-close { display:grid; place-items:center; min-width:44px; height:44px; border:1px solid #784457; border-radius:7px; color:#efc8a3; } .admin-sidebar-close { position:absolute; right:10px; top:10px; width:32px; height:32px; min-width:32px; background:#39212b; } .admin-brand { padding-top:16px; } .admin-topbar { padding:14px 18px; gap:12px; } .admin-topbar>div { margin-right:auto; } .admin-topbar-badge { display:none; } .admin-content { padding:24px 16px; } }
@@ -178,14 +178,14 @@ main button[class*='from-brand-orange']:hover,main a[class*='from-brand-orange']
 @media(max-width:600px) { .admin-dashboard-link { display:none; } }
 
 /* Portrait art keeps the champion inside the auth panel at every breakpoint. */
-.auth-register .admin-login-art>img { object-position:50% 12%; }
+.auth-register .admin-login-art>img { object-position:50% 4%; }
 .admin-login-art { min-width:0; }
 .login-notice svg { flex-shrink:0; }
 @media(max-width:600px) {
   .admin-login { width:100%; }
   .admin-login-art { min-height:0; display:flex; flex-direction:column; }
-  .admin-login-art>img { position:relative; width:100%; height:190px; object-position:50% 28%; }
-  .auth-register .admin-login-art>img { object-position:50% 18%; }
+  .admin-login-art>img { position:relative; width:100%; height:190px; object-position:50% 10%; }
+  .auth-register .admin-login-art>img { object-position:50% 4%; }
   .admin-login-art::after { display:none; }
   .admin-login-art>div { position:relative; inset:auto; padding:20px 24px; background:#23191b; }
   .admin-login-art h2 { font-size:1.5rem; }
@@ -193,7 +193,7 @@ main button[class*='from-brand-orange']:hover,main a[class*='from-brand-orange']
   .admin-login-form { padding:24px; }
 }
 @media(max-width:600px) {
-  .auth-register .admin-login-art>img { object-position:50% 0%; }
+  .auth-register .admin-login-art>img { object-position:50% 4%; }
   .brand { min-width:0; }
   .brand small { max-width:clamp(110px,36vw,180px); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .header-actions { flex-shrink:0; gap:8px; }

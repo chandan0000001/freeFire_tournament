@@ -49,6 +49,9 @@ Public asset configuration:
 | `VITE_SOLO_IMAGE` | `/images/chilika-solo.webp` |
 | `VITE_ACCOUNT_IMAGE` | `/images/arena-account.webp` |
 | `VITE_CHAMPION_IMAGE` | `/images/odisha-champion.webp` |
+| `VITE_MVP_IMAGE` | `/images/odisha-mvp.webp` |
+| `VITE_RULES_IMAGE` | `/images/kalinga-squad.webp` |
+| `VITE_COMMAND_IMAGE` | `/images/arena-command.webp` |
 | `VITE_ORGANIZER_IMAGE` | `/images/rahul.webp` |
 
 ### Free Fire + Odisha Photorealistic Collection
@@ -59,9 +62,21 @@ Photorealistic widescreen compositions matching authentic Odisha Free Fire espor
 | --- | --- | --- |
 | `/images/odisha-squad.webp` | Cliffside Squad Sunset overlooking Konark coast | Hero banner / Squad cards |
 | `/images/konark-squad.webp` | Temple steps squad with glowing airdrop crate | Squad tournament cards |
-| `/images/chilika-solo.webp` | Solo operative at Chilika lake lagoon at dawn | Solo cards / Winners |
-| `/images/odisha-champion.webp` | Odisha esports champion operative | MVP spotlight / Leaderboard |
-| `/images/arena-account.webp` | Operative overlooking coastal arena at sunset | Account registration banner |
+| `/images/puri-coast.webp` | Ancient Puri sea beach stone pillars at sunset | Tournament banner option |
+| `/images/barabati-fort.webp` | Barabati fortress stone ramparts & arches in Cuttack | Tournament banner option |
+| `/images/hirakud-dam.webp` | Sharpshooters overlooking vast Hirakud reservoir | Tournament banner option |
+| `/images/similipal-forest.webp` | Tactical patrol in misty sal forest and waterfalls | Tournament banner option |
+| `/images/paradip-port.webp` | Twilight cargo shipping containers at Paradip | Tournament banner option |
+| `/images/chilika-dawn.webp` | Solo canoe operative gliding on Chilika Lake | Solo cards / Winners |
+| `/images/koraput-valley.webp` | Sharpshooter scout overlooking Koraput valley | Tournament banner option |
+| `/images/rourkela-citadel.webp` | Steel citadel industrial battleground at night | Tournament banner option |
+| `/images/bhubaneswar-courtyard.webp` | Sandstone courtyard squad with airdrop supply | Tournament banner option |
+| `/images/gopalpur-beach.webp` | Shoreline tactical advance with historic lighthouse | Tournament banner option |
+| `/images/kalinga-squad.webp` | Temple battlements tactical squad at golden sunset | Rules / Fair Play Guardian |
+| `/images/odisha-mvp.webp` | MVP Gunslinger champion portrait with Sambalpuri collar | MVP Spotlight / Leaderboard |
+| `/images/arena-command.webp` | Esports command room with RGB setup overlooking coast | Admin workspace / Setup |
+| `/images/odisha-champion.webp` | Odisha esports champion operative | Registration page banner |
+| `/images/arena-account.webp` | Operative overlooking coastal arena at sunset | Login / Reset password pages |
 | `/images/rahul.webp` | Rahul organizer portrait | Organizer badge / Community |
 
 The website logo and favicons feature the custom Free Fire Odisha cyber-warrior emblem with the glowing Konark Chakra wheel.

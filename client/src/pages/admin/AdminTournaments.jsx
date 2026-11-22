@@ -32,18 +32,36 @@ export default function AdminTournaments() {
   // Curated photorealistic 16:9 widescreen Free Fire tournament banners
   const BANNER_OPTIONS = [
     { label: 'Odisha squad champions (site default)', value: '' },
-    { label: 'Cliffside Squad · Sunset (16:9)', value: site.heroImage },
+    { label: 'Cliffside Squad · Konark Sunset (16:9)', value: site.heroImage },
     { label: 'Konark Temple · Squad Steps (16:9)', value: site.tournamentImage },
-    { label: 'Chilika Lake · Solo Recon (16:9)', value: site.soloImage },
-    { label: 'Top Fragger · Gunslinger', value: site.championImage },
-    { label: 'Odisha Arena · Command Station (16:9)', value: site.accountImage },
+    { label: 'Puri Coast · Sunset Pillars (16:9)', value: '/images/puri-coast.webp' },
+    { label: 'Barabati Fort · Ancient Ramparts (16:9)', value: '/images/barabati-fort.webp' },
+    { label: 'Hirakud Dam · Sharpshooter Ridge (16:9)', value: '/images/hirakud-dam.webp' },
+    { label: 'Similipal Forest · Misty Patrol (16:9)', value: '/images/similipal-forest.webp' },
+    { label: 'Paradip Port · Twilight Docks (16:9)', value: '/images/paradip-port.webp' },
+    { label: 'Chilika Lake · Dawn Solo Recon (16:9)', value: '/images/chilika-dawn.webp' },
+    { label: 'Koraput Valley · Mountain Scout (16:9)', value: '/images/koraput-valley.webp' },
+    { label: 'Rourkela Citadel · Steel Arena (16:9)', value: '/images/rourkela-citadel.webp' },
+    { label: 'Bhubaneswar · Sandstone Courtyard (16:9)', value: '/images/bhubaneswar-courtyard.webp' },
+    { label: 'Gopalpur Beach · Coastal Recon (16:9)', value: '/images/gopalpur-beach.webp' },
+    { label: 'Kalinga Citadel · Battlements Squad (16:9)', value: '/images/kalinga-squad.webp' },
+    { label: 'Odisha Arena · Command Station (16:9)', value: '/images/arena-command.webp' },
   ];
 
   const RANDOM_BANNERS = [
     site.heroImage,
     site.tournamentImage,
-    site.soloImage,
-    site.championImage,
+    '/images/puri-coast.webp',
+    '/images/barabati-fort.webp',
+    '/images/hirakud-dam.webp',
+    '/images/similipal-forest.webp',
+    '/images/paradip-port.webp',
+    '/images/chilika-dawn.webp',
+    '/images/koraput-valley.webp',
+    '/images/rourkela-citadel.webp',
+    '/images/bhubaneswar-courtyard.webp',
+    '/images/gopalpur-beach.webp',
+    '/images/kalinga-squad.webp',
   ];
 
   // Form state

@@ -175,7 +175,7 @@ export default function WinnersPage() {
 
             <div className="rounded-2xl bg-[#1c1b1e] border border-cyan-500/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-cyan-400 transition-all">
               <div className="w-28 h-32 rounded-xl mx-auto overflow-hidden border border-white/10 shadow-lg">
-                <ResponsiveImage sizes="(max-width: 640px) 100vw, 420px" src={site.championImage} alt="MVP Gunslinger" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                <ResponsiveImage sizes="(max-width: 640px) 100vw, 420px" src={site.mvpImage} alt="MVP Gunslinger" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>
               <div>
                 <span className="text-[10px] uppercase font-bold text-cyan-400 block tracking-wider">Tournament MVP</span>
