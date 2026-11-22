@@ -2,20 +2,24 @@ import { getBrevoApi, SendSmtpEmail } from '../config/brevo.js';
 import { SiteSetting } from '../models/SiteSetting.js';
 
 const getSender = async () => {
+  let senderName = process.env.SITE_NAME || process.env.EMAIL_FROM_NAME || 'Rahul Esports';
+  let senderEmail = process.env.EMAIL_FROM || 'rittournament01@gmail.com';
+
   try {
     const setting = await SiteSetting.findOne().lean();
     if (setting?.brevoSenderEmail) {
-      return {
-        email: setting.brevoSenderEmail.trim(),
-        name: setting.collegeName || process.env.EMAIL_FROM_NAME || 'Rahul Esports',
-      };
+      senderEmail = setting.brevoSenderEmail.trim();
+    }
+    if (setting?.collegeName && !setting.collegeName.includes('RIT') && !setting.collegeName.includes('Roland')) {
+      senderName = setting.collegeName;
     }
   } catch (e) {
     // fallback
   }
+
   return {
-    email: process.env.EMAIL_FROM || 'kumardalaichandan803@gmail.com',
-    name: process.env.EMAIL_FROM_NAME || 'Rahul Esports',
+    email: senderEmail,
+    name: senderName,
   };
 };
 

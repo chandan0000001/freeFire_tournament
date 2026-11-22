@@ -7,6 +7,7 @@ import {
   resetPasswordSchema,
 } from '../src/validations/authValidation.js';
 import { redisAuth } from '../src/config/redis.js';
+import { resolveClientBase } from '../src/controllers/authController.js';
 
 test('Auth Zod Validation: Register schema enforces required fields and security rules', () => {
   // Invalid registration: short name, bad phone, weak password
@@ -77,4 +78,32 @@ test('Redis Auth Helpers: Rate limiting and Reset Token caching operate correctl
   await redisAuth.clearResetToken(sampleToken);
   const cleared = await redisAuth.getResetToken(sampleToken);
   assert.equal(cleared, null);
+});
+
+test('Client Base URL Resolver: Prevents comma-separated URL bug and extracts valid single origin', () => {
+  const origEnvClient = process.env.CLIENT_URL;
+  const origNodeEnv = process.env.NODE_ENV;
+
+  try {
+    // 1. Simulates production environment with comma-separated CLIENT_URL
+    process.env.CLIENT_URL = 'http://localhost:5173,https://rittournament.vercel.app';
+    process.env.NODE_ENV = 'production';
+
+    // When request has Origin header, it must take precedence
+    const reqWithOrigin = { headers: { origin: 'https://rittournament.vercel.app' } };
+    assert.equal(resolveClientBase(reqWithOrigin), 'https://rittournament.vercel.app');
+
+    // When request has no Origin, it must pick single valid production URL without comma
+    const reqNoOrigin = { headers: {} };
+    assert.equal(resolveClientBase(reqNoOrigin), 'https://rittournament.vercel.app');
+    assert.ok(!resolveClientBase(reqNoOrigin).includes(','));
+
+    // In development mode, prefers localhost
+    process.env.NODE_ENV = 'development';
+    assert.equal(resolveClientBase(reqNoOrigin), 'http://localhost:5173');
+    assert.ok(!resolveClientBase(reqNoOrigin).includes(','));
+  } finally {
+    process.env.CLIENT_URL = origEnvClient;
+    process.env.NODE_ENV = origNodeEnv;
+  }
 });

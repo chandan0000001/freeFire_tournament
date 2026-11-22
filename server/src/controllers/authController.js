@@ -245,6 +245,43 @@ export const adminLogin = async (req, res, next) => {
 };
 
 /**
+ * Helper to reliably resolve a single, valid Client Base URL for links.
+ * Prevents issues with comma-separated CLIENT_URL or missing origin headers.
+ */
+export const resolveClientBase = (req) => {
+  // 1. If Origin or Referer header is present and valid, trust the client caller
+  const rawOrigin = req.headers?.origin || (req.headers?.referer ? (() => {
+    try { return new URL(req.headers.referer).origin; } catch (e) { return null; }
+  })() : null);
+
+  if (rawOrigin && typeof rawOrigin === 'string' && /^https?:\/\//i.test(rawOrigin)) {
+    return rawOrigin.replace(/\/+$/, '');
+  }
+
+  // 2. Parse CLIENT_URL from environment (safely handles comma-separated lists)
+  if (process.env.CLIENT_URL) {
+    const candidateUrls = process.env.CLIENT_URL
+      .split(',')
+      .map((s) => s.trim().replace(/\/+$/, ''))
+      .filter((s) => /^https?:\/\//i.test(s));
+
+    if (candidateUrls.length > 0) {
+      if (process.env.NODE_ENV === 'production') {
+        const prodUrl = candidateUrls.find((u) => u.startsWith('https://'));
+        return prodUrl || candidateUrls[0];
+      }
+      const localUrl = candidateUrls.find((u) => u.includes('localhost') || u.includes('127.0.0.1'));
+      return localUrl || candidateUrls[0];
+    }
+  }
+
+  // 3. Fallback default
+  return process.env.NODE_ENV === 'production'
+    ? 'https://rittournament.vercel.app'
+    : 'http://localhost:5173';
+};
+
+/**
  * Forgot Password - Generates Single-Use Reset Token & Sends Brevo Email
  */
 export const forgotPassword = async (req, res, next) => {
@@ -294,12 +331,8 @@ export const forgotPassword = async (req, res, next) => {
       email: user.email,
     }, 900);
 
-    // Determine Client Base URL
-    const clientBase =
-      process.env.CLIENT_URL ||
-      req.headers.origin ||
-      (process.env.NODE_ENV === 'production' ? 'https://rittournament.vercel.app' : 'http://localhost:5173');
-
+    // Determine clean single Client Base URL
+    const clientBase = resolveClientBase(req);
     const resetUrl = `${clientBase}/reset-password?token=${rawToken}`;
 
     // Send email via Brevo
