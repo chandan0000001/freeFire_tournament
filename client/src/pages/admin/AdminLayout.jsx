@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Trophy, CreditCard, KeyRound, FileCheck, Gift, Coins, Settings, ScrollText, LogOut, Menu, X, ShieldCheck, Globe } from 'lucide-react';
+import { LayoutDashboard, Trophy, CreditCard, KeyRound, FileCheck, Gift, Settings, ScrollText, LogOut, Menu, X, ShieldCheck, Globe } from 'lucide-react';
 import { site } from '../../config/site.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 const navItems = [
@@ -10,7 +10,6 @@ const navItems = [
   ['Room management', '/admin/rooms', KeyRound],
   ['Results & review', '/admin/results', FileCheck],
   ['Prizes & payouts', '/admin/prizes', Gift],
-  ['Wallet & withdrawals', '/admin/withdrawals', Coins],
   ['Site settings', '/admin/settings', Settings],
   ['Audit trail', '/admin/audit-logs', ScrollText],
 ];

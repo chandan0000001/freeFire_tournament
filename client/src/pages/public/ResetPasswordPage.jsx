@@ -70,7 +70,7 @@ export default function ResetPasswordPage() {
         <div>
           <span className="eyebrow">{site.region.toUpperCase()}’S ARENA</span>
           <h2>Account Security.<br />Updated.</h2>
-          <p>Choose a secure password to protect your coin wallet, match entries, and withdrawals.</p>
+          <p>Choose a secure password to protect your player account, match entries, and tournament registrations.</p>
         </div>
       </div>
 

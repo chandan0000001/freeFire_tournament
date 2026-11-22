@@ -25,7 +25,7 @@ Frontend is built with React, Vite, and Tailwind CSS. Backend is powered by Node
 ### 3. Unified Authentication & Security Guardrails
 - **Single Auth Path**: All users (players and administrators) authenticate exclusively through `/login` and `/register`. Dedicated `/admin/login` paths redirect seamlessly to `/login`.
 - **Streamlined Signup**: Essential player fields only: Full Name, Email, WhatsApp Mobile Number, and Password.
-- **Protected User Portals**: Tournament registration (`/join/squad/*`, `/join/solo/*`), tracking (`/status`, `/my-registrations`), and player wallet (`/wallet`) require authentication.
+- **Protected User Portals**: Tournament registration (`/join/squad/*`, `/join/solo/*`) and personal registration tracking (`/status`, `/my-registrations`) require authentication.
 - **Multi-Origin Password Reset**: Token-based password reset resolution safely parses single and comma-separated `CLIENT_URL` configurations, ensuring password reset links resolve to valid origins.
 
 ### 4. Tournament Registration & Match Coordination
@@ -42,7 +42,7 @@ Frontend is built with React, Vite, and Tailwind CSS. Backend is powered by Node
 - Real-time tournament leaderboard tracking Squads and Individual Players.
 - Tracks Booyahs, kills, placement points, In-Game Names (IGN), and verified Free Fire UIDs with 1-click copy capability.
 - Admin result review interface supports manual or automated entry of player UIDs, kills, and ranks.
-- Idempotent prize allocation preventing duplicate wallet or cash rewards upon result re-publication.
+- Idempotent prize allocation preventing duplicate cash rewards upon result re-publication.
 
 ---
 

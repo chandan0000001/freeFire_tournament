@@ -26,7 +26,6 @@ const WinnersPage = lazy(() => import('./pages/public/WinnersPage.jsx'));
 const RulesPage = lazy(() => import('./pages/public/RulesPage.jsx'));
 const PrivacyPolicyPage = lazy(() => import('./pages/public/PrivacyPolicyPage.jsx'));
 const ContactPage = lazy(() => import('./pages/public/ContactPage.jsx'));
-const WalletPage = lazy(() => import('./pages/public/WalletPage.jsx'));
 const LoginPage = lazy(() => import('./pages/public/LoginPage.jsx'));
 const RegisterPage = lazy(() => import('./pages/public/RegisterPage.jsx'));
 const ForgotPasswordPage = lazy(() => import('./pages/public/ForgotPasswordPage.jsx'));
@@ -40,7 +39,6 @@ const AdminRegistrations = lazy(() => import('./pages/admin/AdminRegistrations.j
 const AdminRooms = lazy(() => import('./pages/admin/AdminRooms.jsx'));
 const AdminResultsReview = lazy(() => import('./pages/admin/AdminResultsReview.jsx'));
 const AdminPrizes = lazy(() => import('./pages/admin/AdminPrizes.jsx'));
-const AdminWithdrawals = lazy(() => import('./pages/admin/AdminWithdrawals.jsx'));
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings.jsx'));
 const AdminAuditLogs = lazy(() => import('./pages/admin/AdminAuditLogs.jsx'));
 
@@ -132,15 +130,8 @@ export default function App() {
                 }
               />
 
-              {/* Protected Player Wallet (Login Required) */}
-              <Route
-                path="/wallet"
-                element={
-                  <ProtectedPlayerRoute>
-                    <PublicShell><WalletPage /></PublicShell>
-                  </ProtectedPlayerRoute>
-                }
-              />
+              {/* Redirect legacy wallet path to tournaments */}
+              <Route path="/wallet" element={<Navigate to="/tournaments" replace />} />
 
               {/* Unified Auth Pages */}
               <Route path="/admin/login" element={<Navigate to="/login" replace />} />
@@ -165,7 +156,7 @@ export default function App() {
                 <Route path="rooms" element={<AdminRooms />} />
                 <Route path="results" element={<AdminResultsReview />} />
                 <Route path="prizes" element={<AdminPrizes />} />
-                <Route path="withdrawals" element={<AdminWithdrawals />} />
+                <Route path="withdrawals" element={<Navigate to="/admin/dashboard" replace />} />
                 <Route path="settings" element={<AdminSettings />} />
                 <Route path="audit-logs" element={<AdminAuditLogs />} />
               </Route>

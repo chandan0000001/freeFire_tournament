@@ -13,7 +13,6 @@ body { background:var(--odisha-ink); color:#f3e9e7; }
 .brand small [lang=or] { color:#edbd78; }
 .desktop-nav { color:#c5b0b8; gap:20px; }
 .desktop-nav a:hover { color:#edbd78; }
-.wallet-link { background:#39202a; border-color:#70414e; color:#f4d4aa; }
 .mobile-nav .active { background:#482330; color:#efc78c; }
 .arena-hero { min-height:555px; border-radius:12px; border-color:#744331; background:#250e16; }
 .hero-image { object-position:center; }

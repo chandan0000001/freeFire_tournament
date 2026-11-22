@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Menu, X, Wallet, User, LogOut } from 'lucide-react';
+import { Menu, X, User, LogOut } from 'lucide-react';
 import { site } from '../../config/site.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 
@@ -16,7 +16,7 @@ const links = [
 export default function Navbar() {
   const [open, setOpen] = useState(false);
   const { pathname } = useLocation();
-  const { isAdmin, user, wallet, logout } = useAuth();
+  const { isAdmin, user, logout } = useAuth();
 
   useEffect(() => {
     setOpen(false);

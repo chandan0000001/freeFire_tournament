@@ -17,7 +17,6 @@ import {
   ArrowLeft,
   CheckCircle,
   AlertCircle,
-  Coins,
   MessageCircle
 } from 'lucide-react';
 
@@ -30,7 +29,7 @@ export default function TournamentDetailPage() {
 
   usePageMeta(
     tournament ? `${tournament.title} | Free Fire Tournament | ${site.name}` : `Tournament Details | ${site.name}`,
-    tournament ? `Join ${tournament.title} with prize pool of ₹${tournament.prizeConfig?.totalPool ?? 0}. Format: ${tournament.gameMode || 'Battle Royale'}, Entry: ${tournament.entryFee || 0} Coins. Open to all competitive players.` : 'View Free Fire tournament details, schedules, scoring system, and prize breakdown.'
+    tournament ? `Join ${tournament.title} with prize pool of ₹${tournament.prizeConfig?.totalPool ?? 0}. Format: ${tournament.gameMode || 'Battle Royale'}, Entry: ₹${tournament.entryFee || 0}. Open to all competitive players.` : 'View Free Fire tournament details, schedules, scoring system, and prize breakdown.'
   );
 
   const [refreshVersion, setRefreshVersion] = useState(0);

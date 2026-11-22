@@ -44,7 +44,7 @@ export default function PrivacyPolicyPage() {
             </li>
             <li className="flex items-start gap-2">
               <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
-              <span><strong>Payment & Wallet Data:</strong> Coin balance transactions and UPI Reference / Transaction IDs provided to confirm tournament slot entry or process withdrawals.</span>
+              <span><strong>Payment Data:</strong> 12-digit UPI UTR Transaction IDs provided to confirm tournament slot entry and match scheduling.</span>
             </li>
           </ul>
         </div>
@@ -57,10 +57,10 @@ export default function PrivacyPolicyPage() {
           <p>Your information is used exclusively to facilitate fair and transparent tournament operations:</p>
           <ul className="space-y-1.5 pl-2">
             <li>• Verifying that all participants are registered with legitimate Free Fire mobile accounts.</li>
-            <li>• Securely dispatching Custom Room ID and Password via Brevo transactional emails to verified team captains.</li>
+            <li>• Securely dispatching Custom Room ID and Password via Brevo transactional emails and WhatsApp to verified team leaders.</li>
             <li>• Tracking match kills and placement scores via referee observations.</li>
             <li>• Displaying leaderboard ranks and Hall of Fame winner honors.</li>
-            <li>• Releasing UPI cash prize payouts and processing coin withdrawals directly to winning players.</li>
+            <li>• Releasing UPI cash prize payouts directly to winning players.</li>
           </ul>
         </div>
 
@@ -85,7 +85,7 @@ export default function PrivacyPolicyPage() {
             <Mail className="w-4 h-4 text-emerald-400" /> 4. Contact Tournament Administration
           </h2>
           <p>
-            If you have questions regarding data privacy, wallet transactions, or leaderboard rankings, contact our administration:
+            If you have questions regarding data privacy, tournament registrations, or leaderboard rankings, contact our administration:
           </p>
           <div className="p-3 rounded-lg bg-[#111214] border border-[#393236] space-y-1 font-mono text-slate-300">
             <p>Admin Email: <span className="text-white">{site.contactEmail || 'Contact the organizer through the support page'}</span></p>

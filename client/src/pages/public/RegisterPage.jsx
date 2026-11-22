@@ -65,14 +65,14 @@ export default function RegisterPage() {
         <div>
           <span className="eyebrow">{site.region.toUpperCase()}’S ARENA</span>
           <h2>Your legacy.<br />Starts here.</h2>
-          <p>Join Rahul Esports. Fast registrations, instant coin wallet, and verified competitive Free Fire custom rooms.</p>
+          <p>Join Rahul Esports. Fast registrations, direct UPI slot confirmation, and verified competitive Free Fire custom rooms.</p>
         </div>
       </div>
 
       <div className="admin-login-form">
         <Link className="text-link" to="/">Back to the arena</Link>
         <h1>Create your account</h1>
-        <p>Enter your details below to open your player account and coin wallet.</p>
+        <p>Enter your details below to create your player account.</p>
 
         {error && <div role="alert" className="login-error">{error}</div>}
 

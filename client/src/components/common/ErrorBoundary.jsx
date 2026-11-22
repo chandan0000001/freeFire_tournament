@@ -39,7 +39,7 @@ export default class ErrorBoundary extends React.Component {
                 Arena Signal Disrupted
               </h2>
               <p className="text-xs text-slate-300 leading-relaxed">
-                An unexpected interface issue occurred. Your wallet balance and tournament slots are safe.
+                An unexpected interface issue occurred. Your tournament slots and registration details are safe.
               </p>
             </div>
 

@@ -1,7 +1,7 @@
 import ResponsiveImage from '../common/ResponsiveImage.jsx';
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { CalendarDays, Users, MapPin, Coins, MessageCircle } from 'lucide-react';
+import { CalendarDays, Users, MapPin, MessageCircle } from 'lucide-react';
 import { site, tournamentArtwork } from '../../config/site.js';
 import { tournamentAvailability } from '../../utils/tournament.js';
 
