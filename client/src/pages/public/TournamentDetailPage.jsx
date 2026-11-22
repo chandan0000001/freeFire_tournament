@@ -13,7 +13,9 @@ import {
   Flame, 
   ArrowLeft,
   CheckCircle,
-  AlertCircle
+  AlertCircle,
+  Coins,
+  MessageCircle
 } from 'lucide-react';
 
 export default function TournamentDetailPage() {
@@ -129,7 +131,10 @@ export default function TournamentDetailPage() {
           <div className="grid grid-cols-3 gap-4 sm:gap-8 w-full md:w-auto">
             <div>
               <p className="text-[10px] uppercase font-bold text-slate-400">Entry Fee</p>
-              <p className="text-xl font-display font-bold text-white">₹{tournament.entryFee}</p>
+              <p className="text-xl font-display font-bold text-amber-400 flex items-center gap-1">
+                <Coins className="w-5 h-5 text-amber-400 shrink-0" />
+                {tournament.entryFee} Coins
+              </p>
             </div>
             <div>
               <p className="text-[10px] uppercase font-bold text-slate-400">Prize Pool</p>
@@ -148,9 +153,10 @@ export default function TournamentDetailPage() {
             {availability.canRegister ? (
               <Link
                 to={tournament.format === 'squad' ? `/join/squad/${tournament._id}` : `/join/solo/${tournament._id}`}
-                className="w-full md:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber text-white font-display font-bold text-sm uppercase tracking-wider shadow-glow-orange hover:brightness-110 active:scale-95 transition-all text-center"
+                className="w-full md:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber text-white font-display font-bold text-sm uppercase tracking-wider shadow-glow-orange hover:brightness-110 active:scale-95 transition-all text-center flex items-center justify-center gap-2"
               >
-                Register Now (₹{tournament.entryFee})
+                <Coins className="w-4 h-4 text-white" />
+                Register ({tournament.entryFee} Coins)
               </Link>
             ) : (
               <button
@@ -205,7 +211,7 @@ export default function TournamentDetailPage() {
             <div className="p-6 rounded-xl bg-[#24171e] border border-[#49303a] space-y-4">
               <h3 className="font-display text-xl font-bold uppercase text-white">About the Tournament</h3>
               <p className="text-sm text-slate-300 leading-relaxed">
-                {tournament.description || 'Welcome to this week’s official Free Fire college match! Bring your best team and battle for the Booyah.'}
+                {tournament.description || 'Welcome to this week’s official Free Fire tournament! Bring your best gameplay and battle for the Booyah.'}
               </p>
             </div>
 
@@ -271,6 +277,17 @@ export default function TournamentDetailPage() {
                 </p>
               </div>
 
+              {/* WhatsApp Room ID Notice */}
+              <div className="p-3.5 rounded-xl bg-emerald-950/60 border border-emerald-500/40 space-y-1">
+                <div className="flex items-center gap-1.5 text-emerald-400 font-bold text-xs uppercase">
+                  <MessageCircle className="w-4 h-4 shrink-0" />
+                  <span>Room ID Delivery Notice</span>
+                </div>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  Room ID & Password are sent to your <strong>{tournament.format === 'squad' ? "Team Leader's" : "Player's"} WhatsApp</strong> (and Email) 15–30 mins before kick-off.
+                </p>
+              </div>
+
               <div className="pt-4 border-t border-[#49303a] space-y-3 text-xs text-slate-300">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
@@ -280,9 +297,9 @@ export default function TournamentDetailPage() {
                   <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>Mobile devices only (No PC/Emulators)</span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-emerald-300 font-medium">
                   <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Room details sent to your registered email</span>
+                  <span>Room ID & Password sent to Captain's WhatsApp</span>
                 </div>
               </div>
             </div>

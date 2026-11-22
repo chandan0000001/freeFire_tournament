@@ -45,7 +45,7 @@ export default function WinnersPage() {
           Tournament Champions
         </h1>
         <p className="text-xs text-slate-400">
-          Celebrating the college's elite Free Fire squads and solo gunslingers.
+          Celebrating Odisha's elite Free Fire squads and solo gunslingers.
         </p>
       </div>
 

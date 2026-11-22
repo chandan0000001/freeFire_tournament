@@ -11,14 +11,13 @@ import {
   CheckCircle, 
   MessageCircle, 
   Copy, 
-  Zap,
   Coins,
-  CreditCard 
+  AlertCircle
 } from 'lucide-react';
 
 export default function SoloRegisterPage() {
+  usePageMeta('Solo Registration (1 Player) | Rahul Esports', 'Register as a solo Free Fire player using in-app wallet coins. Room ID & password dispatched to Player WhatsApp.');
   const { tournamentId } = useParams();
-  usePageMeta('Solo Registration | Free Fire Tournament | Rahul Esports Odisha', 'Register as a solo Free Fire player for Rahul Esports weekly tournaments. In-app coin entry and room verification.');
 
   const [tournament, setTournament] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -26,17 +25,20 @@ export default function SoloRegisterPage() {
   const [error, setError] = useState('');
   const [successData, setSuccessData] = useState(null);
   const [copied, setCopied] = useState(false);
-  const [paymentMethod, setPaymentMethod] = useState('WALLET_COINS'); // 'WALLET_COINS' | 'MANUAL_UPI'
 
   // Form state
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
-  const [collegeRollNo, setCollegeRollNo] = useState('');
+  const [location, setLocation] = useState('');
   const [inGameName, setInGameName] = useState('');
   const [freeFireUid, setFreeFireUid] = useState('');
   const [isConsentPublic, setIsConsentPublic] = useState(false);
   const [agreed, setAgreed] = useState(false);
+
+  // Live Wallet Balance State
+  const [walletBalance, setWalletBalance] = useState(null);
+  const [walletLoading, setWalletLoading] = useState(false);
 
   useEffect(() => {
     const fetchTournament = async () => {
@@ -59,16 +61,49 @@ export default function SoloRegisterPage() {
     fetchTournament();
   }, [tournamentId]);
 
+  // Real-time wallet lookup for Player Email
+  useEffect(() => {
+    const trimmedEmail = email.trim().toLowerCase();
+    if (!trimmedEmail || !trimmedEmail.includes('@') || trimmedEmail.length < 5) {
+      setWalletBalance(null);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setWalletLoading(true);
+      try {
+        const res = await api.get(`/wallet/${encodeURIComponent(trimmedEmail)}`);
+        if (res.success && res.wallet) {
+          setWalletBalance(res.wallet.totalCoins || 0);
+        } else {
+          setWalletBalance(0);
+        }
+      } catch (err) {
+        setWalletBalance(0);
+      } finally {
+        setWalletLoading(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [email]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
 
     if (!tournament || tournament.format !== 'solo' || !tournamentAvailability(tournament).canRegister) {
-      setError('Registration is unavailable for this tournament or format. Please choose an open match.');
+      setError('Registration is unavailable for this tournament or format.');
       return;
     }
     if (!agreed) {
-      setError('Please agree to the tournament fair play rules & eligibility notice');
+      setError('Please agree to the tournament fair play rules & mobile-only policy');
+      return;
+    }
+
+    const requiredCoins = tournament.entryFee || 14;
+    if (walletBalance !== null && walletBalance < requiredCoins) {
+      setError(`Insufficient wallet coins! You need ${requiredCoins} Coins to register. Please top up your wallet.`);
       return;
     }
 
@@ -80,53 +115,37 @@ export default function SoloRegisterPage() {
 
     setSubmitting(true);
     try {
-      if (paymentMethod === 'WALLET_COINS') {
-        const payload = {
-          tournamentId,
-          format: 'solo',
-          captain: {
-            name,
-            email,
-            phone,
-            collegeRollNo: collegeRollNo || 'N/A',
-          },
-          players: [
-            {
-              name,
-              inGameName,
-              freeFireUid,
-              isConsentPublic,
-            },
-          ],
-        };
-        const res = await api.post(`/tournaments/${tournamentId}/join-with-coins`, payload);
-        if (res.success) {
-          setSuccessData(res);
-        }
-      } else {
-        const payload = {
-          tournamentId,
-          captain: {
-            name,
-            email,
-            phone,
-            collegeRollNo,
-          },
+      const payload = {
+        tournamentId,
+        format: 'solo',
+        captain: {
+          name,
+          email,
+          phone,
+          collegeRollNo: location || 'N/A',
           inGameName,
-          freeFireUid,
-          isConsentPublic,
-        };
+          freeFireUid: cleanUid,
+        },
+        players: [
+          {
+            name,
+            inGameName,
+            freeFireUid: cleanUid,
+            isConsentPublic,
+          },
+        ],
+      };
 
-        const res = await api.post('/registrations/solo', payload);
-        if (res.success) {
-          setSuccessData(res);
-        }
+      // Direct coin registration: deducts coins from wallet and confirms slot instantly
+      const res = await api.post(`/tournaments/${tournamentId}/join-with-coins`, payload);
+      if (res.success) {
+        setSuccessData(res);
       }
     } catch (err) {
       if (err.message && err.message.includes('Insufficient coins')) {
-        setError(`${err.message} You can top up coins in your Player Wallet.`);
+        setError(`${err.message} Please top up your wallet first.`);
       } else {
-        setError(err.message || 'Solo registration failed. Please check your inputs.');
+        setError(err.message || 'Solo registration failed. Please verify your inputs.');
       }
     } finally {
       setSubmitting(false);
@@ -141,31 +160,31 @@ export default function SoloRegisterPage() {
 
   if (loading) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-20 text-center">
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
         <div className="w-10 h-10 border-4 border-brand-orange border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
         <p className="text-slate-400 text-sm">Loading registration portal...</p>
       </div>
     );
   }
 
-  // Success State
+  // Registration Confirmed View
   if (successData) {
-    const { registration, paymentInstructions } = successData;
-    const isCoinsPaid = registration?.paymentStatus === 'verified';
+    const { registration } = successData;
+    const requiredCoins = tournament?.entryFee || 14;
 
     return (
       <div className="max-w-xl mx-auto px-4 py-10">
-        <div className="p-6 sm:p-8 rounded-2xl bg-[#24171e] border border-emerald-500/40 text-center space-y-6 shadow-2xl">
+        <div className="p-6 sm:p-8 rounded-2xl bg-[#121722] border border-emerald-500/40 text-center space-y-6 shadow-2xl">
           <div className="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto">
             <CheckCircle className="w-7 h-7" />
           </div>
 
           <div>
             <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">
-              {isCoinsPaid ? 'Solo Slot Confirmed & Verified Instantly' : 'Solo Slot Reserved — Payment Required'}
+              Solo Slot Confirmed Instantly
             </span>
             <h2 className="font-display text-2xl sm:text-3xl font-extrabold uppercase text-white mt-1">
-              {registration?.inGameName}
+              {registration?.players?.[0]?.inGameName || inGameName}
             </h2>
             <p className="text-xs text-slate-300 mt-0.5">
               Tournament: <strong>{registration?.tournamentTitle || tournament?.title}</strong>
@@ -173,126 +192,60 @@ export default function SoloRegisterPage() {
           </div>
 
           {/* Reference ID Callout Box */}
-          <div className="p-4 rounded-xl bg-[#160e13] border border-[#49303a] flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-[#0B0E14] border border-[#1F293D] flex items-center justify-between">
             <div className="text-left">
               <p className="text-[10px] uppercase font-bold text-slate-400">Your Reference ID</p>
               <p className="font-mono text-xl font-bold text-brand-orange">{registration?.referenceId}</p>
             </div>
             <button
               onClick={() => copyToClipboard(registration?.referenceId || '')}
-              className="px-3 py-1.5 rounded-lg bg-[#301e27] text-xs text-slate-300 hover:text-white flex items-center gap-1.5 border border-[#49303a]"
+              className="px-3 py-1.5 rounded-lg bg-[#161B26] text-xs text-slate-300 hover:text-white flex items-center gap-1.5 border border-[#1F293D]"
             >
               <Copy className="w-3.5 h-3.5" />
               {copied ? 'Copied!' : 'Copy'}
             </button>
           </div>
 
-          {/* Coins Paid Notice */}
-          {isCoinsPaid && (
-            <div className="p-5 rounded-xl bg-emerald-950/40 border border-emerald-500/30 text-center space-y-2">
-              <span className="font-display font-extrabold text-base text-emerald-400 uppercase">
-                Paid with {tournament?.entryFee || 14} Wallet Coins
-              </span>
-              <p className="text-xs text-slate-300">
-                Your solo slot is confirmed. Custom Room ID and Password will be emailed to <strong>{email}</strong> before match kick-off.
-              </p>
-              <div className="pt-2">
-                <Link
-                  to="/tournaments"
-                  className="inline-block px-5 py-2 rounded-xl bg-brand-orange hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-wider"
-                >
-                  Return to Tournaments
-                </Link>
-              </div>
+          {/* Paid with Coins Notice */}
+          <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-500/30 flex items-center justify-center gap-2 text-amber-300 font-bold text-sm">
+            <Coins className="w-5 h-5 text-brand-orange" />
+            <span>Registered with {requiredCoins} Wallet Coins (Deducted from Wallet)</span>
+          </div>
+
+          {/* Prominent WhatsApp Delivery Confirmation */}
+          <div className="p-5 rounded-2xl bg-emerald-950/60 border border-emerald-500/50 space-y-2 text-center">
+            <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
+              <MessageCircle className="w-6 h-6" />
             </div>
-          )}
+            <h3 className="font-display font-extrabold text-base text-emerald-300 uppercase">
+              Room Credentials Will Arrive on WhatsApp
+            </h3>
+            <p className="text-xs text-slate-200 leading-relaxed max-w-md mx-auto">
+              Custom Room ID and Password will be sent directly to your <strong>WhatsApp: {phone}</strong> (and {email}) 15–30 minutes before match kick-off.
+            </p>
+          </div>
 
-          {/* UPI Payment Instructions Card */}
-          {!isCoinsPaid && paymentInstructions && (
-            <>
-              <div className="p-5 rounded-xl bg-[#160e13] border border-brand-amber/30 text-left space-y-4">
-                <div className="flex items-center justify-between border-b border-[#49303a] pb-3">
-                  <div>
-                    <span className="text-[10px] font-bold uppercase text-brand-amber">Payment Details</span>
-                    <p className="text-xs text-slate-300">
-                      Payee: <strong className="text-white">{paymentInstructions.payeeName || 'Admin'}</strong>
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <span className="text-[10px] font-bold uppercase text-slate-400">Amount</span>
-                    <p className="font-display text-xl font-extrabold text-emerald-400">₹{registration.entryFee}</p>
-                  </div>
-                </div>
-
-                {/* UPI ID with 1-click copy */}
-                <div className="flex items-center justify-between p-3 rounded-lg bg-[#301e27] border border-[#49303a]">
-                  <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400 block">UPI ID</span>
-                    <span className="font-mono font-bold text-sm text-cyan-400">{paymentInstructions.upiId}</span>
-                  </div>
-                  <button
-                    onClick={() => copyToClipboard(paymentInstructions.upiId)}
-                    className="px-3 py-1 rounded bg-slate-800 hover:bg-slate-700 text-xs text-slate-200 flex items-center gap-1"
-                  >
-                    <Copy className="w-3 h-3" /> Copy UPI
-                  </button>
-                </div>
-
-                {/* Scannable Dynamic QR Code */}
-                {paymentInstructions.qrCodeUrl && (
-                  <div className="text-center py-2 space-y-2">
-                    <div className="inline-block p-2 rounded-xl bg-white shadow-md">
-                      <img
-                        src={paymentInstructions.qrCodeUrl}
-                        alt="Scan UPI QR Code"
-                        className="w-44 h-44 object-contain mx-auto"
-                      />
-                    </div>
-                    <p className="text-[11px] text-slate-400">
-                      Scan with <strong>Google Pay</strong>, <strong>PhonePe</strong>, or <strong>Paytm</strong>
-                    </p>
-                  </div>
-                )}
-
-                {/* 1-Tap Mobile UPI App Link */}
-                {paymentInstructions.upiDeepLink && (
-                  <a
-                    href={paymentInstructions.upiDeepLink}
-                    className="w-full py-3 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 hover:brightness-110 text-white font-display font-bold uppercase tracking-wider text-xs shadow-md transition-all flex items-center justify-center gap-2"
-                  >
-                    <Zap className="w-4 h-4 text-amber-300 fill-amber-300" />
-                    Pay ₹{registration.entryFee} via Any UPI App (Mobile Only)
-                  </a>
-                )}
-              </div>
-
-              {/* 1-Tap WhatsApp CTA Button */}
-              <div className="space-y-2">
-                <p className="text-xs text-slate-400 text-left">
-                  After payment, send your payment screenshot & UTR to admin:
-                </p>
-                <a
-                  href={paymentInstructions.whatsappChatUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold uppercase tracking-wider text-sm transition-all shadow-lg flex items-center justify-center gap-2"
-                >
-                  <MessageCircle className="w-5 h-5 fill-slate-950" />
-                  Send Payment Screenshot on WhatsApp
-                </a>
-              </div>
-            </>
-          )}
-
-          <div className="pt-1">
-            <Link to="/status" className="text-xs text-slate-400 hover:text-brand-orange underline">
-              Check registration status later using Reference ID
+          <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
+            <Link
+              to="/tournaments"
+              className="px-6 py-2.5 rounded-xl bg-brand-orange hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-wider transition-colors"
+            >
+              Back to Tournaments
+            </Link>
+            <Link
+              to="/wallet"
+              className="px-6 py-2.5 rounded-xl bg-[#161B26] text-slate-300 hover:text-white border border-[#1F293D] font-bold text-xs uppercase tracking-wider transition-colors"
+            >
+              View Player Wallet
             </Link>
           </div>
         </div>
       </div>
     );
   }
+
+  const requiredCoins = tournament?.entryFee || 14;
+  const isInsufficient = walletBalance !== null && walletBalance < requiredCoins;
 
   return (
     <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
@@ -310,8 +263,21 @@ export default function SoloRegisterPage() {
           {tournament?.title || 'Solo Battle Registration'}
         </h1>
         <p className="text-xs text-slate-400 mt-1">
-          Entry Fee: <strong className="text-white">₹{tournament?.entryFee || 14}</strong>. No email OTP required.
+          Entry Fee: <strong className="text-amber-300">{requiredCoins} Coins</strong> (deducted from your Player Wallet).
         </p>
+      </div>
+
+      {/* Prominent WhatsApp Delivery Notice */}
+      <div className="p-4 rounded-xl bg-emerald-950/60 border border-emerald-500/40 flex items-start gap-3">
+        <MessageCircle className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+        <div>
+          <strong className="text-white text-xs sm:text-sm font-bold block uppercase tracking-wide">
+            Room ID & Password Delivery Notice
+          </strong>
+          <p className="text-xs text-slate-300 leading-relaxed mt-0.5">
+            Custom Room ID and Password will be sent directly to your <strong>WhatsApp ({phone || 'Your Phone Number'})</strong> 15–30 minutes before match kick-off.
+          </p>
+        </div>
       </div>
 
       {error && (
@@ -321,88 +287,99 @@ export default function SoloRegisterPage() {
         </div>
       )}
 
-      {/* Form Card */}
-      <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-6">
+      {/* Registration Form */}
+      <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl bg-[#121722] border border-[#1F293D] space-y-6">
         
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Full Name (Player) *</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Rahul Sharma"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
-            />
-          </div>
+        {/* Player Details */}
+        <div className="space-y-4">
+          <h3 className="font-display text-lg font-bold uppercase text-white border-b border-[#1F293D] pb-2">
+            Player Information & Credentials
+          </h3>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">City & State (Location) *</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Bhubaneswar, Odisha"
-              value={collegeRollNo}
-              onChange={(e) => setCollegeRollNo(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
-            />
-          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Full Name *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Rahul Sharma"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Free Fire In-Game Name (IGN) *</label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Apex_Sniper"
-              value={inGameName}
-              onChange={(e) => setInGameName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
-            />
-          </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">City & State (Location) *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Berhampur, Odisha"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
-              Free Fire UID (6–17 Digits Only) *
-            </label>
-            <input
-              type="text"
-              required
-              maxLength={17}
-              placeholder="e.g. 1401364963"
-              value={freeFireUid}
-              onChange={(e) => setFreeFireUid(e.target.value.replace(/[^0-9]/g, '').slice(0, 17))}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
-            />
-            {freeFireUid && freeFireUid.length < 6 && (
-              <span className="text-[10px] text-rose-400 mt-1 block">
-                Must be at least 6 digits ({freeFireUid.length}/6)
-              </span>
-            )}
-          </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Free Fire In-Game Name (IGN) *</label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Apex_Sniper"
+                value={inGameName}
+                onChange={(e) => setInGameName(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Email * (For Room Credentials)</label>
-            <input
-              type="email"
-              required
-              placeholder="yourname@gmail.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
-            />
-          </div>
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                Free Fire UID (6–17 Digits Only) *
+              </label>
+              <input
+                type="text"
+                required
+                maxLength={17}
+                placeholder="e.g. 1401364963"
+                value={freeFireUid}
+                onChange={(e) => setFreeFireUid(e.target.value.replace(/[^0-9]/g, '').slice(0, 17))}
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
+              />
+              {freeFireUid && freeFireUid.length < 6 && (
+                <span className="text-[10px] text-rose-400 mt-1 block">
+                  Must be at least 6 digits ({freeFireUid.length}/6)
+                </span>
+              )}
+            </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Phone (WhatsApp) *</label>
-            <input
-              type="tel"
-              required
-              placeholder="10-digit mobile number"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
-            />
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                Email * (Wallet Account)
+              </label>
+              <input
+                type="email"
+                required
+                placeholder="player@gmail.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
+                Phone (WhatsApp for Room ID) *
+              </label>
+              <input
+                type="tel"
+                required
+                placeholder="10-digit WhatsApp number"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+              />
+            </div>
           </div>
         </div>
 
@@ -413,7 +390,7 @@ export default function SoloRegisterPage() {
               type="checkbox"
               checked={isConsentPublic}
               onChange={(e) => setIsConsentPublic(e.target.checked)}
-              className="w-4 h-4 rounded text-brand-orange focus:ring-0 bg-[#160e13] border-[#49303a]"
+              className="w-4 h-4 rounded text-brand-orange focus:ring-0 bg-[#0B0E14] border-[#1F293D]"
             />
             <span className="text-xs text-slate-300">
               Allow displaying my Free Fire UID on public leaderboard and winners podium.
@@ -421,86 +398,81 @@ export default function SoloRegisterPage() {
           </label>
         </div>
 
-        {/* Payment Method Selector */}
-        <div className="pt-2 space-y-2">
-          <label className="block text-xs font-semibold text-slate-300 uppercase">
-            Choose Payment Method *
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => setPaymentMethod('WALLET_COINS')}
-              className={`p-4 rounded-xl border text-left transition-all ${
-                paymentMethod === 'WALLET_COINS'
-                  ? 'border-brand-orange bg-brand-orange/15 shadow-glow-orange'
-                  : 'border-[#49303a] bg-[#160e13] hover:border-slate-600'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-display font-bold text-sm text-white flex items-center gap-1.5">
-                  <Coins className="w-4 h-4 text-brand-orange" />
-                  <span>Pay with Wallet Coins</span>
-                </span>
-                <span className="text-[10px] bg-emerald-950/80 text-emerald-300 font-bold px-2 py-0.5 rounded border border-emerald-500/30">
-                  Instant Verification
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 mt-1">
-                Deduct {tournament?.entryFee || 14} Coins from your wallet. Instant slot confirmation!
-              </p>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setPaymentMethod('MANUAL_UPI')}
-              className={`p-4 rounded-xl border text-left transition-all ${
-                paymentMethod === 'MANUAL_UPI'
-                  ? 'border-brand-amber bg-brand-amber/15 shadow-md'
-                  : 'border-[#49303a] bg-[#160e13] hover:border-slate-600'
-              }`}
-            >
-              <div className="flex items-center justify-between">
-                <span className="font-display font-bold text-sm text-white flex items-center gap-1.5">
-                  <CreditCard className="w-4 h-4 text-brand-amber" />
-                  <span>Manual UPI Transfer</span>
-                </span>
-                <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded border border-slate-700">
-                  Manual Review
-                </span>
-              </div>
-              <p className="text-[11px] text-slate-400 mt-1">
-                Pay ₹{tournament?.entryFee || 14} via UPI and submit your 12-digit UTR.
-              </p>
-            </button>
+        {/* Live Wallet Balance & Coin Deduction Card */}
+        <div className="p-4 rounded-xl bg-[#0B0E14] border border-brand-orange/40 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="font-display font-bold text-xs text-white uppercase flex items-center gap-1.5">
+              <Coins className="w-4 h-4 text-brand-orange" />
+              <span>Wallet Coin Status</span>
+            </span>
+            <span className="text-[11px] text-slate-400">1 Coin = ₹1 INR</span>
           </div>
+
+          <div className="grid grid-cols-2 gap-3 text-center sm:text-left">
+            <div className="p-3 rounded-lg bg-[#121722] border border-[#1F293D]">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Entry Fee</span>
+              <strong className="text-base text-amber-300 font-display font-extrabold">{requiredCoins} Coins</strong>
+            </div>
+
+            <div className="p-3 rounded-lg bg-[#121722] border border-[#1F293D]">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Your Available Balance</span>
+              <strong className={`text-base font-display font-extrabold ${walletBalance !== null ? (walletBalance >= requiredCoins ? 'text-emerald-400' : 'text-rose-400') : 'text-slate-400'}`}>
+                {walletLoading ? 'Checking...' : walletBalance !== null ? `${walletBalance} Coins` : 'Enter email to check'}
+              </strong>
+            </div>
+          </div>
+
+          {/* Insufficient Coins Warning */}
+          {isInsufficient && (
+            <div className="p-3 rounded-lg bg-rose-950/50 border border-rose-500/40 text-rose-300 text-xs flex flex-col sm:flex-row items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
+                <span>Need <strong>{requiredCoins - walletBalance} more Coins</strong> to register.</span>
+              </div>
+              <Link
+                to="/wallet"
+                target="_blank"
+                className="px-4 py-1.5 rounded-lg bg-brand-orange text-white text-[11px] font-bold uppercase tracking-wider hover:brightness-110 shrink-0"
+              >
+                Top Up Coins in Wallet
+              </Link>
+            </div>
+          )}
         </div>
 
-        {/* Rules Agreement */}
-        <div>
+        {/* Agreement Checkbox */}
+        <div className="pt-2">
           <label className="flex items-start gap-2.5 cursor-pointer">
             <input
               type="checkbox"
               checked={agreed}
               onChange={(e) => setAgreed(e.target.checked)}
-              className="mt-1 w-4 h-4 rounded text-brand-orange focus:ring-0 bg-[#160e13] border-[#49303a]"
+              className="mt-1 w-4 h-4 rounded text-brand-orange focus:ring-0 bg-[#0B0E14] border-[#1F293D]"
             />
             <span className="text-xs text-slate-300 leading-relaxed">
-              I certify that I am playing on a mobile device without teaming or hacks, and agree to {site.name} official tournament rules.
+              I certify that I will play only on a mobile device (no PC emulators/hacks) and agree that {requiredCoins} Coins will be deducted from my wallet for registration.
             </span>
           </label>
         </div>
 
-        <button
-          type="submit"
-          disabled={submitting}
-          className="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber font-display font-bold uppercase tracking-wider text-white text-base shadow-glow-orange hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-        >
-          {submitting ? 'Reserving Solo Slot...' : (
-            paymentMethod === 'WALLET_COINS'
-              ? `Confirm Slot with ${tournament?.entryFee || 14} Coins (Instant)`
-              : `Submit Solo Registration (₹${tournament?.entryFee || 14})`
-          )}
-        </button>
+        {/* Submit or Top-Up CTA */}
+        {isInsufficient ? (
+          <Link
+            to="/wallet"
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 font-display font-bold uppercase tracking-wider text-white text-base shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2"
+          >
+            <Coins className="w-5 h-5" />
+            Top Up Coins in Wallet to Register (Need {requiredCoins - walletBalance} Coins)
+          </Link>
+        ) : (
+          <button
+            type="submit"
+            disabled={submitting}
+            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber font-display font-bold uppercase tracking-wider text-white text-base shadow-glow-orange hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+          >
+            {submitting ? 'Confirming Solo Slot...' : `Confirm Solo Registration with ${requiredCoins} Coins (Instant)`}
+          </button>
+        )}
 
       </form>
 
