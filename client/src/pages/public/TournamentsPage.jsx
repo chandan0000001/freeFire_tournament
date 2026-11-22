@@ -75,6 +75,28 @@ export default function TournamentsPage() {
         </div>
       </div>
 
+      {/* Daily Match Sessions & WhatsApp Notice Strip */}
+      <div className="p-4 rounded-2xl bg-[#24171e] border border-brand-orange/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-lg">
+        <div className="flex items-center gap-2.5">
+          <div className="w-8 h-8 rounded-xl bg-brand-orange/20 text-brand-orange flex items-center justify-center shrink-0">
+            <Flame className="w-4 h-4" />
+          </div>
+          <div>
+            <span className="text-[10px] uppercase font-bold text-brand-orange block tracking-wider">
+              Daily Match Sessions (4–5 Matches Per Section)
+            </span>
+            <p className="text-xs text-slate-200 font-medium">
+              Morning: <strong>10:00 AM – 12:30 PM</strong> · Afternoon: <strong>2:00 PM – 4:30 PM</strong> · Evening: <strong>6:00 PM – 8:30 PM</strong>
+            </p>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-emerald-950/70 border border-emerald-500/30 text-emerald-300 text-xs shrink-0">
+          <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
+          <span>Room ID & Pass delivered to Leader WhatsApp</span>
+        </div>
+      </div>
+
       {/* GBArena Inspired Filter & Control Bar */}
       <div className="p-3 sm:p-4 rounded-2xl bg-[#24171e]/95 border border-[#49303a] flex flex-col lg:flex-row items-center justify-between gap-4 top-20 z-30 shadow-2xl backdrop-blur-md">
         {/* Status Filter Tabs (GBArena Style) */}

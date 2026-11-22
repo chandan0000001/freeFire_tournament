@@ -3,9 +3,11 @@ import { PAYMENT_STATUS, ROOM_DELIVERY_STATUS, TOURNAMENT_FORMAT } from '../cons
 
 const playerSchema = new mongoose.Schema(
   {
-    name: { type: String, trim: true },
-    inGameName: { type: String, required: [true, 'In-game Name is required'], trim: true },
-    freeFireUid: { type: String, required: [true, 'Free Fire UID is required'], trim: true },
+    name: { type: String, trim: true, default: '' },
+    phone: { type: String, trim: true, default: '' },
+    inGameName: { type: String, trim: true, default: '' },
+    freeFireUid: { type: String, trim: true, default: '' },
+    isLeader: { type: Boolean, default: false },
     isConsentPublic: { type: Boolean, default: false },
   },
   { _id: false }
@@ -32,6 +34,15 @@ const registrationSchema = new mongoose.Schema(
       enum: Object.values(TOURNAMENT_FORMAT),
       required: true,
     },
+    preferredSlot: {
+      type: String,
+      enum: ['morning', 'afternoon', 'evening'],
+      default: 'morning',
+    },
+    slotTime: {
+      type: String,
+      default: '10:00 AM – 12:30 PM',
+    },
     teamName: {
       type: String,
       trim: true,
@@ -43,24 +54,23 @@ const registrationSchema = new mongoose.Schema(
       name: { type: String, required: true, trim: true },
       email: {
         type: String,
-        required: true,
         lowercase: true,
         trim: true,
-        match: [/^\S+@\S+\.\S+$/, 'Valid email is required'],
+        default: '',
       },
       phone: { type: String, required: true, trim: true },
-      collegeRollNo: { type: String, required: true, trim: true },
+      collegeRollNo: { type: String, trim: true, default: '' },
     },
     players: {
       type: [playerSchema],
       validate: {
         validator: function (val) {
           if (this.format === TOURNAMENT_FORMAT.SQUAD) {
-            return val && val.length >= 4;
+            return val && val.length >= 3 && val.length <= 4;
           }
           return val && val.length === 1;
         },
-        message: 'Squad requires 4 players; Solo requires 1 player.',
+        message: 'Squad requires 3 or 4 players; Solo requires 1 player.',
       },
     },
     paymentStatus: {
@@ -100,7 +110,7 @@ const registrationSchema = new mongoose.Schema(
   }
 );
 
-// Compound index to prevent duplicate team name or captain registering twice for the same tournament
-registrationSchema.index({ tournamentId: 1, 'captain.email': 1 }, { unique: true });
+// Index to quickly look up registrations by tournament and captain phone
+registrationSchema.index({ tournamentId: 1, 'captain.phone': 1 });
 
 export const Registration = mongoose.model('Registration', registrationSchema);

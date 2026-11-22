@@ -137,9 +137,8 @@ export default function TournamentDetailPage() {
           <div className="grid grid-cols-3 gap-4 sm:gap-8 w-full md:w-auto">
             <div>
               <p className="text-[10px] uppercase font-bold text-slate-400">Entry Fee</p>
-              <p className="text-xl font-display font-bold text-amber-400 flex items-center gap-1">
-                <Coins className="w-5 h-5 text-amber-400 shrink-0" />
-                {tournament.entryFee} Coins
+              <p className="text-xl font-display font-bold text-amber-400">
+                ₹{tournament.entryFee}
               </p>
             </div>
             <div>
@@ -161,8 +160,7 @@ export default function TournamentDetailPage() {
                 to={tournament.format === 'squad' ? `/join/squad/${tournament._id}` : `/join/solo/${tournament._id}`}
                 className="w-full md:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber text-white font-display font-bold text-sm uppercase tracking-wider shadow-glow-orange hover:brightness-110 active:scale-95 transition-all text-center flex items-center justify-center gap-2"
               >
-                <Coins className="w-4 h-4 text-white" />
-                Register ({tournament.entryFee} Coins)
+                Register Now (₹{tournament.entryFee})
               </Link>
             ) : (
               <button

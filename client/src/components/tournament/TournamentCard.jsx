@@ -61,9 +61,8 @@ export default function TournamentCard({ tournament: t }) {
           </div>
           <div>
             <small>Entry ({t.format === 'squad' ? 'Squad' : 'Player'})</small>
-            <strong className="text-amber-300 font-bold flex items-center gap-1">
-              <Coins size={14} className="text-amber-400 shrink-0" />
-              {t.entryFee === 0 ? 'Free' : `${t.entryFee} Coins`}
+            <strong className="text-amber-300 font-bold">
+              {t.entryFee === 0 ? 'Free' : `₹${t.entryFee}`}
             </strong>
           </div>
         </div>
@@ -79,7 +78,7 @@ export default function TournamentCard({ tournament: t }) {
           className={`arena-button ${slots.canRegister ? '' : 'secondary'}`}
           to={slots.canRegister ? `/join/${t.format}/${t._id}` : `/tournaments/${t.slug}`}
         >
-          {slots.canRegister ? `Register (${t.entryFee} Coins)` : 'View match details'}
+          {slots.canRegister ? `Register (₹${t.entryFee})` : 'View match details'}
         </Link>
       </div>
     </article>

@@ -12,166 +12,136 @@ import { cache } from '../config/redis.js';
 export const registerSquad = async (req, res, next) => {
   let reservedTournament = null;
   try {
-    const { tournamentId, teamName, captain, players } = req.body;
+    const { tournamentId, teamName, captain, players, preferredSlot, slotTime, utr } = req.body;
 
-    if (!tournamentId || !teamName || !captain) {
-      return res.status(400).json({ success: false, message: 'Missing required squad registration fields' });
+    if (!tournamentId || !teamName) {
+      return res.status(400).json({ success: false, message: 'Missing tournament or team name.' });
     }
 
-    if (!Array.isArray(players) || players.length === 0) {
-      return res.status(400).json({ success: false, message: 'Squad registration requires a player roster' });
+    if (!Array.isArray(players) || players.length < 3) {
+      return res.status(400).json({ success: false, message: 'Squad registration requires at least 3 players.' });
     }
 
-    // Validate and normalize 4 player slots (missing players fill up 'N/A')
+    // Determine designated Team Leader
+    const designatedLeader = players.find((p) => p.isLeader) || players[0];
+    const leaderName = designatedLeader?.name?.trim() || captain?.name?.trim() || 'Team Leader';
+    const leaderPhone = designatedLeader?.phone?.trim() || captain?.phone?.trim() || '';
+
+    if (!leaderPhone) {
+      return res.status(400).json({ success: false, message: 'Team Leader phone number is required.' });
+    }
+
+    // Normalize up to 4 player positions (3 or 4 players accepted)
     const normalizedPlayers = [];
     for (let i = 0; i < 4; i++) {
-      const p = players[i] || {};
-      const rawIgn = (p.inGameName || '').trim();
-      const rawUid = (p.freeFireUid || '').trim();
-
-      // If Player 1 (Captain)
-      if (i === 0) {
-        if (!rawIgn) {
-          return res.status(400).json({ success: false, message: 'Captain (Player 1) In-Game Name is required.' });
+      const p = players[i];
+      if (!p || !p.name || p.name.trim().toUpperCase() === 'N/A') {
+        if (i < 3) {
+          return res.status(400).json({ success: false, message: `Player ${i + 1} Name is required.` });
         }
-        if (!rawUid || !/^\d{6,17}$/.test(rawUid)) {
-          return res.status(400).json({
-            success: false,
-            message: 'Captain (Player 1) Free Fire UID must be numbers only, between 6 and 17 digits.',
-          });
-        }
+        // Player 4 is optional
         normalizedPlayers.push({
-          name: p.name?.trim() || captain.name?.trim() || rawIgn,
-          inGameName: rawIgn,
-          freeFireUid: rawUid,
-          isConsentPublic: Boolean(p.isConsentPublic),
+          name: 'N/A',
+          phone: 'N/A',
+          inGameName: 'N/A',
+          freeFireUid: 'N/A',
+          isLeader: false,
         });
       } else {
-        // Player 2, 3, 4: If not provided or empty, fill up 'N/A'
-        if (!rawIgn && !rawUid) {
-          normalizedPlayers.push({
-            name: 'N/A',
-            inGameName: 'N/A',
-            freeFireUid: 'N/A',
-            isConsentPublic: false,
-          });
-        } else {
-          const isIgnNA = !rawIgn || rawIgn.toUpperCase() === 'N/A';
-          const isUidNA = !rawUid || rawUid.toUpperCase() === 'N/A';
-
-          if (isUidNA) {
-            normalizedPlayers.push({
-              name: isIgnNA ? 'N/A' : (p.name?.trim() || rawIgn),
-              inGameName: isIgnNA ? 'N/A' : rawIgn,
-              freeFireUid: 'N/A',
-              isConsentPublic: Boolean(p.isConsentPublic),
-            });
-          } else {
-            // UID is provided: MUST be numbers only, 6 to 17 digits
-            if (!/^\d{6,17}$/.test(rawUid)) {
-              return res.status(400).json({
-                success: false,
-                message: `Player ${i + 1} Free Fire UID must be numbers only, between 6 and 17 digits (or 'N/A').`,
-              });
-            }
-            normalizedPlayers.push({
-              name: isIgnNA ? `Player ${i + 1}` : (p.name?.trim() || rawIgn),
-              inGameName: isIgnNA ? `Player ${i + 1}` : rawIgn,
-              freeFireUid: rawUid,
-              isConsentPublic: Boolean(p.isConsentPublic),
-            });
-          }
-        }
+        const isThisLeader = Boolean(p.isLeader || (i === 0 && !players.some((x) => x.isLeader)));
+        normalizedPlayers.push({
+          name: p.name.trim(),
+          phone: (p.phone || '').trim(),
+          inGameName: (p.inGameName || p.name).trim(),
+          freeFireUid: (p.freeFireUid || 'N/A').trim(),
+          isLeader: isThisLeader,
+        });
       }
     }
 
-    // Check for duplicate Free Fire UIDs within squad (excluding N/A)
-    const activeUids = normalizedPlayers
-      .map((p) => p.freeFireUid.trim())
-      .filter((uid) => uid && uid.toUpperCase() !== 'N/A');
-    const uniqueUids = new Set(activeUids);
-    if (uniqueUids.size !== activeUids.length) {
-      return res.status(400).json({
-        success: false,
-        message: 'Duplicate Free Fire UIDs detected. Each player in the squad must have a unique Free Fire UID.',
-      });
-    }
-
-    // Check if captain email is already registered in this tournament
-    const existing = await Registration.findOne({
-      tournamentId,
-      'captain.email': captain.email.toLowerCase().trim(),
-    });
-    if (existing) {
-      return res.status(409).json({
-        success: false,
-        message: 'This email is already registered for this tournament. Reference: ' + existing.referenceId,
-      });
-    }
-
-    // 1. Verify capacity (only admin-verified registrations occupy filled slots)
+    // 1. Verify capacity
     reservedTournament = await checkAvailableCapacity(tournamentId);
 
     // 2. Generate unique reference ID
     const referenceId = generateRegistrationRef('squad');
+
+    const assignedSlot = ['morning', 'afternoon', 'evening'].includes(preferredSlot) ? preferredSlot : 'morning';
+    const slotLabel =
+      assignedSlot === 'afternoon'
+        ? 'Afternoon (2:00 PM – 4:30 PM)'
+        : assignedSlot === 'evening'
+        ? 'Evening (6:00 PM – 8:30 PM)'
+        : 'Morning (10:00 AM – 12:30 PM)';
 
     // 3. Create registration document
     const registration = await Registration.create({
       referenceId,
       tournamentId,
       format: TOURNAMENT_FORMAT.SQUAD,
+      preferredSlot: assignedSlot,
+      slotTime: slotTime || slotLabel,
       teamName: teamName.trim(),
       captain: {
-        name: captain.name?.trim() || 'Captain',
-        email: captain.email.toLowerCase().trim(),
-        phone: captain.phone?.trim() || captain.whatsapp?.trim() || '',
-        collegeRollNo: captain.collegeRollNo?.trim() || captain.collegeRoll?.trim() || 'N/A',
+        name: leaderName,
+        email: captain?.email?.toLowerCase()?.trim() || '',
+        phone: leaderPhone,
+        collegeRollNo: '',
       },
       players: normalizedPlayers,
       paymentStatus: PAYMENT_STATUS.PENDING,
+      paymentDetails: {
+        utr: (utr || '').trim(),
+      },
     });
 
     // 4. Fetch site settings for UPI & WhatsApp numbers
     const settings = (await SiteSetting.findOne()) || {};
-    const adminWhatsApp = settings.adminWhatsAppNumber || process.env.ADMIN_WHATSAPP_NUMBER || '';
-    const upiId = settings.upiId || process.env.ADMIN_UPI_ID || 'organizer@upi';
-    const payeeName = settings.upiPayeeName || process.env.ADMIN_UPI_NAME || 'Rahul Esports Organizer';
-    const aid = settings.upiAid || process.env.ADMIN_UPI_AID || '';
+    const adminWhatsApp = settings.adminWhatsAppNumber || process.env.ADMIN_WHATSAPP_NUMBER || '918114603994';
+    const upiId = settings.upiId || process.env.ADMIN_UPI_ID || 'srikantap571-1@okaxis';
+    const payeeName = settings.upiPayeeName || process.env.ADMIN_UPI_NAME || 'Rahul Esports';
     const amount = reservedTournament.entryFee;
 
     // UPI Deep Link & Dynamic QR Code
-    const upiDeepLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&aid=${encodeURIComponent(aid)}`;
+    const upiDeepLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR`;
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiDeepLink)}`;
 
-    // 5. Send confirmation email in background
-    sendRegistrationEmail(registration, reservedTournament, upiId).catch((err) =>
-      console.error('[Email Notice]', err.message)
-    );
+    // Build roster text for WhatsApp
+    const rosterList = normalizedPlayers
+      .filter((p) => p.name !== 'N/A')
+      .map((p, idx) => `${idx + 1}. ${p.name}${p.isLeader ? ' (Team Leader)' : ''} - ${p.phone}`)
+      .join('\n');
 
-    // 6. Build pre-filled WhatsApp click-to-chat URL
+    // 5. Pre-filled WhatsApp message
     const prefilledText = encodeURIComponent(
       `Hello Admin! I have registered for "${reservedTournament.title}".\n` +
       `*Reference ID:* ${referenceId}\n` +
-      `*Team Name:* ${teamName}\n` +
-      `*Captain:* ${captain.name}\n` +
-      `*Amount:* ₹${amount}\n` +
-      `Attached is my UPI payment screenshot / UTR.`
+      `*Team Name:* ${teamName.trim()}\n` +
+      `*Preferred Slot:* ${slotLabel}\n` +
+      `*Team Leader:* ${leaderName} (${leaderPhone})\n` +
+      `*Squad Roster:*\n${rosterList}\n` +
+      `*Entry Fee:* ₹${amount}\n` +
+      `*12-Digit UPI UTR:* ${utr ? utr.trim() : 'Submitting on WhatsApp'}\n` +
+      `Please verify and confirm our custom room match slot!`
     );
     const whatsappUrl = `https://wa.me/${adminWhatsApp}?text=${prefilledText}`;
 
-    // Invalidate tournament cache so remaining slots counter updates immediately across app
     await cache.delPattern('tournaments:*');
 
     res.status(201).json({
       success: true,
-      message: 'Squad registration submitted successfully! Please complete manual UPI payment.',
+      message: 'Squad registration submitted successfully!',
       registration: {
         referenceId: registration.referenceId,
         tournamentTitle: reservedTournament.title,
         teamName: registration.teamName,
-        captainName: registration.captain.name,
+        captainName: leaderName,
+        captainPhone: leaderPhone,
+        preferredSlot: registration.preferredSlot,
+        slotTime: registration.slotTime,
         entryFee: amount,
         paymentStatus: registration.paymentStatus,
+        players: normalizedPlayers,
+        utr: registration.paymentDetails.utr,
       },
       paymentInstructions: {
         upiId,
@@ -184,7 +154,6 @@ export const registerSquad = async (req, res, next) => {
       },
     });
   } catch (error) {
-    // Rollback atomic slot if error happened after reservation
     if (reservedTournament) {
       await releaseSlot(reservedTournament._id);
     }
@@ -195,100 +164,94 @@ export const registerSquad = async (req, res, next) => {
 export const registerSolo = async (req, res, next) => {
   let reservedTournament = null;
   try {
-    const { tournamentId, captain, inGameName, freeFireUid, isConsentPublic } = req.body;
+    const { tournamentId, captain, inGameName, freeFireUid, isConsentPublic, preferredSlot, slotTime, utr } = req.body;
 
-    if (!tournamentId || !captain || !inGameName || !freeFireUid) {
-      return res.status(400).json({ success: false, message: 'Missing required solo registration fields' });
+    if (!tournamentId || !captain?.name || !captain?.phone) {
+      return res.status(400).json({ success: false, message: 'Player name and WhatsApp phone number are required.' });
     }
 
-    const cleanUid = String(freeFireUid).trim();
-    if (!/^\d{6,17}$/.test(cleanUid)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Free Fire UID must be numbers only, between 6 and 17 digits.',
-      });
-    }
-
-    const existing = await Registration.findOne({
-      tournamentId,
-      'captain.email': captain.email.toLowerCase().trim(),
-    });
-    if (existing) {
-      return res.status(409).json({
-        success: false,
-        message: 'This email is already registered for this tournament. Reference: ' + existing.referenceId,
-      });
-    }
-
-    // 1. Verify capacity (only admin-verified registrations occupy filled slots)
+    // 1. Verify capacity
     reservedTournament = await checkAvailableCapacity(tournamentId);
 
     // 2. Generate unique reference ID
     const referenceId = generateRegistrationRef('solo');
+
+    const assignedSlot = ['morning', 'afternoon', 'evening'].includes(preferredSlot) ? preferredSlot : 'morning';
+    const slotLabel =
+      assignedSlot === 'afternoon'
+        ? 'Afternoon (2:00 PM – 4:30 PM)'
+        : assignedSlot === 'evening'
+        ? 'Evening (6:00 PM – 8:30 PM)'
+        : 'Morning (10:00 AM – 12:30 PM)';
 
     // 3. Create registration document
     const registration = await Registration.create({
       referenceId,
       tournamentId,
       format: TOURNAMENT_FORMAT.SOLO,
+      preferredSlot: assignedSlot,
+      slotTime: slotTime || slotLabel,
       captain: {
-        name: captain.name?.trim() || 'Captain',
-        email: captain.email.toLowerCase().trim(),
-        phone: captain.phone?.trim() || captain.whatsapp?.trim() || '',
-        collegeRollNo: captain.collegeRollNo?.trim() || captain.collegeRoll?.trim() || 'N/A',
+        name: captain.name.trim(),
+        email: captain.email?.toLowerCase()?.trim() || '',
+        phone: captain.phone.trim(),
+        collegeRollNo: '',
       },
       players: [
         {
           name: captain.name.trim(),
-          inGameName: inGameName.trim(),
-          freeFireUid: freeFireUid.trim(),
+          phone: captain.phone.trim(),
+          inGameName: (inGameName || captain.name).trim(),
+          freeFireUid: (freeFireUid || 'N/A').trim(),
+          isLeader: true,
           isConsentPublic: Boolean(isConsentPublic),
         },
       ],
       paymentStatus: PAYMENT_STATUS.PENDING,
+      paymentDetails: {
+        utr: (utr || '').trim(),
+      },
     });
 
     // 4. Fetch site settings
     const settings = (await SiteSetting.findOne()) || {};
-    const adminWhatsApp = settings.adminWhatsAppNumber || process.env.ADMIN_WHATSAPP_NUMBER || '';
-    const upiId = settings.upiId || process.env.ADMIN_UPI_ID || 'organizer@upi';
-    const payeeName = settings.upiPayeeName || process.env.ADMIN_UPI_NAME || 'Rahul Esports Organizer';
-    const aid = settings.upiAid || process.env.ADMIN_UPI_AID || '';
+    const adminWhatsApp = settings.adminWhatsAppNumber || process.env.ADMIN_WHATSAPP_NUMBER || '918114603994';
+    const upiId = settings.upiId || process.env.ADMIN_UPI_ID || 'srikantap571-1@okaxis';
+    const payeeName = settings.upiPayeeName || process.env.ADMIN_UPI_NAME || 'Rahul Esports';
     const amount = reservedTournament.entryFee;
 
     // UPI Deep Link & Dynamic QR Code
-    const upiDeepLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR&aid=${encodeURIComponent(aid)}`;
+    const upiDeepLink = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(payeeName)}&am=${amount}&cu=INR`;
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiDeepLink)}`;
 
-    // 5. Send confirmation email
-    sendRegistrationEmail(registration, reservedTournament, upiId).catch((err) =>
-      console.error('[Email Notice]', err.message)
-    );
-
-    // 6. WhatsApp click-to-chat link
+    // 5. WhatsApp click-to-chat link
     const prefilledText = encodeURIComponent(
       `Hello Admin! I have registered for "${reservedTournament.title}" (Solo).\n` +
       `*Reference ID:* ${referenceId}\n` +
       `*Player Name:* ${captain.name}\n` +
-      `*In-Game Name:* ${inGameName}\n` +
+      `*WhatsApp Phone:* ${captain.phone}\n` +
+      `*Preferred Slot:* ${slotLabel}\n` +
       `*Amount:* ₹${amount}\n` +
-      `Attached is my UPI payment screenshot / UTR.`
+      `*12-Digit UPI UTR:* ${utr ? utr.trim() : 'Submitting on WhatsApp'}\n` +
+      `Please verify and confirm my custom room match slot!`
     );
     const whatsappUrl = `https://wa.me/${adminWhatsApp}?text=${prefilledText}`;
 
-    // Invalidate tournament cache so remaining slots counter updates immediately across app
     await cache.delPattern('tournaments:*');
 
     res.status(201).json({
       success: true,
-      message: 'Solo registration submitted successfully! Please complete manual UPI payment.',
+      message: 'Solo registration submitted successfully!',
       registration: {
         referenceId: registration.referenceId,
         tournamentTitle: reservedTournament.title,
         playerName: captain.name,
-        inGameName,
+        playerPhone: captain.phone,
+        preferredSlot: registration.preferredSlot,
+        slotTime: registration.slotTime,
         entryFee: amount,
         paymentStatus: registration.paymentStatus,
+        utr: registration.paymentDetails.utr,
       },
       paymentInstructions: {
         upiId,

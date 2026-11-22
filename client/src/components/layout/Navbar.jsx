@@ -57,14 +57,13 @@ export default function Navbar() {
         <div className="header-actions">
           {user ? (
             <div className="flex items-center gap-2">
-              <Link to="/wallet" className="wallet-link" title="My Player Wallet">
-                <Wallet size={17} />
-                <span>{wallet?.totalCoins !== undefined ? `${wallet.totalCoins} Coins` : 'Wallet'}</span>
-              </Link>
+              <span className="text-xs font-bold text-slate-300 hidden sm:inline-block px-2.5 py-1 rounded-lg bg-[#24171e] border border-[#412a34]">
+                {user.name}
+              </span>
               <button
                 type="button"
                 onClick={logout}
-                className="hidden sm:inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-white px-2.5 py-1.5 rounded-lg bg-[#1b1017] border border-[#412a34] transition-colors"
+                className="inline-flex items-center gap-1 text-[11px] font-bold uppercase tracking-wider text-slate-400 hover:text-white px-2.5 py-1.5 rounded-lg bg-[#1b1017] border border-[#412a34] transition-colors"
                 title="Sign out"
               >
                 <LogOut size={13} />
@@ -79,9 +78,11 @@ export default function Navbar() {
               >
                 Sign In
               </Link>
-              <Link to="/login?redirect=/wallet" className="wallet-link">
-                <Wallet size={17} />
-                <span>Wallet</span>
+              <Link
+                to="/register"
+                className="hidden sm:inline-block text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-[#49303a] bg-[#1b1017] transition-colors"
+              >
+                Register
               </Link>
             </div>
           )}
@@ -103,7 +104,6 @@ export default function Navbar() {
           {user && (
             <div className="py-2 border-b border-[#412a34] text-xs text-brand-orange font-bold uppercase tracking-wider flex items-center justify-between">
               <span>Player: {user.name}</span>
-              <span className="text-amber-300 font-mono">{wallet?.totalCoins ?? 0} Coins</span>
             </div>
           )}
           {links.map(([to, label]) => (
@@ -111,7 +111,6 @@ export default function Navbar() {
               {label}
             </NavLink>
           ))}
-          <Link to={user ? "/wallet" : "/login?redirect=/wallet"}>Player Wallet</Link>
           {!user ? (
             <>
               <Link to="/login" className="text-brand-orange font-bold">Sign In</Link>

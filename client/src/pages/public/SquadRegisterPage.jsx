@@ -12,12 +12,21 @@ import {
   CheckCircle, 
   MessageCircle, 
   Copy, 
-  Coins,
+  Clock,
+  QrCode,
+  Sparkles,
+  Crown,
   AlertCircle
 } from 'lucide-react';
 
+const TIME_SLOTS = [
+  { id: 'morning', label: 'Morning Slot', time: '10:00 AM – 12:30 PM', matches: '5 Matches' },
+  { id: 'afternoon', label: 'Afternoon Slot', time: '2:00 PM – 4:30 PM', matches: '4 to 5 Matches' },
+  { id: 'evening', label: 'Evening Slot', time: '6:00 PM – 8:30 PM', matches: '4 to 5 Matches' },
+];
+
 export default function SquadRegisterPage() {
-  usePageMeta('Squad Registration (4 Players) | Rahul Esports', 'Register your 4-player Free Fire squad using in-app wallet coins. Room ID & password dispatched to Team Leader WhatsApp.');
+  usePageMeta('Squad Registration (4 Positions) | Rahul Esports', 'Register your Free Fire squad. Choose your preferred time session. Room ID & password dispatched to Team Leader WhatsApp.');
   const { tournamentId } = useParams();
   const { user } = useAuth();
 
@@ -25,46 +34,36 @@ export default function SquadRegisterPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [successData, setSuccessData] = useState(null);
   const [copied, setCopied] = useState(false);
 
-  // Form state pre-filled from user profile if logged in
-  const [teamName, setTeamName] = useState('');
-  const [captain, setCaptain] = useState({
-    name: user?.name || '',
-    email: user?.email || '',
-    phone: user?.mobileNumber || '',
-    collegeRollNo: user?.location || '',
-  });
+  // Flow step: 'form' -> 'payment' -> 'success'
+  const [step, setStep] = useState('form');
 
+  // Form State
+  const [teamName, setTeamName] = useState('');
+  const [preferredSlot, setPreferredSlot] = useState('morning');
+  const [hasFourthPlayer, setHasFourthPlayer] = useState(true);
+
+  // 4 Player Positions (Name + Phone) with Team Leader Index (0 = Player 1)
+  const [leaderIndex, setLeaderIndex] = useState(0);
   const [players, setPlayers] = useState([
-    { name: user?.name || '', inGameName: user?.inGameName || '', freeFireUid: user?.freeFireUid || '', isConsentPublic: false },
-    { name: '', inGameName: '', freeFireUid: '', isConsentPublic: false },
-    { name: '', inGameName: '', freeFireUid: '', isConsentPublic: false },
-    { name: '', inGameName: '', freeFireUid: '', isConsentPublic: false },
+    { name: user?.name || '', phone: user?.mobileNumber || '' },
+    { name: '', phone: '' },
+    { name: '', phone: '' },
+    { name: '', phone: '' },
   ]);
 
-  const [agreed, setAgreed] = useState(false);
+  // Payment state
+  const [utrNumber, setUtrNumber] = useState('');
+  const [registrationResult, setRegistrationResult] = useState(null);
 
-  // Live Wallet Balance State
-  const [walletBalance, setWalletBalance] = useState(null);
-  const [walletLoading, setWalletLoading] = useState(false);
-
-  // Auto-sync with logged in user
+  // Auto-sync logged in user to Player 1 if empty
   useEffect(() => {
     if (user) {
-      setCaptain((prev) => ({
-        ...prev,
-        name: prev.name || user.name || '',
-        email: user.email || prev.email,
-        phone: prev.phone || user.mobileNumber || '',
-        collegeRollNo: prev.collegeRollNo || user.location || '',
-      }));
       setPlayers((prev) => {
         const copy = [...prev];
-        if (!copy[0].inGameName && user.inGameName) copy[0].inGameName = user.inGameName;
-        if (!copy[0].freeFireUid && user.freeFireUid) copy[0].freeFireUid = user.freeFireUid;
         if (!copy[0].name && user.name) copy[0].name = user.name;
+        if (!copy[0].phone && user.mobileNumber) copy[0].phone = user.mobileNumber;
         return copy;
       });
     }
@@ -91,486 +90,555 @@ export default function SquadRegisterPage() {
     fetchTournament();
   }, [tournamentId]);
 
-  // Real-time wallet lookup for Captain Email
-  useEffect(() => {
-    const trimmedEmail = captain.email.trim().toLowerCase();
-    if (!trimmedEmail || !trimmedEmail.includes('@') || trimmedEmail.length < 5) {
-      setWalletBalance(null);
-      return;
-    }
-
-    const timer = setTimeout(async () => {
-      setWalletLoading(true);
-      try {
-        const res = await api.get(`/wallet/${encodeURIComponent(trimmedEmail)}`);
-        if (res.success && res.wallet) {
-          setWalletBalance(res.wallet.totalCoins || 0);
-        } else {
-          setWalletBalance(0);
-        }
-      } catch (err) {
-        setWalletBalance(0);
-      } finally {
-        setWalletLoading(false);
-      }
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [captain.email]);
-
   const handlePlayerChange = (index, field, value) => {
     const updated = [...players];
-    updated[index][field] = value;
+    updated[index] = { ...updated[index], [field]: value };
     setPlayers(updated);
   };
 
-  const handleUidChange = (index, rawVal) => {
-    const upper = rawVal.toUpperCase();
-    if (index > 0 && (upper === 'N' || upper === 'N/' || upper === 'N/A')) {
-      handlePlayerChange(index, 'freeFireUid', upper);
-      return;
-    }
-    const digitsOnly = rawVal.replace(/[^0-9]/g, '').slice(0, 17);
-    handlePlayerChange(index, 'freeFireUid', digitsOnly);
-  };
-
-  const fillPlayerNA = (index) => {
-    const updated = [...players];
-    updated[index].inGameName = 'N/A';
-    updated[index].freeFireUid = 'N/A';
-    setPlayers(updated);
-  };
-
-  const handleSubmit = async (e) => {
+  const handleGoToPayment = (e) => {
     e.preventDefault();
     setError('');
 
-    if (!tournament || tournament.format !== 'squad' || !tournamentAvailability(tournament).canRegister) {
-      setError('Registration is unavailable for this tournament or format.');
-      return;
-    }
-    if (!agreed) {
-      setError('Please agree to the tournament fair play rules & mobile-only policy');
+    if (!teamName.trim()) {
+      setError('Please enter your Squad / Team Name.');
       return;
     }
 
-    const requiredCoins = tournament.entryFee || 29;
-    if (walletBalance !== null && walletBalance < requiredCoins) {
-      setError(`Insufficient wallet coins! You need ${requiredCoins} Coins to register. Please top up your wallet.`);
-      return;
-    }
-
-    const sanitizedPlayers = players.map((p, idx) => {
-      if (idx === 0) return p;
-      const ign = p.inGameName.trim();
-      const uid = p.freeFireUid.trim();
-      if (!ign && !uid) {
-        return { ...p, inGameName: 'N/A', freeFireUid: 'N/A' };
+    // Validate Player 1, 2, 3
+    for (let i = 0; i < 3; i++) {
+      if (!players[i].name.trim()) {
+        setError(`Please enter the name of Player ${i + 1}.`);
+        return;
       }
-      return {
-        ...p,
-        inGameName: ign || 'N/A',
-        freeFireUid: uid || 'N/A',
-      };
-    });
-
-    const capUid = sanitizedPlayers[0].freeFireUid.trim();
-    if (!/^\d{6,17}$/.test(capUid)) {
-      setError('Player 1 (Team Leader) Free Fire UID must be numbers only, between 6 and 17 digits.');
-      return;
-    }
-
-    for (let i = 1; i < 4; i++) {
-      const uid = sanitizedPlayers[i].freeFireUid.trim().toUpperCase();
-      if (uid !== 'N/A' && !/^\d{6,17}$/.test(uid)) {
-        setError(`Player ${i + 1} Free Fire UID must be numbers only, between 6 and 17 digits (or N/A).`);
+      if (!players[i].phone.trim() || !/^\d{10}$/.test(players[i].phone.trim().replace(/\D/g, ''))) {
+        setError(`Please enter a valid 10-digit phone number for Player ${i + 1}.`);
         return;
       }
     }
 
-    const activeUids = sanitizedPlayers
-      .map(p => p.freeFireUid.trim())
-      .filter(uid => uid && uid.toUpperCase() !== 'N/A');
-    const uniqueUids = new Set(activeUids);
-    if (uniqueUids.size !== activeUids.length) {
-      setError('Duplicate Free Fire UIDs detected! Each player in the squad must have a unique UID.');
+    // If 4th player is active, validate
+    if (hasFourthPlayer) {
+      if (!players[3].name.trim()) {
+        setError('Please enter Player 4 name (or check "3 Players Only" if playing as a trio).');
+        return;
+      }
+      if (!players[3].phone.trim() || !/^\d{10}$/.test(players[3].phone.trim().replace(/\D/g, ''))) {
+        setError('Please enter a valid 10-digit phone number for Player 4.');
+        return;
+      }
+    }
+
+    // Ensure Team Leader phone is valid
+    const leader = players[leaderIndex];
+    if (!leader || !leader.phone.trim()) {
+      setError('Please select a valid Team Leader with a verified phone number.');
+      return;
+    }
+
+    // Advance to Step 2: Payment
+    setStep('payment');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleFinalSubmit = async (e) => {
+    e.preventDefault();
+    if (submitting) return;
+    setError('');
+
+    if (utrNumber.trim() && !/^\d{12}$/.test(utrNumber.trim())) {
+      setError('UTR / Reference number must be exactly 12 digits (numbers only).');
       return;
     }
 
     setSubmitting(true);
-    try {
-      const payload = {
-        tournamentId,
-        teamName,
-        captain,
-        players: sanitizedPlayers,
-      };
 
-      // Direct coin registration: deducts coins from wallet and confirms slot instantly
-      const res = await api.post(`/tournaments/${tournamentId}/join-with-coins`, payload);
+    try {
+      const activeSlotObj = TIME_SLOTS.find((s) => s.id === preferredSlot) || TIME_SLOTS[0];
+
+      // Format player payload
+      const payloadPlayers = players.map((p, idx) => {
+        if (idx === 3 && !hasFourthPlayer) {
+          return {
+            name: 'N/A',
+            phone: 'N/A',
+            isLeader: false,
+          };
+        }
+        return {
+          name: p.name.trim(),
+          phone: p.phone.trim(),
+          isLeader: idx === leaderIndex,
+        };
+      });
+
+      const leader = players[leaderIndex] || players[0];
+
+      const res = await api.post('/registrations/squad', {
+        tournamentId,
+        teamName: teamName.trim(),
+        preferredSlot,
+        slotTime: activeSlotObj.time,
+        utr: utrNumber.trim(),
+        captain: {
+          name: leader.name.trim(),
+          phone: leader.phone.trim(),
+          email: user?.email || '',
+        },
+        players: payloadPlayers,
+      });
+
       if (res.success) {
-        setSuccessData(res);
+        setRegistrationResult(res);
+        setStep('success');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      } else {
+        setError(res.message || 'Failed to submit registration. Please try again.');
       }
     } catch (err) {
-      if (err.message && err.message.includes('Insufficient coins')) {
-        setError(`${err.message} Please top up your wallet first.`);
-      } else {
-        setError(err.message || 'Squad registration failed. Please verify your inputs.');
-      }
+      setError(err.message || 'Error submitting registration.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
   if (loading) {
     return (
-      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
-        <div className="w-10 h-10 border-4 border-brand-orange border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-        <p className="text-slate-400 text-sm">Loading registration portal...</p>
+      <div className="min-h-[50vh] flex flex-col items-center justify-center py-20">
+        <div className="w-10 h-10 border-4 border-brand-orange border-t-transparent rounded-full animate-spin"></div>
+        <p className="mt-4 font-display text-sm uppercase tracking-wider text-slate-400">Loading Tournament Details...</p>
       </div>
     );
   }
 
-  // Registration Confirmed View
-  if (successData) {
-    const { registration } = successData;
-    const requiredCoins = tournament?.entryFee || 29;
-
+  if (!tournament) {
     return (
-      <div className="max-w-xl mx-auto px-4 py-10">
-        <div className="p-6 sm:p-8 rounded-2xl bg-[#121722] border border-emerald-500/40 text-center space-y-6 shadow-2xl">
-          <div className="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto">
-            <CheckCircle className="w-7 h-7" />
-          </div>
-
-          <div>
-            <span className="text-xs font-bold uppercase tracking-widest text-emerald-400">
-              Squad Slot Confirmed Instantly
-            </span>
-            <h2 className="font-display text-2xl sm:text-3xl font-extrabold uppercase text-white mt-1">
-              {registration?.teamName}
-            </h2>
-            <p className="text-xs text-slate-300 mt-0.5">
-              Tournament: <strong>{registration?.tournamentTitle || tournament?.title}</strong>
-            </p>
-          </div>
-
-          {/* Reference ID Callout Box */}
-          <div className="p-4 rounded-xl bg-[#0B0E14] border border-[#1F293D] flex items-center justify-between">
-            <div className="text-left">
-              <p className="text-[10px] uppercase font-bold text-slate-400">Your Reference ID</p>
-              <p className="font-mono text-xl font-bold text-brand-orange">{registration?.referenceId}</p>
-            </div>
-            <button
-              onClick={() => copyToClipboard(registration?.referenceId || '')}
-              className="px-3 py-1.5 rounded-lg bg-[#161B26] text-xs text-slate-300 hover:text-white flex items-center gap-1.5 border border-[#1F293D]"
-            >
-              <Copy className="w-3.5 h-3.5" />
-              {copied ? 'Copied!' : 'Copy'}
-            </button>
-          </div>
-
-          {/* Paid with Coins Notice */}
-          <div className="p-4 rounded-xl bg-amber-950/30 border border-amber-500/30 flex items-center justify-center gap-2 text-amber-300 font-bold text-sm">
-            <Coins className="w-5 h-5 text-brand-orange" />
-            <span>Registered with {requiredCoins} Wallet Coins (Deducted from Wallet)</span>
-          </div>
-
-          {/* Prominent WhatsApp Delivery Confirmation */}
-          <div className="p-5 rounded-2xl bg-emerald-950/60 border border-emerald-500/50 space-y-2 text-center">
-            <div className="w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center mx-auto">
-              <MessageCircle className="w-6 h-6" />
-            </div>
-            <h3 className="font-display font-extrabold text-base text-emerald-300 uppercase">
-              Room Credentials Will Arrive on WhatsApp
-            </h3>
-            <p className="text-xs text-slate-200 leading-relaxed max-w-md mx-auto">
-              Custom Room ID and Password will be sent directly to your <strong>Team Leader WhatsApp: {captain.phone}</strong> (and {captain.email}) 15–30 minutes before match kick-off.
-            </p>
-          </div>
-
-          <div className="pt-2 flex flex-col sm:flex-row gap-3 justify-center">
-            <Link
-              to="/tournaments"
-              className="px-6 py-2.5 rounded-xl bg-brand-orange hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-wider transition-colors"
-            >
-              Back to Tournaments
-            </Link>
-            <Link
-              to="/wallet"
-              className="px-6 py-2.5 rounded-xl bg-[#161B26] text-slate-300 hover:text-white border border-[#1F293D] font-bold text-xs uppercase tracking-wider transition-colors"
-            >
-              View Player Wallet
-            </Link>
-          </div>
-        </div>
+      <div className="max-w-xl mx-auto px-4 py-20 text-center space-y-4">
+        <ShieldAlert className="w-12 h-12 text-rose-500 mx-auto" />
+        <h2 className="font-display text-2xl font-bold uppercase text-white">Tournament Not Found</h2>
+        <p className="text-xs text-slate-400">{error || 'The tournament you are looking for does not exist.'}</p>
+        <Link to="/tournaments" className="inline-block mt-4 px-6 py-2 rounded-xl bg-brand-orange text-white text-xs font-bold uppercase">
+          Return to Tournaments
+        </Link>
       </div>
     );
   }
 
-  const requiredCoins = tournament?.entryFee || 29;
-  const isInsufficient = walletBalance !== null && walletBalance < requiredCoins;
+  const availability = tournamentAvailability(tournament);
+  const designatedLeader = players[leaderIndex] || players[0];
+  const activeSlot = TIME_SLOTS.find((s) => s.id === preferredSlot) || TIME_SLOTS[0];
 
   return (
-    <div className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-6">
-      
-      {/* Header */}
-      <div>
-        <Link to={`/tournaments/${tournament?.slug}`} className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white mb-3">
-          <ArrowLeft className="w-4 h-4" /> Back to Tournament
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+      {/* Top Back Navigation */}
+      <div className="flex items-center justify-between border-b border-[#412a34] pb-4">
+        <Link to={`/tournaments/${tournament.slug}`} className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white transition-colors">
+          <ArrowLeft className="w-4 h-4 text-brand-orange" />
+          <span>Back to Match Overview</span>
         </Link>
-        <div className="flex items-center gap-2 text-brand-orange text-xs font-bold uppercase tracking-wider">
-          <Users className="w-4 h-4" />
-          <span>Squad Entry Form (4 Players)</span>
-        </div>
-        <h1 className="font-display text-3xl font-extrabold uppercase text-white tracking-wide mt-1">
-          {tournament?.title || 'Squad Battle Registration'}
-        </h1>
-        <p className="text-xs text-slate-400 mt-1">
-          Entry Fee: <strong className="text-amber-300">{requiredCoins} Coins</strong> (deducted from Team Leader's Wallet).
-        </p>
+        <span className="text-xs font-bold uppercase text-brand-orange px-3 py-1 rounded-lg bg-brand-orange/10 border border-brand-orange/30">
+          Squad 4v4 Battle
+        </span>
       </div>
 
-      {/* Prominent WhatsApp Delivery Notice */}
-      <div className="p-4 rounded-xl bg-emerald-950/60 border border-emerald-500/40 flex items-start gap-3">
-        <MessageCircle className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
+      {/* Tournament Header Summary */}
+      <div className="p-5 sm:p-6 rounded-2xl bg-[#24171e] border border-[#49303a] flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
         <div>
-          <strong className="text-white text-xs sm:text-sm font-bold block uppercase tracking-wide">
-            Room ID & Password Delivery Notice
+          <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Official Registration</span>
+          <h1 className="font-display text-2xl sm:text-3xl font-extrabold uppercase text-white mt-0.5">
+            {tournament.title}
+          </h1>
+          <div className="flex flex-wrap items-center gap-3 text-xs text-slate-300 mt-2">
+            <span>Map: <strong className="text-white">{tournament.map || 'Bermuda'}</strong></span>
+            <span>·</span>
+            <span>Total Prize Pool: <strong className="text-brand-amber font-bold">₹{tournament.prizeConfig?.totalPool || 0}</strong></span>
+          </div>
+        </div>
+
+        <div className="text-left md:text-right border-t md:border-t-0 border-[#412a34] pt-3 md:pt-0 w-full md:w-auto">
+          <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Squad Entry Fee</span>
+          <strong className="text-2xl sm:text-3xl font-display font-extrabold text-amber-400">
+            ₹{tournament.entryFee}
           </strong>
-          <p className="text-xs text-slate-300 leading-relaxed mt-0.5">
-            Custom Room ID and Password will be sent directly to your <strong>Team Leader's WhatsApp ({captain.phone || 'Your Phone Number'})</strong> 15–30 minutes before match kick-off.
-          </p>
+          <span className="text-[11px] text-slate-400 block mt-0.5">Pay via direct UPI</span>
         </div>
       </div>
 
+      {/* Error Alert */}
       {error && (
-        <div className="p-4 rounded-lg bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
-          <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
+        <div className="p-4 rounded-xl bg-rose-950/80 border border-rose-500/40 text-rose-300 text-xs sm:text-sm flex items-center gap-2.5">
+          <AlertCircle className="w-5 h-5 shrink-0 text-rose-400" />
           <span>{error}</span>
         </div>
       )}
 
-      {/* Registration Form */}
-      <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl bg-[#121722] border border-[#1F293D] space-y-6">
-        
-        {/* Section 1: Team & Team Leader Details */}
-        <div className="space-y-4">
-          <h3 className="font-display text-lg font-bold uppercase text-white border-b border-[#1F293D] pb-2">
-            1. Team & Team Leader Details
-          </h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      {/* STEP 1: SQUAD DETAILS & TIME SLOT SELECTION */}
+      {step === 'form' && (
+        <form onSubmit={handleGoToPayment} className="space-y-8">
+          
+          {/* Section A: Preferred Match Time Slot (Option 2) */}
+          <div className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-4">
             <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Squad / Team Name *</label>
+              <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest block">Step 1 of 2</span>
+              <h2 className="font-display text-xl font-bold uppercase text-white mt-1 flex items-center gap-2">
+                <Clock className="w-5 h-5 text-brand-orange" />
+                Select Preferred Match Session
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Choose the time window that suits your squad. If a specific section is full, Admin will coordinate with your Team Leader on WhatsApp.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              {TIME_SLOTS.map((slot) => {
+                const isSelected = preferredSlot === slot.id;
+                return (
+                  <button
+                    key={slot.id}
+                    type="button"
+                    onClick={() => setPreferredSlot(slot.id)}
+                    className={`p-4 rounded-xl border text-left transition-all ${
+                      isSelected
+                        ? 'border-brand-orange bg-brand-orange/20 shadow-glow-orange scale-[1.02]'
+                        : 'border-[#49303a] bg-[#1b1017] hover:border-slate-500'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs font-extrabold uppercase tracking-wider ${isSelected ? 'text-brand-orange' : 'text-slate-300'}`}>
+                        {slot.label}
+                      </span>
+                      {isSelected && <CheckCircle className="w-4 h-4 text-brand-orange" />}
+                    </div>
+                    <div className="font-display text-base font-bold text-white mt-1">
+                      {slot.time}
+                    </div>
+                    <span className="text-[11px] text-slate-400 block mt-1">
+                      {slot.matches} scheduled
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Section B: Team Name */}
+          <div className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-4">
+            <div>
+              <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest block">Step 2 of 2</span>
+              <h2 className="font-display text-xl font-bold uppercase text-white mt-1 flex items-center gap-2">
+                <Users className="w-5 h-5 text-brand-orange" />
+                Squad Roster & Team Leader
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Enter each player's name and WhatsApp number. Tap the highlight badge to designate the <strong>Team Leader</strong>.
+              </p>
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
+                Squad / Team Name *
+              </label>
               <input
                 type="text"
                 required
-                placeholder="e.g. Thunder Strikers"
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+                placeholder="e.g. Royal Warriors, Team Alpha"
+                className="w-full px-4 py-3 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-sm focus:outline-none focus:border-brand-orange"
               />
             </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">Team Leader Name *</label>
-              <input
-                type="text"
-                required
-                placeholder="Full Name"
-                value={captain.name}
-                onChange={(e) => setCaptain({ ...captain, name: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
-                Team Leader Email * (Wallet Account)
-              </label>
-              <input
-                type="email"
-                required
-                placeholder="leader@gmail.com"
-                value={captain.email}
-                onChange={(e) => setCaptain({ ...captain, email: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
-                Team Leader Phone (WhatsApp for Room ID) *
-              </label>
-              <input
-                type="tel"
-                required
-                placeholder="10-digit WhatsApp number"
-                value={captain.phone}
-                onChange={(e) => setCaptain({ ...captain, phone: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
-              />
-            </div>
-
-            <div className="sm:col-span-2">
-              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">City & State (Location) *</label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Bhubaneswar, Odisha"
-                value={captain.collegeRollNo}
-                onChange={(e) => setCaptain({ ...captain, collegeRollNo: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Live Wallet Balance & Coin Deduction Card */}
-        <div className="p-4 rounded-xl bg-[#0B0E14] border border-brand-orange/40 space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="font-display font-bold text-xs text-white uppercase flex items-center gap-1.5">
-              <Coins className="w-4 h-4 text-brand-orange" />
-              <span>Wallet Coin Status</span>
-            </span>
-            <span className="text-[11px] text-slate-400">1 Coin = ₹1 INR</span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3 text-center sm:text-left">
-            <div className="p-3 rounded-lg bg-[#121722] border border-[#1F293D]">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Entry Fee</span>
-              <strong className="text-base text-amber-300 font-display font-extrabold">{requiredCoins} Coins</strong>
-            </div>
-
-            <div className="p-3 rounded-lg bg-[#121722] border border-[#1F293D]">
-              <span className="text-[10px] uppercase font-bold text-slate-400 block">Your Available Balance</span>
-              <strong className={`text-base font-display font-extrabold ${walletBalance !== null ? (walletBalance >= requiredCoins ? 'text-emerald-400' : 'text-rose-400') : 'text-slate-400'}`}>
-                {walletLoading ? 'Checking...' : walletBalance !== null ? `${walletBalance} Coins` : 'Enter email to check'}
-              </strong>
-            </div>
-          </div>
-
-          {/* Insufficient Coins Warning */}
-          {isInsufficient && (
-            <div className="p-3 rounded-lg bg-rose-950/50 border border-rose-500/40 text-rose-300 text-xs flex flex-col sm:flex-row items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-rose-400 shrink-0" />
-                <span>Need <strong>{requiredCoins - walletBalance} more Coins</strong> to register.</span>
+            {/* 4 Player Positions Grid */}
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-300">
+                  Player Roster (4 Positions)
+                </span>
+                <label className="flex items-center gap-2 cursor-pointer text-xs text-slate-400 hover:text-white">
+                  <input
+                    type="checkbox"
+                    checked={!hasFourthPlayer}
+                    onChange={(e) => setHasFourthPlayer(!e.target.checked)}
+                    className="rounded border-[#49303a] text-brand-orange focus:ring-0"
+                  />
+                  <span>Playing as Trio (3 Players Only)</span>
+                </label>
               </div>
-              <Link
-                to="/wallet"
-                target="_blank"
-                className="px-4 py-1.5 rounded-lg bg-brand-orange text-white text-[11px] font-bold uppercase tracking-wider hover:brightness-110 shrink-0"
-              >
-                Top Up Coins in Wallet
-              </Link>
-            </div>
-          )}
-        </div>
 
-        {/* Section 2: 4 Players Roster */}
-        <div className="space-y-4">
-          <div className="border-b border-[#1F293D] pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-            <h3 className="font-display text-lg font-bold uppercase text-white">
-              2. Squad Player Roster (4 Free Fire Players)
-            </h3>
-            <span className="text-[11px] text-slate-400">
-              Free Fire UIDs are <strong>6 to 17 digits numbers only</strong>.
-            </span>
-          </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[0, 1, 2, 3].map((idx) => {
+                  if (idx === 3 && !hasFourthPlayer) return null;
+                  const isLeader = leaderIndex === idx;
 
-          <div className="space-y-3">
-            {players.map((player, idx) => (
-              <div key={idx} className="p-4 rounded-xl bg-[#0B0E14] border border-[#1F293D] grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-brand-orange uppercase">
-                    Player {idx + 1} {idx === 0 ? '(Team Leader)' : ''}
-                  </span>
-                  {idx > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => fillPlayerNA(idx)}
-                      className={`text-[10px] px-2 py-0.5 rounded border font-semibold transition-colors ${
-                        player.inGameName === 'N/A' && player.freeFireUid === 'N/A'
-                          ? 'bg-amber-950/60 text-amber-300 border-amber-500/40'
-                          : 'bg-slate-800 hover:bg-slate-700 text-slate-300 border-slate-700'
+                  return (
+                    <div
+                      key={idx}
+                      className={`p-4 rounded-xl border transition-all relative ${
+                        isLeader
+                          ? 'border-brand-orange bg-brand-orange/10 shadow-[0_0_20px_rgba(255,85,0,0.2)]'
+                          : 'border-[#49303a] bg-[#1b1017]'
                       }`}
                     >
-                      {player.inGameName === 'N/A' && player.freeFireUid === 'N/A' ? 'Filled N/A' : 'Fill N/A'}
-                    </button>
-                  )}
-                </div>
+                      {/* Card Header & Team Leader Selector */}
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                          Position {idx + 1}
+                        </span>
 
-                <div>
-                  <input
-                    type="text"
-                    required={idx === 0}
-                    placeholder={idx === 0 ? "In-Game Name (IGN) *" : "In-Game Name (IGN or N/A)"}
-                    value={player.inGameName}
-                    onChange={(e) => handlePlayerChange(idx, 'inGameName', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#161B26] border border-[#1F293D] text-xs text-white focus:outline-none focus:border-brand-orange"
-                  />
-                </div>
+                        <button
+                          type="button"
+                          onClick={() => setLeaderIndex(idx)}
+                          className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-[11px] font-bold uppercase tracking-wider transition-all ${
+                            isLeader
+                              ? 'bg-brand-orange text-white shadow-glow-orange'
+                              : 'bg-[#24171e] text-slate-400 hover:text-white border border-[#412a34]'
+                          }`}
+                        >
+                          <Crown className={`w-3.5 h-3.5 ${isLeader ? 'text-white' : 'text-slate-400'}`} />
+                          <span>{isLeader ? 'Team Leader' : 'Set as Leader'}</span>
+                          {isLeader && <CheckCircle className="w-3.5 h-3.5 ml-0.5 text-white" />}
+                        </button>
+                      </div>
 
-                <div>
-                  <input
-                    type="text"
-                    required={idx === 0}
-                    placeholder={idx === 0 ? "Free Fire UID (6–17 digits) *" : "Free Fire UID (6–17 digits or N/A)"}
-                    value={player.freeFireUid}
-                    onChange={(e) => handleUidChange(idx, e.target.value)}
-                    maxLength={17}
-                    className="w-full px-3 py-2 rounded-lg bg-[#161B26] border border-[#1F293D] text-xs text-white font-mono focus:outline-none focus:border-brand-orange"
-                  />
+                      {/* Leader Notice Badge */}
+                      {isLeader && (
+                        <div className="mb-3 py-1.5 px-2.5 rounded-lg bg-emerald-950/70 border border-emerald-500/30 text-[10px] text-emerald-300 flex items-center gap-1.5">
+                          <MessageCircle className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                          <span>Room ID & Password will be delivered to this number</span>
+                        </div>
+                      )}
+
+                      {/* Inputs */}
+                      <div className="space-y-3">
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                            Player {idx + 1} Name *
+                          </label>
+                          <input
+                            type="text"
+                            required
+                            value={players[idx].name}
+                            onChange={(e) => handlePlayerChange(idx, 'name', e.target.value)}
+                            placeholder={`e.g. ${idx === 0 ? 'Rahul (Captain)' : `Player ${idx + 1}`}`}
+                            className="w-full px-3.5 py-2 rounded-lg bg-[#24171e] border border-[#49303a] text-white text-xs sm:text-sm focus:outline-none focus:border-brand-orange"
+                          />
+                        </div>
+
+                        <div>
+                          <label className="block text-[11px] font-semibold text-slate-400 mb-1">
+                            WhatsApp Phone Number *
+                          </label>
+                          <input
+                            type="tel"
+                            required
+                            maxLength={10}
+                            value={players[idx].phone}
+                            onChange={(e) => handlePlayerChange(idx, 'phone', e.target.value)}
+                            placeholder="10-digit mobile number"
+                            className="w-full px-3.5 py-2 rounded-lg bg-[#24171e] border border-[#49303a] text-white text-xs sm:text-sm focus:outline-none focus:border-brand-orange"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          {/* Action CTA */}
+          <div className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+              <p className="text-xs text-slate-300">
+                Preferred: <strong className="text-white">{activeSlot.label} ({activeSlot.time})</strong>
+              </p>
+              <p className="text-xs text-emerald-400 mt-0.5">
+                Team Leader: <strong>{designatedLeader.name || 'Player 1'} ({designatedLeader.phone || 'Phone pending'})</strong>
+              </p>
+            </div>
+
+            <button
+              type="submit"
+              className="w-full sm:w-auto px-8 py-3.5 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber font-display font-extrabold uppercase tracking-wider text-white text-sm shadow-glow-orange hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              <span>GO — PROCEED TO PAYMENT (₹{tournament.entryFee})</span>
+              <Sparkles className="w-4 h-4" />
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* STEP 2: DIRECT UPI PAYMENT SCREEN */}
+      {step === 'payment' && (
+        <form onSubmit={handleFinalSubmit} className="space-y-6">
+          <div className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-6 shadow-xl">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#412a34] pb-4">
+              <div>
+                <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest block">Checkout & UPI Payment</span>
+                <h2 className="font-display text-2xl font-bold uppercase text-white mt-1">
+                  Pay ₹{tournament.entryFee} for Squad Slot
+                </h2>
+                <p className="text-xs text-slate-400 mt-1">
+                  Team: <strong>{teamName}</strong> · Slot: <strong>{activeSlot.label} ({activeSlot.time})</strong>
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setStep('form')}
+                className="text-xs font-bold uppercase tracking-wider text-slate-400 hover:text-white px-3 py-1.5 rounded-lg bg-[#1b1017] border border-[#412a34]"
+              >
+                Edit Roster
+              </button>
+            </div>
+
+            {/* Scannable Dynamic QR Code Card */}
+            <div className="p-6 rounded-2xl bg-[#1b1017] border border-brand-orange/40 flex flex-col md:flex-row items-center gap-6">
+              <div className="w-48 h-48 bg-white p-2 rounded-2xl shadow-2xl shrink-0 flex items-center justify-center">
+                <img
+                  src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(`upi://pay?pa=srikantap571-1@okaxis&pn=Rahul%20Esports&am=${tournament.entryFee}&cu=INR`)}`}
+                  alt="UPI QR Code"
+                  className="w-full h-full object-contain"
+                />
+              </div>
+
+              <div className="space-y-3 flex-1 text-center md:text-left">
+                <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest block">
+                  Scan to Pay ₹{tournament.entryFee} via Any UPI App
+                </span>
+                <h3 className="font-display text-lg font-bold text-white uppercase">
+                  Google Pay, PhonePe, Paytm, BHIM
+                </h3>
+                <p className="text-xs text-slate-400">
+                  Scan the QR code or pay manually to our verified organizer UPI ID:
+                </p>
+
+                <div className="flex items-center justify-center md:justify-start gap-2 pt-1">
+                  <span className="font-mono text-sm font-bold text-brand-amber bg-[#24171e] px-3.5 py-1.5 rounded-xl border border-[#49303a]">
+                    srikantap571-1@okaxis
+                  </span>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      await navigator.clipboard.writeText('srikantap571-1@okaxis');
+                      setCopied(true);
+                      setTimeout(() => setCopied(false), 2000);
+                    }}
+                    className="p-2 rounded-xl bg-[#24171e] hover:bg-[#301e27] text-slate-300 hover:text-white border border-[#49303a] transition-colors"
+                    title="Copy UPI ID"
+                  >
+                    {copied ? <CheckCircle className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
-            ))}
+            </div>
+
+            {/* UTR Input Field */}
+            <div className="space-y-2">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">
+                12-Digit UPI UTR / Transaction Reference Number *
+              </label>
+              <input
+                type="text"
+                required
+                maxLength={12}
+                value={utrNumber}
+                onChange={(e) => setUtrNumber(e.target.value.replace(/\D/g, ''))}
+                placeholder="e.g. 432198765432"
+                className="w-full px-4 py-3 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-base font-mono tracking-wider focus:outline-none focus:border-brand-orange"
+              />
+              <p className="text-[11px] text-slate-400">
+                Found in your UPI payment receipt details (12 digits numbers only).
+              </p>
+            </div>
+
+            {/* Submit Action */}
+            <button
+              type="submit"
+              disabled={submitting}
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber font-display font-extrabold uppercase tracking-wider text-white text-base shadow-glow-orange hover:brightness-110 active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              {submitting ? 'Submitting Registration...' : `CONFIRM & SUBMIT REGISTRATION (₹${tournament.entryFee})`}
+            </button>
+          </div>
+        </form>
+      )}
+
+      {/* STEP 3: SUCCESS & WHATSAPP DISPATCH */}
+      {step === 'success' && registrationResult && (
+        <div className="p-6 sm:p-8 rounded-2xl bg-[#24171e] border border-emerald-500/40 text-center space-y-6 shadow-2xl">
+          <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center mx-auto shadow-glow-emerald">
+            <CheckCircle className="w-8 h-8" />
+          </div>
+
+          <div className="space-y-1">
+            <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-widest block">
+              Registration Recorded
+            </span>
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold uppercase text-white">
+              Squad Successfully Registered!
+            </h2>
+            <p className="text-xs text-slate-300 max-w-md mx-auto mt-1">
+              Your registration reference ID has been generated. Please send payment verification to Admin WhatsApp to confirm your match slot.
+            </p>
+          </div>
+
+          {/* Reference Card */}
+          <div className="p-5 rounded-2xl bg-[#1b1017] border border-[#49303a] max-w-md mx-auto text-left space-y-2.5">
+            <div className="flex items-center justify-between pb-2 border-b border-[#412a34]">
+              <span className="text-xs text-slate-400 font-semibold">Reference ID:</span>
+              <strong className="text-base font-mono font-bold text-brand-orange">
+                {registrationResult.registration.referenceId}
+              </strong>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-400">Team Name:</span>
+              <span className="text-white font-bold">{registrationResult.registration.teamName}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-400">Selected Session:</span>
+              <span className="text-brand-amber font-bold">{registrationResult.registration.slotTime}</span>
+            </div>
+            <div className="flex items-center justify-between text-xs">
+              <span className="text-slate-400">Team Leader:</span>
+              <span className="text-emerald-400 font-bold">{registrationResult.registration.captainName} ({registrationResult.registration.captainPhone})</span>
+            </div>
+            {registrationResult.registration.utr && (
+              <div className="flex items-center justify-between text-xs">
+                <span className="text-slate-400">Submitted UTR:</span>
+                <span className="font-mono text-slate-200">{registrationResult.registration.utr}</span>
+              </div>
+            )}
+          </div>
+
+          {/* High-Impact Admin WhatsApp CTA */}
+          <div className="pt-2 max-w-md mx-auto space-y-3">
+            <a
+              href={registrationResult.paymentInstructions.whatsappChatUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="w-full py-4 px-6 rounded-xl bg-emerald-600 hover:bg-emerald-500 font-display font-extrabold uppercase text-white text-sm tracking-wider flex items-center justify-center gap-2.5 shadow-[0_4px_20px_rgba(16,185,129,0.4)] hover:brightness-110 active:scale-95 transition-all"
+            >
+              <MessageCircle className="w-5 h-5" />
+              <span>SEND DETAILS TO ADMIN WHATSAPP</span>
+            </a>
+
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Admin will verify your 12-digit UTR on WhatsApp, schedule your room, and dispatch the Custom Room ID & Password to your Team Leader's WhatsApp 15-20 minutes before match time.
+            </p>
+          </div>
+
+          <div className="pt-4 border-t border-[#412a34] flex justify-center gap-4">
+            <Link to="/tournaments" className="text-xs font-bold uppercase text-slate-400 hover:text-white">
+              Back to Tournaments
+            </Link>
+            <span>·</span>
+            <Link to="/status" className="text-xs font-bold uppercase text-brand-orange hover:text-white">
+              Track Registration Status
+            </Link>
           </div>
         </div>
-
-        {/* Agreement Checkbox */}
-        <div className="pt-2">
-          <label className="flex items-start gap-2.5 cursor-pointer">
-            <input
-              type="checkbox"
-              checked={agreed}
-              onChange={(e) => setAgreed(e.target.checked)}
-              className="mt-1 w-4 h-4 rounded text-brand-orange focus:ring-0 bg-[#0B0E14] border-[#1F293D]"
-            />
-            <span className="text-xs text-slate-300 leading-relaxed">
-              I certify that all players will play only on mobile devices (no PC emulators/hacks) and agree that {requiredCoins} Coins will be deducted from my wallet for registration.
-            </span>
-          </label>
-        </div>
-
-        {/* Submit or Top-Up CTA */}
-        {isInsufficient ? (
-          <Link
-            to="/wallet"
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-600 to-amber-500 font-display font-bold uppercase tracking-wider text-white text-base shadow-lg hover:brightness-110 transition-all flex items-center justify-center gap-2"
-          >
-            <Coins className="w-5 h-5" />
-            Top Up Coins in Wallet to Register (Need {requiredCoins - walletBalance} Coins)
-          </Link>
-        ) : (
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber font-display font-bold uppercase tracking-wider text-white text-base shadow-glow-orange hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-          >
-            {submitting ? 'Confirming Squad Slot...' : `Confirm Registration with ${requiredCoins} Coins (Instant)`}
-          </button>
-        )}
-
-      </form>
-
+      )}
     </div>
   );
 }
