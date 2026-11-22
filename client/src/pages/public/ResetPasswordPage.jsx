@@ -1,61 +1,46 @@
 import React, { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { ShieldCheck, LockKeyhole, Eye, EyeOff } from 'lucide-react';
 import api from '../../services/api.js';
-import { resetPasswordSchema } from '../../validations/authValidation.js';
+import { site } from '../../config/site.js';
 import usePageMeta from '../../hooks/usePageMeta.js';
-import { Lock, CheckCircle, ShieldAlert, ArrowRight } from 'lucide-react';
+import { resetPasswordSchema } from '../../validations/authValidation.js';
 
 export default function ResetPasswordPage() {
-  usePageMeta('Set New Password | Rahul Esports', 'Enter your new password to regain access to your Rahul Esports tournament account.');
+  usePageMeta('Set New Password | Rahul Esports', 'Choose your new account password.');
 
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Extract ?token=... from URL
   const searchParams = new URLSearchParams(location.search);
   const token = searchParams.get('token') || '';
 
-  const [formData, setFormData] = useState({
-    password: '',
-    confirmPassword: '',
-  });
-
-  const [fieldErrors, setFieldErrors] = useState({});
-  const [serverError, setServerError] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [visible, setVisible] = useState(false);
+  const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
 
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-    if (fieldErrors[name]) setFieldErrors((prev) => ({ ...prev, [name]: '' }));
-    if (serverError) setServerError('');
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setFieldError('');
-    setServerError('');
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    if (submitting) return;
+    setError('');
 
     if (!token) {
-      setServerError('Password reset token is missing from the link. Please request a new link.');
+      setError('Password reset token is missing from the link. Please request a new link.');
       return;
     }
 
-    // Zod validation
     const result = resetPasswordSchema.safeParse({
       token,
-      password: formData.password,
-      confirmPassword: formData.confirmPassword,
+      password,
+      confirmPassword,
     });
 
     if (!result.success) {
-      const errors = {};
       const issues = result.error.issues || result.error.errors || [];
-      issues.forEach((err) => {
-        if (err.path[0]) errors[err.path[0]] = err.message;
-      });
-      setFieldErrors(errors);
+      setError(issues[0]?.message || 'Please check your passwords.');
       return;
     }
 
@@ -68,141 +53,101 @@ export default function ResetPasswordPage() {
           navigate('/login', { replace: true });
         }, 3000);
       } else {
-        setServerError(res.message || 'Failed to reset password.');
+        setError(res.message || 'Failed to reset password.');
       }
     } catch (err) {
-      setServerError(err.message || 'Password reset token is invalid or has expired.');
+      setError(err.message || 'Password reset token is invalid or has expired.');
     } finally {
       setSubmitting(false);
     }
   };
 
-  if (!token) {
-    return (
-      <div className="max-w-md mx-auto px-4 py-16 text-center space-y-4">
-        <div className="p-6 rounded-2xl bg-[#121722] border border-[#1F293D] shadow-xl space-y-4">
-          <ShieldAlert className="w-12 h-12 text-rose-400 mx-auto" />
-          <h2 className="font-display text-xl font-bold uppercase text-white">Invalid Reset Link</h2>
-          <p className="text-xs text-slate-400 leading-relaxed">
-            The reset token is missing or malformed. Please request a new password reset link from the forgot password page.
-          </p>
-          <Link
-            to="/forgot-password"
-            className="inline-block px-5 py-2.5 rounded-xl bg-brand-orange text-white font-bold text-xs uppercase tracking-wider"
-          >
-            Request New Reset Link
-          </Link>
+  return (
+    <div className="admin-login">
+      <div className="admin-login-art">
+        <img src={site.heroImage} alt="Odisha-inspired battle arena" />
+        <div>
+          <span className="eyebrow">{site.region.toUpperCase()}’S ARENA</span>
+          <h2>Account Security.<br />Updated.</h2>
+          <p>Choose a secure password to protect your coin wallet, match entries, and withdrawals.</p>
         </div>
       </div>
-    );
-  }
 
-  return (
-    <div className="max-w-md mx-auto px-4 sm:px-6 py-14">
-      <div className="p-6 sm:p-8 rounded-2xl bg-[#121722] border border-[#1F293D] shadow-2xl space-y-6">
-        
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="w-12 h-12 rounded-full bg-brand-orange/15 text-brand-orange border border-brand-orange/30 flex items-center justify-center mx-auto">
-            <Lock className="w-6 h-6" />
+      <div className="admin-login-form">
+        <Link className="text-link" to="/login">Back to sign in</Link>
+        <h1>Set new password</h1>
+        <p>Enter your new password below to regain full account access.</p>
+
+        {error && <div role="alert" className="login-error">{error}</div>}
+
+        {!token ? (
+          <div style={{ color: '#ffd4dc', background: '#571e31', border: '1px solid #be6078', borderRadius: '8px', padding: '16px' }}>
+            <p style={{ margin: '0 0 12px 0' }}>The password reset link is invalid or incomplete. Please request a new reset link.</p>
+            <Link to="/forgot-password" className="arena-button" style={{ display: 'inline-flex', padding: '8px 16px', textDecoration: 'none' }}>
+              Request new link
+            </Link>
           </div>
-          <h1 className="font-display text-2xl font-black uppercase text-white tracking-wider">
-            New Password
-          </h1>
-          <p className="text-xs text-slate-400">
-            Choose a strong password to secure your tournament coins and profile.
-          </p>
-        </div>
-
-        {serverError && (
-          <div className="p-3.5 rounded-xl bg-rose-950/70 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
-            <ShieldAlert className="w-4 h-4 text-rose-400 shrink-0" />
-            <span>{serverError}</span>
-          </div>
-        )}
-
-        {success ? (
-          <div className="p-6 rounded-xl bg-emerald-950/50 border border-emerald-500/40 text-center space-y-4">
-            <div className="w-12 h-12 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto">
-              <CheckCircle className="w-6 h-6" />
-            </div>
-            <div>
-              <h3 className="font-display font-extrabold text-base text-emerald-300 uppercase">
-                Password Reset Complete
-              </h3>
-              <p className="text-xs text-slate-200 mt-1 leading-relaxed">
-                Your password has been securely updated. You will be redirected to the sign in page in 3 seconds...
-              </p>
-            </div>
-            <div className="pt-2">
-              <Link
-                to="/login"
-                className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-xl bg-brand-orange hover:bg-orange-600 text-white font-bold text-xs uppercase tracking-wider transition-colors"
-              >
-                <span>Proceed to Sign In</span>
-                <ArrowRight className="w-4 h-4" />
+        ) : success ? (
+          <div style={{ background: '#1c2e24', border: '1px solid #2e7d56', borderRadius: '8px', padding: '16px', color: '#cbf3dc', fontSize: '0.875rem' }}>
+            <strong style={{ display: 'block', color: '#6ee7b7', marginBottom: '6px' }}>Password successfully updated!</strong>
+            You will be redirected to the sign in page in 3 seconds...
+            <div style={{ marginTop: '16px' }}>
+              <Link to="/login" className="arena-button" style={{ display: 'inline-flex', padding: '10px 18px', textDecoration: 'none' }}>
+                Sign in now
               </Link>
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit}>
             <div>
-              <label className="block text-xs font-bold uppercase text-slate-300 mb-1">
-                New Password * (Min 8 Chars, 1 Uppercase, 1 Number)
-              </label>
-              <input
-                type="password"
-                name="password"
-                required
-                autoComplete="new-password"
-                placeholder="Enter new password"
-                value={formData.password}
-                onChange={handleChange}
-                className={`w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border text-sm text-white focus:outline-none transition-colors ${
-                  fieldErrors.password ? 'border-rose-500' : 'border-[#1F293D] focus:border-brand-orange'
-                }`}
-              />
-              {fieldErrors.password && (
-                <p className="text-[11px] text-rose-400 mt-1">{fieldErrors.password}</p>
-              )}
+              <label htmlFor="new-password">New password</label>
+              <div className="password-field">
+                <input
+                  id="new-password"
+                  name="password"
+                  type={visible ? 'text' : 'password'}
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter new password"
+                />
+                <button
+                  type="button"
+                  aria-label={visible ? 'Hide password' : 'Show password'}
+                  aria-pressed={visible}
+                  onClick={() => setVisible(!visible)}
+                >
+                  {visible ? <EyeOff size={19} /> : <Eye size={19} />}
+                </button>
+              </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold uppercase text-slate-300 mb-1">
-                Confirm New Password *
-              </label>
-              <input
-                type="password"
-                name="confirmPassword"
-                required
-                autoComplete="new-password"
-                placeholder="Repeat new password"
-                value={formData.confirmPassword}
-                onChange={handleChange}
-                className={`w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border text-sm text-white focus:outline-none transition-colors ${
-                  fieldErrors.confirmPassword ? 'border-rose-500' : 'border-[#1F293D] focus:border-brand-orange'
-                }`}
-              />
-              {fieldErrors.confirmPassword && (
-                <p className="text-[11px] text-rose-400 mt-1">{fieldErrors.confirmPassword}</p>
-              )}
+              <label htmlFor="confirm-password">Confirm new password</label>
+              <div className="password-field">
+                <input
+                  id="confirm-password"
+                  name="confirmPassword"
+                  type={visible ? 'text' : 'password'}
+                  required
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Repeat new password"
+                />
+              </div>
             </div>
 
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber font-display font-bold uppercase tracking-wider text-white text-sm shadow-glow-orange hover:brightness-110 active:scale-95 disabled:opacity-50 transition-all flex items-center justify-center gap-2 mt-2"
-            >
-              {submitting ? 'Resetting Password...' : (
-                <>
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Update Password & Save</span>
-                </>
-              )}
+            <button type="submit" className="arena-button" disabled={submitting}>
+              <LockKeyhole size={17} />
+              {submitting ? 'Updating password…' : 'Update password'}
             </button>
           </form>
         )}
 
+        <div className="login-notice">
+          <ShieldCheck size={17} />
+          <span>Your new password will be encrypted and saved immediately.</span>
+        </div>
       </div>
     </div>
   );

@@ -94,8 +94,8 @@ export default function App() {
                   <Route path="/forgot-password" element={<PublicShell><ForgotPasswordPage /></PublicShell>} />
                   <Route path="/reset-password" element={<PublicShell><ResetPasswordPage /></PublicShell>} />
 
-                  {/* Admin Auth & Dashboard */}
-                  <Route path="/admin/login" element={<PublicShell><AdminLoginPage /></PublicShell>} />
+                  {/* Unified Auth & Admin Dashboard */}
+                  <Route path="/admin/login" element={<Navigate to="/login?redirect=/admin/dashboard" replace />} />
                   <Route
                     path="/admin"
                     element={

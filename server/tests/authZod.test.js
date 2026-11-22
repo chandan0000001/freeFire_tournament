@@ -24,15 +24,12 @@ test('Auth Zod Validation: Register schema enforces required fields and security
   assert.ok(errorPaths.includes('mobileNumber'));
   assert.ok(errorPaths.includes('password'));
 
-  // Valid registration
+  // Valid registration (strictly 4 required fields)
   const valid = registerSchema.safeParse({
     fullName: 'Rahul Sharma',
     email: 'rahul.gamer@gmail.com',
     mobileNumber: '9876543210',
     password: 'Password123!',
-    freeFireUid: '1401364963',
-    inGameName: 'Rahul_Pro',
-    location: 'Bhubaneswar, Odisha',
   });
   assert.equal(valid.success, true);
   assert.equal(valid.data.email, 'rahul.gamer@gmail.com');

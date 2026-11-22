@@ -38,7 +38,7 @@ export const register = async (req, res, next) => {
       return res.status(400).json({ success: false, message: errorMsg });
     }
 
-    const { fullName, email, mobileNumber, password, freeFireUid, inGameName, location } = parseResult.data;
+    const { fullName, email, mobileNumber, password } = parseResult.data;
 
     // Redis rate limit: Max 5 registrations per hour per IP
     const clientIp = req.ip || req.connection.remoteAddress || 'unknown';
@@ -66,9 +66,6 @@ export const register = async (req, res, next) => {
       mobileNumber,
       password,
       role: ROLES.PLAYER,
-      freeFireUid: freeFireUid || '',
-      inGameName: inGameName || '',
-      location: location || '',
       lastLogin: new Date(),
     });
 
@@ -78,7 +75,6 @@ export const register = async (req, res, next) => {
       wallet.userId = user._id;
       wallet.playerName = user.name;
       wallet.phone = user.mobileNumber;
-      if (freeFireUid) wallet.freeFireUid = freeFireUid;
       await wallet.save();
     } else {
       wallet = await Wallet.create({
@@ -86,7 +82,6 @@ export const register = async (req, res, next) => {
         userEmail: email,
         playerName: user.name,
         phone: user.mobileNumber,
-        freeFireUid: freeFireUid || '',
       });
     }
 
@@ -106,9 +101,6 @@ export const register = async (req, res, next) => {
         email: user.email,
         mobileNumber: user.mobileNumber,
         role: user.role,
-        freeFireUid: user.freeFireUid,
-        inGameName: user.inGameName,
-        location: user.location,
       },
       wallet: {
         totalCoins: wallet.totalCoins,
