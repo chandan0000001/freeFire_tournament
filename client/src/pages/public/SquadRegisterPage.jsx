@@ -1,5 +1,7 @@
+import { site } from '../../config/site.js';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
+import { tournamentAvailability } from '../../utils/tournament.js';
 import api from '../../services/api.js';
 import usePageMeta from '../../hooks/usePageMeta.js';
 import { 
@@ -96,6 +98,10 @@ export default function SquadRegisterPage() {
     e.preventDefault();
     setError('');
 
+    if (!tournament || tournament.format !== 'squad' || !tournamentAvailability(tournament).canRegister) {
+      setError('Registration is unavailable for this tournament or format. Please choose an open match.');
+      return;
+    }
     if (!agreed) {
       setError('Please agree to the tournament fair play rules & eligibility notice');
       return;
@@ -192,7 +198,7 @@ export default function SquadRegisterPage() {
 
     return (
       <div className="max-w-xl mx-auto px-4 py-10">
-        <div className="p-6 sm:p-8 rounded-2xl bg-[#121722] border border-emerald-500/40 text-center space-y-6 shadow-2xl">
+        <div className="p-6 sm:p-8 rounded-2xl bg-[#24171e] border border-emerald-500/40 text-center space-y-6 shadow-2xl">
           <div className="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto">
             <CheckCircle className="w-7 h-7" />
           </div>
@@ -210,14 +216,14 @@ export default function SquadRegisterPage() {
           </div>
 
           {/* Reference ID Callout Box */}
-          <div className="p-4 rounded-xl bg-[#0B0E14] border border-[#1F293D] flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-[#160e13] border border-[#49303a] flex items-center justify-between">
             <div className="text-left">
               <p className="text-[10px] uppercase font-bold text-slate-400">Registration Reference ID</p>
               <p className="font-mono text-xl font-bold text-brand-orange">{registration?.referenceId}</p>
             </div>
             <button
               onClick={() => copyToClipboard(registration?.referenceId || '')}
-              className="px-3 py-1.5 rounded-lg bg-[#161B26] text-xs text-slate-300 hover:text-white flex items-center gap-1.5 border border-[#1F293D]"
+              className="px-3 py-1.5 rounded-lg bg-[#301e27] text-xs text-slate-300 hover:text-white flex items-center gap-1.5 border border-[#49303a]"
             >
               <Copy className="w-3.5 h-3.5" />
               {copied ? 'Copied!' : 'Copy'}
@@ -247,8 +253,8 @@ export default function SquadRegisterPage() {
           {/* UPI Payment Instructions Card */}
           {!isCoinsPaid && paymentInstructions && (
             <>
-              <div className="p-5 rounded-xl bg-[#0B0E14] border border-brand-amber/30 text-left space-y-4">
-                <div className="flex items-center justify-between border-b border-[#1F293D] pb-3">
+              <div className="p-5 rounded-xl bg-[#160e13] border border-brand-amber/30 text-left space-y-4">
+                <div className="flex items-center justify-between border-b border-[#49303a] pb-3">
                   <div>
                     <span className="text-[10px] font-bold uppercase text-brand-amber">Payment Details</span>
                     <p className="text-xs text-slate-300">
@@ -262,7 +268,7 @@ export default function SquadRegisterPage() {
                 </div>
 
                 {/* UPI ID with 1-click copy */}
-                <div className="flex items-center justify-between p-3 rounded-lg bg-[#161B26] border border-[#1F293D]">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-[#301e27] border border-[#49303a]">
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">UPI ID</span>
                     <span className="font-mono font-bold text-sm text-cyan-400">{paymentInstructions.upiId}</span>
@@ -359,11 +365,11 @@ export default function SquadRegisterPage() {
       )}
 
       {/* Form Card */}
-      <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl bg-[#121722] border border-[#1F293D] space-y-8">
+      <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-8">
         
         {/* Section 1: Team & Captain Details */}
         <div className="space-y-4">
-          <h3 className="font-display text-lg font-bold uppercase text-white border-b border-[#1F293D] pb-2">
+          <h3 className="font-display text-lg font-bold uppercase text-white border-b border-[#49303a] pb-2">
             1. Team & Captain Information
           </h3>
 
@@ -376,7 +382,7 @@ export default function SquadRegisterPage() {
                 placeholder="e.g. Thunder Strikers"
                 value={teamName}
                 onChange={(e) => setTeamName(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
               />
             </div>
 
@@ -388,7 +394,7 @@ export default function SquadRegisterPage() {
                 placeholder="Full Name"
                 value={captain.name}
                 onChange={(e) => setCaptain({ ...captain, name: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
               />
             </div>
 
@@ -400,7 +406,7 @@ export default function SquadRegisterPage() {
                 placeholder="captain@gmail.com"
                 value={captain.email}
                 onChange={(e) => setCaptain({ ...captain, email: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
               />
             </div>
 
@@ -412,7 +418,7 @@ export default function SquadRegisterPage() {
                 placeholder="10-digit mobile number"
                 value={captain.phone}
                 onChange={(e) => setCaptain({ ...captain, phone: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
               />
             </div>
 
@@ -424,7 +430,7 @@ export default function SquadRegisterPage() {
                 placeholder="e.g. Berhampur, Odisha"
                 value={captain.collegeRollNo}
                 onChange={(e) => setCaptain({ ...captain, collegeRollNo: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
               />
             </div>
           </div>
@@ -432,7 +438,7 @@ export default function SquadRegisterPage() {
 
         {/* Section 2: 4 Players Roster */}
         <div className="space-y-4">
-          <div className="border-b border-[#1F293D] pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+          <div className="border-b border-[#49303a] pb-2 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
             <h3 className="font-display text-lg font-bold uppercase text-white">
               2. Squad Player Roster (4 Free Fire Players)
             </h3>
@@ -443,7 +449,7 @@ export default function SquadRegisterPage() {
 
           <div className="space-y-3">
             {players.map((player, idx) => (
-              <div key={idx} className="p-4 rounded-xl bg-[#0B0E14] border border-[#1F293D] grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
+              <div key={idx} className="p-4 rounded-xl bg-[#160e13] border border-[#49303a] grid grid-cols-1 sm:grid-cols-3 gap-3 items-center">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-brand-orange uppercase">
                     Player {idx + 1} {idx === 0 ? '(Captain)' : ''}
@@ -471,7 +477,7 @@ export default function SquadRegisterPage() {
                     placeholder={idx === 0 ? "In-Game Name (IGN) *" : "In-Game Name (IGN or N/A)"}
                     value={player.inGameName}
                     onChange={(e) => handlePlayerChange(idx, 'inGameName', e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#161B26] border border-[#1F293D] text-xs text-white focus:outline-none focus:border-brand-orange"
+                    className="w-full px-3 py-2 rounded-lg bg-[#301e27] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
                   />
                 </div>
 
@@ -483,7 +489,7 @@ export default function SquadRegisterPage() {
                     value={player.freeFireUid}
                     maxLength={17}
                     onChange={(e) => handleUidChange(idx, e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#161B26] border border-[#1F293D] text-xs text-white font-mono focus:outline-none focus:border-brand-orange"
+                    className="w-full px-3 py-2 rounded-lg bg-[#301e27] border border-[#49303a] text-xs text-white font-mono focus:outline-none focus:border-brand-orange"
                   />
                   {player.freeFireUid && player.freeFireUid.toUpperCase() !== 'N/A' && player.freeFireUid.length < 6 && (
                     <span className="text-[10px] text-rose-400 mt-1 block">
@@ -508,7 +514,7 @@ export default function SquadRegisterPage() {
               className={`p-4 rounded-xl border text-left transition-all ${
                 paymentMethod === 'WALLET_COINS'
                   ? 'border-brand-orange bg-brand-orange/15 shadow-glow-orange'
-                  : 'border-[#1F293D] bg-[#0B0E14] hover:border-slate-600'
+                  : 'border-[#49303a] bg-[#160e13] hover:border-slate-600'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -531,7 +537,7 @@ export default function SquadRegisterPage() {
               className={`p-4 rounded-xl border text-left transition-all ${
                 paymentMethod === 'MANUAL_UPI'
                   ? 'border-brand-amber bg-brand-amber/15 shadow-md'
-                  : 'border-[#1F293D] bg-[#0B0E14] hover:border-slate-600'
+                  : 'border-[#49303a] bg-[#160e13] hover:border-slate-600'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -557,10 +563,10 @@ export default function SquadRegisterPage() {
               type="checkbox"
               checked={agreed}
               onChange={(e) => setAgreed(e.target.checked)}
-              className="mt-1 w-4 h-4 rounded text-brand-orange focus:ring-0 bg-[#0B0E14] border-[#1F293D]"
+              className="mt-1 w-4 h-4 rounded text-brand-orange focus:ring-0 bg-[#160e13] border-[#49303a]"
             />
             <span className="text-xs text-slate-300 leading-relaxed">
-              I certify that all players will play only on mobile devices (no PC emulators/hacks) and agree to Rahul Esports official tournament rules.
+              I certify that all players will play only on mobile devices (no PC emulators/hacks) and agree to {site.name} official tournament rules.
             </span>
           </label>
         </div>

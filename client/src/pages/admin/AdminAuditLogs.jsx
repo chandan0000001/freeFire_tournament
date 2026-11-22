@@ -36,10 +36,10 @@ export default function AdminAuditLogs() {
       </div>
 
       {/* Logs Table */}
-      <div className="rounded-2xl bg-[#121722] border border-[#1F293D] overflow-hidden shadow-xl">
+      <div className="rounded-2xl bg-[#24171e] border border-[#49303a] overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#0B0E14] text-[10px] uppercase font-bold text-slate-400 border-b border-[#1F293D]">
+            <thead className="bg-[#160e13] text-[10px] uppercase font-bold text-slate-400 border-b border-[#49303a]">
               <tr>
                 <th className="py-3 px-5">Timestamp</th>
                 <th className="py-3 px-5">Action</th>
@@ -48,7 +48,7 @@ export default function AdminAuditLogs() {
                 <th className="py-3 px-5">Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1F293D]">
+            <tbody className="divide-y divide-[#49303a]">
               {loading ? (
                 <tr>
                   <td colSpan="5" className="py-12 text-center text-slate-500">
@@ -57,7 +57,7 @@ export default function AdminAuditLogs() {
                 </tr>
               ) : logs.length > 0 ? (
                 logs.map((log) => (
-                  <tr key={log._id} className="hover:bg-[#161B26]">
+                  <tr key={log._id} className="hover:bg-[#301e27]">
                     <td className="py-3 px-5 text-slate-400 whitespace-nowrap">
                       {new Date(log.createdAt).toLocaleString('en-IN')}
                     </td>

@@ -1,126 +1,51 @@
-import React, { useState } from 'react';
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Trophy, CreditCard, KeyRound, FileCheck, Gift, Coins, Settings, ScrollText, LogOut, Menu, X, ShieldCheck, Globe } from 'lucide-react';
+import { site } from '../../config/site.js';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { 
-  LayoutDashboard, 
-  Trophy, 
-  Users, 
-  CreditCard, 
-  KeyRound, 
-  FileCheck, 
-  Gift, 
-  Coins,
-  Settings, 
-  ScrollText, 
-  LogOut, 
-  Menu, 
-  X, 
-  Flame,
-  ShieldCheck 
-} from 'lucide-react';
-
+const navItems = [
+  ['Dashboard', '/admin/dashboard', LayoutDashboard],
+  ['Tournaments', '/admin/tournaments', Trophy],
+  ['Registrations', '/admin/registrations', CreditCard],
+  ['Room management', '/admin/rooms', KeyRound],
+  ['Results & review', '/admin/results', FileCheck],
+  ['Prizes & payouts', '/admin/prizes', Gift],
+  ['Wallet & withdrawals', '/admin/withdrawals', Coins],
+  ['Site settings', '/admin/settings', Settings],
+  ['Audit trail', '/admin/audit-logs', ScrollText],
+];
 export default function AdminLayout() {
-  const { user, isAdmin, logout } = useAuth();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const [open, setOpen] = useState(false);
+  const { pathname } = useLocation();
   const navigate = useNavigate();
-
-  const handleLogout = () => {
-    logout();
-    navigate('/admin/login');
-  };
-
-  const navItems = [
-    { name: 'Dashboard Overview', path: '/admin/dashboard', icon: LayoutDashboard },
-    { name: 'Tournaments & Slots', path: '/admin/tournaments', icon: Trophy },
-    { name: 'Registrations & Payments', path: '/admin/registrations', icon: CreditCard },
-    { name: 'Room Credentials (Email)', path: '/admin/rooms', icon: KeyRound },
-    { name: 'Match Result Review', path: '/admin/results', icon: FileCheck },
-    { name: 'Cash Prizes & Payouts', path: '/admin/prizes', icon: Gift },
-    { name: 'Coin Withdrawals & Wallet', path: '/admin/withdrawals', icon: Coins },
-    { name: 'Site Settings', path: '/admin/settings', icon: Settings },
-    { name: 'Audit Logs', path: '/admin/audit-logs', icon: ScrollText },
-  ];
-
-  return (
-    <div className="min-h-screen bg-[#07090D] flex flex-col md:flex-row">
-      
-      {/* Mobile Header Bar */}
-      <div className="md:hidden bg-[#0B0E14] border-b border-[#1F293D] p-4 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Flame className="w-5 h-5 text-brand-orange" />
-          <span className="font-display font-bold text-white uppercase tracking-wider">Admin Panel</span>
-        </div>
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 rounded-lg bg-[#161B26] text-slate-300"
-        >
-          {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-        </button>
+  useEffect(() => { setOpen(false); }, [pathname]);
+  useEffect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    const close = event => { if (event.key === 'Escape') setOpen(false); };
+    window.addEventListener('keydown', close);
+    return () => { document.body.style.overflow = previous; window.removeEventListener('keydown', close); };
+  }, [open]);
+  return <div className="admin-shell">
+    {open && <button className="admin-backdrop" aria-label="Close navigation overlay" onClick={() => setOpen(false)} />}
+    <aside id="organizer-navigation" className={`admin-sidebar ${open ? 'is-open' : ''}`}>
+      <button className="admin-sidebar-close" aria-label="Close navigation" onClick={() => setOpen(false)}><X size={18}/></button>
+      <Link className="admin-brand" to="/admin/dashboard"><img src="/favicon.svg" alt=""/><div><strong>{site.name}</strong><small>Organizer workspace</small></div></Link>
+      <p className="admin-nav-label">Tournament operations</p>
+      <nav className="admin-navigation" aria-label="Organizer navigation">
+        {navItems.map(([label,path,Icon]) => <NavLink key={path} to={path}><Icon/><span>{label}</span></NavLink>)}
+      </nav>
+      <div className="admin-sidebar-bottom">
+        <Link className="admin-site-link" to="/"><Globe size={17}/> View public website</Link>
+        <div className="admin-user"><span className="admin-user-icon"><ShieldCheck size={18}/></span><div><strong>{user?.name || 'Organizer'}</strong><small>{user?.email}</small></div></div>
+        <button className="admin-signout" onClick={() => { logout(); navigate('/admin/login'); }}><LogOut size={16}/>Sign out</button>
       </div>
-
-      {/* Sidebar */}
-      <aside
-        className={`fixed md:static inset-y-0 left-0 z-40 w-64 bg-[#0B0E14] border-r border-[#1F293D] flex flex-col justify-between transform transition-transform duration-300 ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
-        }`}
-      >
-        <div>
-          {/* Brand header */}
-          <div className="p-6 border-b border-[#1F293D] flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-sm">
-              <ShieldCheck className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h2 className="font-display font-bold text-base text-white uppercase tracking-wider">Rahul Esports Admin</h2>
-              <p className="text-[10px] text-purple-400 font-semibold uppercase">{user?.role || 'Administrator'}</p>
-            </div>
-          </div>
-
-          {/* Navigation Links */}
-          <nav className="p-4 space-y-1">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              return (
-                <NavLink
-                  key={item.path}
-                  to={item.path}
-                  onClick={() => setSidebarOpen(false)}
-                  className={({ isActive }) =>
-                    `flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all ${
-                      isActive
-                        ? 'bg-purple-950/70 text-purple-300 border border-purple-500/40 shadow-sm'
-                        : 'text-slate-400 hover:text-white hover:bg-[#161B26]'
-                    }`
-                  }
-                >
-                  <Icon className="w-4 h-4" />
-                  {item.name}
-                </NavLink>
-              );
-            })}
-          </nav>
-        </div>
-
-        {/* User Info & Logout footer */}
-        <div className="p-4 border-t border-[#1F293D] space-y-2">
-          <div className="px-2">
-            <p className="text-xs font-bold text-white truncate">{user?.name || 'Admin User'}</p>
-            <p className="text-[10px] text-slate-400 truncate">{user?.email}</p>
-          </div>
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold text-rose-400 hover:bg-rose-950/30 transition-colors"
-          >
-            <LogOut className="w-4 h-4" /> Sign Out
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Admin Content View */}
-      <main className="flex-1 p-4 sm:p-8 overflow-y-auto">
-        <Outlet />
-      </main>
-
+    </aside>
+    <div className="admin-workspace">
+      <header className="admin-topbar"><button className="admin-menu-toggle" aria-label="Open organizer navigation" aria-expanded={open} aria-controls="organizer-navigation" onClick={() => setOpen(true)}><Menu size={21}/></button><div><h1>{navItems.find(([,path]) => path === pathname)?.[0] || 'Organizer workspace'}</h1><p>{site.region} / {site.tagline}</p></div><span className="admin-topbar-badge"><ShieldCheck size={14}/> Authorized organizer</span></header>
+      <main id="main-content" className="admin-content"><Outlet/></main>
     </div>
-  );
+  </div>;
 }

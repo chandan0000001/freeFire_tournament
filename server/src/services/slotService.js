@@ -43,6 +43,10 @@ export const checkAvailableCapacity = async (tournamentId) => {
   if (!tournament) {
     throw new Error('Tournament not found');
   }
+  if (new Date(tournament.matchDate).getTime() <= Date.now() || (tournament.registrationEnd && new Date(tournament.registrationEnd).getTime() <= Date.now())) {
+    throw new Error('Tournament registration deadline has passed');
+  }
+  if (tournament.registrationStart && new Date(tournament.registrationStart).getTime() > Date.now()) throw new Error('Tournament registration has not started');
   if (tournament.status !== TOURNAMENT_STATUS.REGISTRATION_OPEN) {
     throw new Error(`Tournament registration is ${tournament.status.replace('_', ' ')}`);
   }
@@ -71,6 +75,11 @@ export const reserveSlot = async (tournamentId) => {
     {
       _id: tournamentId,
       status: TOURNAMENT_STATUS.REGISTRATION_OPEN,
+      matchDate: { $gt: new Date() },
+      $and: [
+        { $or: [{ registrationEnd: { $gt: new Date() } }, { registrationEnd: null }] },
+        { $or: [{ registrationStart: { $lte: new Date() } }, { registrationStart: null }] },
+      ],
       $expr: { $lt: ['$registeredSlots', '$maxSlots'] },
     },
     {
@@ -87,6 +96,7 @@ export const reserveSlot = async (tournamentId) => {
     if (!existing) {
       throw new Error('Tournament not found');
     }
+    if (new Date(existing.matchDate).getTime() <= Date.now() || (existing.registrationEnd && new Date(existing.registrationEnd).getTime() <= Date.now())) throw new Error('Tournament registration deadline has passed');
     if (existing.status !== TOURNAMENT_STATUS.REGISTRATION_OPEN) {
       throw new Error(`Tournament registration is ${existing.status.replace('_', ' ')}`);
     }

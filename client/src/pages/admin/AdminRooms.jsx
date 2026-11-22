@@ -216,12 +216,12 @@ export default function AdminRooms() {
       )}
 
       {/* Tournament Selector Bar */}
-      <div className="p-4 rounded-xl bg-[#121722] border border-[#1F293D] flex items-center gap-3">
+      <div className="p-4 rounded-xl bg-[#24171e] border border-[#49303a] flex items-center gap-3">
         <label className="text-xs font-bold uppercase text-slate-400">Select Tournament:</label>
         <select
           value={selectedTournamentId}
           onChange={(e) => setSelectedTournamentId(e.target.value)}
-          className="px-3.5 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-xs text-white focus:outline-none focus:border-brand-orange"
+          className="px-3.5 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
         >
           {tournaments.map((t) => (
             <option key={t._id} value={t._id}>
@@ -235,8 +235,8 @@ export default function AdminRooms() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* Step 1: Set Credentials Form */}
-        <form onSubmit={handleSaveCredentials} className="p-6 rounded-2xl bg-[#121722] border border-[#1F293D] space-y-4">
-          <div className="flex items-center gap-2 border-b border-[#1F293D] pb-3">
+        <form onSubmit={handleSaveCredentials} className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-4">
+          <div className="flex items-center gap-2 border-b border-[#49303a] pb-3">
             <KeyRound className="w-5 h-5 text-brand-orange" />
             <h3 className="font-display text-lg font-bold uppercase text-white">
               Step 1: Enter Room Credentials
@@ -254,7 +254,7 @@ export default function AdminRooms() {
                 placeholder="e.g. 5829104"
                 value={roomId}
                 onChange={(e) => setRoomId(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
               />
             </div>
 
@@ -268,7 +268,7 @@ export default function AdminRooms() {
                 placeholder="e.g. 1234"
                 value={roomPassword}
                 onChange={(e) => setRoomPassword(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
               />
             </div>
           </div>
@@ -281,23 +281,23 @@ export default function AdminRooms() {
               rows="2"
               value={customNote}
               onChange={(e) => setCustomNote(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-xs text-white focus:outline-none focus:border-brand-orange"
+              className="w-full px-3.5 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
             />
           </div>
 
           <button
             type="submit"
             disabled={savingCredentials}
-            className="w-full py-2.5 rounded-xl bg-[#161B26] hover:bg-brand-orange hover:text-white text-slate-200 border border-[#1F293D] text-xs font-bold uppercase tracking-wider transition-colors"
+            className="w-full py-2.5 rounded-xl bg-[#301e27] hover:bg-brand-orange hover:text-white text-slate-200 border border-[#49303a] text-xs font-bold uppercase tracking-wider transition-colors"
           >
             {savingCredentials ? 'Saving...' : 'Save Room Credentials'}
           </button>
         </form>
 
         {/* Step 2: Recipient Selection & Dispatch */}
-        <div className="p-6 rounded-2xl bg-[#121722] border border-[#1F293D] space-y-4 flex flex-col justify-between">
+        <div className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-4 flex flex-col justify-between">
           <div className="space-y-3">
-            <div className="flex items-center justify-between border-b border-[#1F293D] pb-3">
+            <div className="flex items-center justify-between border-b border-[#49303a] pb-3">
               <div className="flex items-center gap-2">
                 <Mail className="w-5 h-5 text-cyan-400" />
                 <h3 className="font-display text-lg font-bold uppercase text-white">
@@ -322,7 +322,7 @@ export default function AdminRooms() {
                     className={`flex items-center justify-between p-2.5 rounded-lg border text-xs cursor-pointer transition-colors ${
                       selectedRegIds.includes(reg._id)
                         ? 'bg-purple-950/40 border-purple-500/40 text-white'
-                        : 'bg-[#0B0E14] border-[#1F293D] text-slate-400'
+                        : 'bg-[#160e13] border-[#49303a] text-slate-400'
                     }`}
                   >
                     <div className="flex items-center gap-2">
@@ -369,14 +369,14 @@ export default function AdminRooms() {
       </div>
 
       {/* Delivery Logs Table */}
-      <div className="rounded-2xl bg-[#121722] border border-[#1F293D] overflow-hidden shadow-xl space-y-4 p-6">
+      <div className="rounded-2xl bg-[#24171e] border border-[#49303a] overflow-hidden shadow-xl space-y-4 p-6">
         <h3 className="font-display text-lg font-bold uppercase text-white">
           Email Delivery Reports ({deliveryLogs.length})
         </h3>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#0B0E14] text-[10px] uppercase font-bold text-slate-400 border-b border-[#1F293D]">
+            <thead className="bg-[#160e13] text-[10px] uppercase font-bold text-slate-400 border-b border-[#49303a]">
               <tr>
                 <th className="py-2.5 px-4">Recipient</th>
                 <th className="py-2.5 px-4">Team / Ref</th>
@@ -386,10 +386,10 @@ export default function AdminRooms() {
                 <th className="py-2.5 px-4 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1F293D]">
+            <tbody className="divide-y divide-[#49303a]">
               {deliveryLogs.length > 0 ? (
                 deliveryLogs.map((log) => (
-                  <tr key={log._id} className="hover:bg-[#161B26]">
+                  <tr key={log._id} className="hover:bg-[#301e27]">
                     <td className="py-2.5 px-4 text-white font-medium">{log.recipientEmail}</td>
                     <td className="py-2.5 px-4 text-slate-300">
                       {log.registrationId?.referenceId} ({log.registrationId?.teamName || 'Solo'})

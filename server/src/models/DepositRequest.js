@@ -1,3 +1,4 @@
+import { getWalletConfig } from '../config/wallet.js';
 import mongoose from 'mongoose';
 
 export const DEPOSIT_STATUS = {
@@ -42,7 +43,7 @@ const depositRequestSchema = new mongoose.Schema(
     coinsRequested: {
       type: Number,
       required: [true, 'Coins requested is required'],
-      min: [10, 'Minimum deposit is 10 coins'],
+      validate: { validator: value => Number.isSafeInteger(value) && getWalletConfig().depositPackages[0] != null && value >= getWalletConfig().depositPackages[0], message: 'Amount is below the configured minimum or is not a whole coin amount.' },
     },
     amountInr: {
       type: Number,

@@ -1,161 +1,110 @@
-# Rahul Esports — Official Competitive Free Fire Arena
+# TH FREEFIRE · Odisha Tournament Arena
 
-[![Live Frontend](https://img.shields.io/badge/Frontend-Vercel-black?logo=vercel&logoColor=white)](https://rittournament.vercel.app)
-[![Live Backend](https://img.shields.io/badge/Backend-Render-46E3B7?logo=render&logoColor=white)](https://freefire-tournament-hlu5.onrender.com)
-[![Database](https://img.shields.io/badge/Database-MongoDB%20Atlas-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Cache & Rate Limit](https://img.shields.io/badge/Cache-Redis%20Cloud-DC382D?logo=redis&logoColor=white)](https://redis.io/)
-[![Email Delivery](https://img.shields.io/badge/Email-Brevo%20API-0092FF?logo=sendinblue&logoColor=white)](https://www.brevo.com/)
+A Free Fire community tournament application with public registration, results, standings, a coin wallet, and a protected organizer workspace. React/Vite serves the frontend; Express/Mongoose serves the API. Redis caching and Brevo transactional email are optional integrations that need their own configuration.
 
-A modern, high-performance, mobile-responsive competitive Free Fire esports platform for **Rahul Esports**. Features custom room management, an integrated in-app **Coin & Wallet system**, instant 1-click tournament registration with coins, automated Brevo room credential dispatch, observer score verification, real-time Redis-cached leaderboards, and an admin withdrawal approval dashboard with UPI UTR disbursement logging.
+## Visual identity
 
----
+The interface uses deep lac red, vermilion and brass, with Sambalpuri-inspired geometric accents and a Konark wheel identity. The hero is original AI-generated Odisha-inspired artwork, not a documentary photograph. Rahul’s organizer portrait was supplied by the project owner and converted to WebP.
 
-## Live Deployments & Architectures
+- `client/public/images/odisha-arena.webp`: custom hero and default tournament artwork.
+- `client/public/images/rahul.webp`: organizer portrait.
+- `client/public/favicon.svg`, `.ico`, `.png`, and `apple-touch-icon.png`: matching wheel icons.
+- `client/src/odisha.css`: public and organizer theme.
+- `client/src/config/site.js`: environment-driven public identity.
 
-- **Frontend Application**: [https://rittournament.vercel.app](https://rittournament.vercel.app) (Hosted on Vercel)
-- **Backend API**: [https://freefire-tournament-hlu5.onrender.com](https://freefire-tournament-hlu5.onrender.com) (Node.js Express API on Render)
-- **API Health Check**: `https://freefire-tournament-hlu5.onrender.com/api/health`
-- **Sitemap**: [https://rittournament.vercel.app/sitemap.xml](https://rittournament.vercel.app/sitemap.xml)
-- **Robots.txt**: [https://rittournament.vercel.app/robots.txt](https://rittournament.vercel.app/robots.txt)
+Existing tournaments retain their saved titles and banners. Change them through the organizer editor; changing the site theme does not rewrite database records.
 
----
+## Run locally
 
-## Coin & Wallet Ecosystem (1 Coin = ₹1 INR)
+Use Node.js 20 or newer and npm. Install each package’s dependencies:
 
-```
-  ┌────────────────┐         ┌────────────────────┐         ┌────────────────────┐
-  │ Deposit Money  │ ──────► │ Buy Wallet Coins   │ ──────► │ Join Tournaments   │
-  │ (Scan Admin QR)│         │ (Approved by Admin)│         │ (Instant 0ms Slot) │
-  └────────────────┘         └────────────────────┘         └─────────┬──────────┘
-                                                                      │ Play & Win
-                                                                      ▼
-  ┌────────────────┐         ┌────────────────────┐         ┌────────────────────┐
-  │ UPI Bank Payout│ ◄────── │ Admin Approves &   │ ◄────── │ Winnings Credited  │
-  │ (Recorded UTR) │         │ Audits Request     │         │ To Wallet Account  │
-  └────────────────┘         └────────────────────┘         └────────────────────┘
-```
-
-1. **Coin Economy**:
-   - **1 Coin = ₹1 INR**.
-   - Dual-balance architecture: **Deposit Coins** (used for tournament entry fees) and **Winning Coins** (earned from tournament placements, eligible for bank withdrawal).
-2. **Instant Tournament Registration**:
-   - Players can bypass manual UPI verification by paying directly with Wallet Coins for instant slot confirmation.
-3. **Automated Prize Distribution**:
-   - Match results published by observers automatically credit cash prizes as Winning Coins to tournament champions.
-4. **Controlled Withdrawals**:
-   - Players submit withdrawal requests with their UPI ID and phone number.
-   - Admin reviews the withdrawal queue, disburses via UPI, logs the banking UTR, and marks the request as APPROVED (or REJECTS with an instant refund to the player's wallet).
-
----
-
-## Tech Stack & Architecture
-
-### Frontend (Client)
-- **Framework**: React 18, Vite 6, Tailwind CSS
-- **Code Splitting**: Route-level `React.lazy()` + `<Suspense>` with branded loading fallback (Initial bundle **<95 kB** gzipped)
-- **State & Storage**: Local passbook storage, real-time wallet lookup, modal verification
-- **SEO & Performance**: Dynamic OpenGraph tags, Apple touch icon, Favicon set, `robots.txt`, and `sitemap.xml`
-- **Analytics**: `@vercel/analytics` integrated for real-time telemetry
-
-### Backend (Server)
-- **Runtime**: Node.js (ESM), Express.js
-- **Database**: MongoDB Atlas with Mongoose models (`Wallet`, `WalletTransaction`, `WithdrawalRequest`, `DepositRequest`, `Tournament`, `Registration`, `Match`, `Result`)
-- **Security**: Helmet, CORS, Joi payload validation, MongoDB atomic `$inc` with `$expr` concurrency guards
-- **Caching & Rate Limiting**: Redis Cloud (`ioredis`) with automatic in-memory fallback
-- **Email Service**: Brevo (Sendinblue) Transactional API for automated room credentials
-
----
-
-## Key API Endpoints
-
-### Wallet & Coins
-
-| Method | Endpoint | Description | Access |
-|---|---|---|---|
-| `GET` | `/api/wallet/:email` | Get wallet balance and transaction ledger | Public |
-| `POST` | `/api/wallet/lookup` | Quick lookup of wallet by email | Public |
-| `POST` | `/api/wallet/deposit` | Submit manual UPI deposit request with UTR | Public |
-| `POST` | `/api/wallet/withdraw` | Submit withdrawal request for winning coins | Public |
-| `POST` | `/api/tournaments/:id/join-with-coins` | Instant tournament slot entry using coins | Public |
-| `GET` | `/api/admin/withdrawals` | Admin view of all pending/completed withdrawals | Admin |
-| `PATCH` | `/api/admin/withdrawals/:id/approve` | Approve withdrawal with payout UTR | Admin |
-| `PATCH` | `/api/admin/withdrawals/:id/reject` | Reject withdrawal and refund coins | Admin |
-| `GET` | `/api/admin/deposits` | Admin view of coin purchase deposit requests | Admin |
-| `PATCH` | `/api/admin/deposits/:id/approve` | Approve coin deposit and credit wallet | Admin |
-| `PATCH` | `/api/admin/deposits/:id/reject` | Reject coin deposit request | Admin |
-| `POST` | `/api/admin/wallets/manual-adjust` | Admin tool to credit/debit coins manually | Admin |
-
-### Tournaments & Matches
-
-| Method | Endpoint | Description | Access |
-|---|---|---|---|
-| `GET` | `/api/health` | Service health, MongoDB & Redis status | Public |
-| `GET` | `/api/tournaments` | List public tournaments (Redis cached 30s) | Public |
-| `GET` | `/api/tournaments/:slug` | Tournament details & rulebook | Public |
-| `POST` | `/api/registrations/squad` | Register 4v4 squad + reserve slot via UPI | Public |
-| `POST` | `/api/registrations/solo` | Register solo player + reserve slot via UPI | Public |
-| `GET` | `/api/registrations/status/:ref`| Track verification & room details | Public |
-| `GET` | `/api/leaderboards` | Standing tables & fragger stats | Public |
-| `POST` | `/api/auth/login` | Admin JWT authentication | Public |
-| `POST` | `/api/admin/rooms/distribute` | Send Room ID & Pass via Brevo | Admin |
-| `POST` | `/api/admin/matches/:id/results`| Publish match results (auto-credits prize coins) | Admin |
-
----
-
-## Local Development & Setup
-
-### 1. Installation
 ```bash
-# Clone the repository
-git clone git@github.com:chandan0000001/freeFire_tournament.git
-cd freeFire_tournament
-
-# Install dependencies
-npm install
-npm --prefix server install
-npm --prefix client install
+npm ci
+npm --prefix client ci
+npm --prefix server ci
+cp client/.env.example client/.env
+cp server/.env.example server/.env
 ```
 
-### 2. Environment Variables
-Create `.env` in `server/` and `client/`:
+Fill in the environment variables before starting. Do not replace an existing `.env` when updating an established installation.
 
-**`server/.env`**:
-```env
-PORT=5000
-NODE_ENV=development
-CLIENT_URL=http://localhost:5173,https://rittournament.vercel.app
-MONGODB_URI=mongodb+srv://<username>:<password>@cluster0.mongodb.net/rahul_esports?retryWrites=true&w=majority
-JWT_SECRET=your_super_secret_jwt_key_here
-REDIS_URL=redis://default:<password>@<host>:<port>
-BREVO_API_KEY=your_brevo_api_key_here
-EMAIL_FROM=admin@rahulesports.in
-EMAIL_FROM_NAME=Rahul Esports Odisha
-ADMIN_WHATSAPP_NUMBER=91XXXXXXXXXX
-WHATSAPP_COMMUNITY_URL=https://chat.whatsapp.com/your_community_link
-ADMIN_UPI_ID=your_upi_id@bank
-ADMIN_UPI_NAME=Rahul Esports Admin
-ADMIN_BOOTSTRAP_EMAIL=admin@rahulesports.in
-ADMIN_BOOTSTRAP_PASSWORD=your_secure_password
-```
-
-**`client/.env`**:
-```env
-VITE_API_BASE_URL=https://freefire-tournament-hlu5.onrender.com/api
-```
-
-### 3. Start Development
 ```bash
-# Run backend and frontend concurrently
 npm run dev
 ```
 
-- Frontend: `http://localhost:5173`
-- Wallet: `http://localhost:5173/wallet`
-- Admin Dashboard: `http://localhost:5173/admin/login`
-- Withdrawal Management: `http://localhost:5173/admin/withdrawals`
-- Backend API: `http://localhost:5000/api`
+The default frontend is `http://localhost:5173`; the API runs on port `5000`. Set `VITE_API_BASE_URL=/api` to use the development proxy. `VITE_DEV_API_TARGET` specifies its backend target. For a separately hosted API, set `VITE_API_BASE_URL` to that backend’s URL, including `/api` or the host alone.
 
----
+## Configuration
 
-## License & Fair Play
-Rahul Esports is an esports platform for competitive Free Fire players and squads. All registered participants must comply with our Fair Play and Anti-Cheat Guidelines. Free Fire is a trademark of Garena International.
+### Frontend
+
+All `VITE_` variables are public and bundled into the frontend. Never put passwords, tokens, database URLs or private API keys in them.
+
+| Variables | Purpose |
+| --- | --- |
+| `VITE_API_BASE_URL`, `VITE_DEV_API_TARGET` | API endpoint and local proxy target |
+| `VITE_SITE_NAME`, `VITE_SITE_REGION`, `VITE_SITE_REGION_NATIVE`, `VITE_SITE_TAGLINE` | Brand and region labels |
+| `VITE_HERO_IMAGE`, `VITE_TOURNAMENT_IMAGE` | Public asset paths |
+| `VITE_ORGANIZER_NAME`, `VITE_ORGANIZER_IMAGE`, `VITE_ORGANIZER_ROLE` | Organizer section |
+| `VITE_COMMUNITY_URL`, `VITE_CONTACT_EMAIL` | Community and contact links; empty values hide the links |
+| `VITE_LOCALE`, `VITE_TIME_ZONE` | Tournament card date and currency formatting |
+
+`client/.env.production` contains **public presentation defaults only**, ensuring production builds have a complete identity. Hosting environment variables override these defaults. Rebuild the frontend after changing its environment variables.
+
+### Backend
+
+`server/.env.example` documents the available keys:
+
+- Required service configuration: `MONGODB_URI`, `JWT_SECRET`, `PORT`, `NODE_ENV`, `CLIENT_URL`.
+- Optional services: `REDIS_URL`, `BREVO_API_KEY`, `EMAIL_FROM`, `EMAIL_FROM_NAME`.
+- Organizer defaults: `SITE_NAME`, `SITE_REGION`, `SITE_ANNOUNCEMENT`, `CONTACT_EMAIL`, `WHATSAPP_COMMUNITY_URL`, `ADMIN_WHATSAPP_NUMBER`.
+- Payment configuration: `ADMIN_UPI_ID`, `ADMIN_UPI_NAME`, and optional UPI metadata.
+- Wallet configuration: `WALLET_DEPOSIT_PACKAGES` is a comma-separated list of positive whole-coin packages; `WALLET_MIN_WITHDRAWAL` is a positive whole-coin amount. These are supplied to the client through `/api/settings/public` and validated by the server. Missing configuration disables the corresponding action rather than inventing a payment destination or limit.
+
+Site settings already saved in MongoDB take precedence over model defaults. Use **Site settings** in the admin workspace to update stored community/payment details. Public branding and the organizer portrait come from the frontend environment.
+
+Tournament fees, capacity, schedules, scoring and prizes are database records entered by the organizer, not fabricated frontend records. Display text, styles and protocol constants are code; operational configuration belongs in environment variables or the database.
+
+## Organizer workspace
+
+Sign in at `/admin/login` with an existing active admin or superadmin account. Credentials are never bundled with the frontend or documented here.
+
+The workspace provides:
+
+- Dashboard metrics and shortcuts.
+- Tournament creation, editing, status changes and deletion confirmation.
+- Registration and payment review.
+- Room credentials and email distribution.
+- Result recording/review and publication.
+- Prize payout records, deposit approval and withdrawal management.
+- Site settings and audit logs.
+
+Tournament date inputs use **the organizer browser’s local timezone**. Existing dates round-trip without UTC offset shifts. Registration closing times must be no later than match start. Changing a format preserves explicitly entered prices and capacity.
+
+`npm run seed` is a **demo/bootstrap operation** that connects to the configured database, creates a missing superadmin using `ADMIN_BOOTSTRAP_EMAIL`/`ADMIN_BOOTSTRAP_PASSWORD`, updates settings and adds demonstration tournaments. Do not run it casually against an established production database. It does not reset an existing administrator’s password.
+
+## Player flows
+
+Players can browse tournaments, choose solo or squad registration, track their reference at `/status`, and view published results, standings and winners. Wallet deposits and payouts require organizer review; the application does not itself execute bank transfers. One coin currently represents one INR throughout the existing accounting model.
+
+The homepage contains only API tournament records and distinguishes loading, error and empty states. Slot displays retain actual registered counts even after a match is live or completed. Registration controls respect capacity and registration/match dates.
+
+## Build and verification
+
+```bash
+npm run build
+npm --prefix client test
+node --test server/tests/scoring.test.js server/tests/walletConfig.test.js
+```
+
+The production frontend is written to `client/dist`. Configure SPA fallback to `index.html` on your host. Deploy the backend separately with its server environment variables and install its dependencies. `render.yaml` includes the new wallet and identity environment keys for Blueprint-managed deployments. For an existing manually configured backend, set `WALLET_DEPOSIT_PACKAGES` and `WALLET_MIN_WITHDRAWAL` before deploying; a Git push alone does not configure a hosting dashboard.
+
+`npm test` also runs the database integration suite using `MONGODB_URI`; it writes temporary records. Use a dedicated test database. `server/tests/e2e_admin_verification.js` performs broader admin mutations and requires explicit test credentials and a controlled test environment; it is not a read-only health check.
+
+Browser checks during the redesign covered real admin login, route navigation, desktop/mobile overflow, password visibility, and opening/cancelling tournament editors. Create/edit/status/delete UI handlers were also checked with intercepted API mutations, including validation errors, disabled save buttons, and date/zero-value payloads. No real tournaments or payouts were changed by those interaction tests. Public layouts were checked at 320, 390, 768, 1024 and 1440 pixels. Payment approvals, real bank transfers, result publication and outgoing email are not implied by these UI checks.
+
+## Known production work
+
+The existing player wallet API identifies players by email rather than authenticated ownership. Add verified player authentication and server-side ownership checks before treating balances and withdrawal requests as private, secure player accounts. The privacy and competition terms should reflect the organizer’s actual operating practices.
+
+This is a community-organized arena, not an official Garena product. Free Fire belongs to its respective owners.

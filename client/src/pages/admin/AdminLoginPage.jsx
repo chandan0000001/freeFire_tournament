@@ -1,103 +1,35 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { ShieldCheck, LockKeyhole, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
-import { ShieldCheck, Lock, AlertCircle, Flame, ArrowLeft } from 'lucide-react';
-
+import { site } from '../../config/site.js';
+import usePageMeta from '../../hooks/usePageMeta.js';
 export default function AdminLoginPage() {
+  usePageMeta('Organizer sign in', 'Secure access to tournament operations.');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [visible, setVisible] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
-
-  const handleLogin = async (e) => {
-    e.preventDefault();
-    setError('');
-    setSubmitting(true);
-
-    try {
-      const res = await login('/auth/admin/login', { email, password });
-      if (res.success) {
-        navigate('/admin/dashboard');
-      }
-    } catch (err) {
-      setError(err.message || 'Invalid administrator credentials');
-    } finally {
-      setSubmitting(false);
-    }
+  const handleLogin = async event => {
+    event.preventDefault();
+    if (submitting) return;
+    setError(''); setSubmitting(true);
+    try { await login('/auth/admin/login', { email:email.trim(), password }); navigate('/admin/dashboard', {replace:true}); }
+    catch (err) { setError(err.message || 'Unable to sign in. Please try again.'); }
+    finally { setSubmitting(false); }
   };
-
-  return (
-    <div className="min-h-[80vh] flex items-center justify-center px-4 py-12">
-      <div className="w-full max-w-md space-y-8">
-        
-        <Link to="/" className="inline-flex items-center gap-1.5 text-xs text-slate-400 hover:text-white">
-          <ArrowLeft className="w-4 h-4" /> Back to Website
-        </Link>
-
-        <div className="p-8 rounded-2xl bg-[#121722] border border-[#1F293D] shadow-2xl space-y-6">
-          
-          <div className="text-center space-y-2">
-            <div className="w-12 h-12 rounded-xl bg-purple-950/60 text-purple-400 border border-purple-500/40 flex items-center justify-center mx-auto shadow-sm">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <h2 className="font-display text-2xl font-extrabold uppercase text-white tracking-wider">
-              Admin Portal
-            </h2>
-            <p className="text-xs text-slate-400">
-              Authorized tournament personnel & match marshals only.
-            </p>
-          </div>
-
-          {error && (
-            <div className="p-3.5 rounded-lg bg-rose-950/60 border border-rose-500/40 text-rose-300 text-xs flex items-center gap-2">
-              <AlertCircle className="w-4 h-4 shrink-0 text-rose-400" />
-              <span>{error}</span>
-            </div>
-          )}
-
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
-                Admin Email
-              </label>
-              <input
-                type="email"
-                required
-                placeholder="admin@ritesports.in"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-slate-300 uppercase mb-1">
-                Password
-              </label>
-              <input
-                type="password"
-                required
-                placeholder="••••••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={submitting}
-              className="w-full py-3 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber hover:brightness-110 font-display font-bold uppercase tracking-wider text-white text-sm shadow-glow-orange transition-all disabled:opacity-50"
-            >
-              {submitting ? 'Authenticating...' : 'Sign In to Dashboard'}
-            </button>
-          </form>
-
-        </div>
-
-      </div>
+  return <div className="admin-login">
+    <div className="admin-login-art"><img src={site.heroImage} alt="Odisha-inspired Konark wheel and coastal sunset"/><div><span className="eyebrow">{site.region}’s arena</span><h2>Great matches.<br/>Start with you.</h2><p>A dedicated workspace for the people behind the competition.</p></div></div>
+    <div className="admin-login-form"><Link className="text-link" to="/">Back to the arena</Link><h1>Welcome back, organizer.</h1><p>Sign in to manage tournaments, registrations and results.</p>
+      {error && <div role="alert" className="login-error">{error}</div>}
+      <form onSubmit={handleLogin}>
+        <div><label htmlFor="admin-email">Email address</label><input id="admin-email" name="email" type="email" autoComplete="username" required value={email} onChange={e => setEmail(e.target.value)} placeholder="Your organizer email"/></div>
+        <div><label htmlFor="admin-password">Password</label><div className="password-field"><input id="admin-password" name="password" type={visible ? 'text' : 'password'} autoComplete="current-password" required value={password} onChange={e => setPassword(e.target.value)} placeholder="Enter your password"/><button type="button" aria-label={visible ? 'Hide password' : 'Show password'} aria-pressed={visible} onClick={() => setVisible(!visible)}>{visible ? <EyeOff size={19}/> : <Eye size={19}/>}</button></div></div>
+        <button type="submit" className="arena-button" disabled={submitting}><LockKeyhole size={17}/>{submitting ? 'Signing in…' : 'Sign in to dashboard'}</button>
+      </form><div className="login-notice"><ShieldCheck size={17}/><span>Access is limited to authorized tournament staff.</span></div>
     </div>
-  );
+  </div>;
 }

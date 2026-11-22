@@ -8,15 +8,15 @@ export default {
     extend: {
       colors: {
         brand: {
-          orange: '#FF5722',
-          amber: '#F59E0B',
-          cyan: '#06B6D4',
-          gold: '#FBBF24',
-          dark: '#0B0E14',
-          darker: '#07090D',
-          card: '#121722',
-          cardBorder: '#1F293D',
-          hover: '#192235',
+          orange: '#ef7166',
+          amber: '#e8b978',
+          cyan: '#79bdb2',
+          gold: '#efc88e',
+          dark: '#160e13',
+          darker: '#10090d',
+          card: '#24171e',
+          cardBorder: '#49303a',
+          hover: '#38242e',
         },
       },
       fontFamily: {

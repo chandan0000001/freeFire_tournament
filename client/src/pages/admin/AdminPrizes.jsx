@@ -286,7 +286,7 @@ export default function AdminPrizes() {
 
       {/* KPI Summary Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-2xl bg-[#121722] border border-[#1F293D] flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-[#24171e] border border-[#49303a] flex items-center justify-between">
           <div>
             <span className="text-[10px] uppercase font-bold text-slate-400 block tracking-wider">
               Total Prizes Allocated
@@ -303,7 +303,7 @@ export default function AdminPrizes() {
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#121722] border border-[#1F293D] flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-[#24171e] border border-[#49303a] flex items-center justify-between">
           <div>
             <span className="text-[10px] uppercase font-bold text-emerald-400 block tracking-wider">
               Disbursed via UPI (Paid)
@@ -320,7 +320,7 @@ export default function AdminPrizes() {
           </div>
         </div>
 
-        <div className="p-4 rounded-2xl bg-[#121722] border border-[#1F293D] flex items-center justify-between">
+        <div className="p-4 rounded-2xl bg-[#24171e] border border-[#49303a] flex items-center justify-between">
           <div>
             <span className="text-[10px] uppercase font-bold text-amber-400 block tracking-wider">
               Pending Disbursal
@@ -339,12 +339,12 @@ export default function AdminPrizes() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="p-3.5 rounded-2xl bg-[#121722] border border-[#1F293D] flex flex-col md:flex-row items-center justify-between gap-3">
+      <div className="p-3.5 rounded-2xl bg-[#24171e] border border-[#49303a] flex flex-col md:flex-row items-center justify-between gap-3">
         <div className="flex flex-wrap items-center gap-2 w-full md:w-auto">
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="px-3 py-1.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-xs text-white focus:outline-none focus:border-brand-orange"
+            className="px-3 py-1.5 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
           >
             <option value="">All Statuses</option>
             <option value="pending">Pending</option>
@@ -363,17 +363,17 @@ export default function AdminPrizes() {
             placeholder="Search winner, UTR, or tournament..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-orange"
+            className="w-full pl-8 pr-3 py-1.5 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-orange"
           />
           <Search className="w-3.5 h-3.5 text-slate-500 absolute left-2.5 top-1/2 -translate-y-1/2" />
         </div>
       </div>
 
       {/* Prizes Table */}
-      <div className="rounded-2xl bg-[#121722] border border-[#1F293D] overflow-hidden shadow-xl">
+      <div className="rounded-2xl bg-[#24171e] border border-[#49303a] overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#0B0E14] text-[10px] uppercase font-bold text-slate-400 border-b border-[#1F293D]">
+            <thead className="bg-[#160e13] text-[10px] uppercase font-bold text-slate-400 border-b border-[#49303a]">
               <tr>
                 <th className="py-3 px-5">Tournament</th>
                 <th className="py-3 px-5">Prize Tier</th>
@@ -384,7 +384,7 @@ export default function AdminPrizes() {
                 <th className="py-3 px-5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1F293D]">
+            <tbody className="divide-y divide-[#49303a]">
               {loading ? (
                 <tr>
                   <td colSpan="7" className="py-12 text-center text-slate-500">
@@ -393,7 +393,7 @@ export default function AdminPrizes() {
                 </tr>
               ) : filteredPrizes.length > 0 ? (
                 filteredPrizes.map((p) => (
-                  <tr key={p._id} className="hover:bg-[#161B26]/60 transition-colors">
+                  <tr key={p._id} className="hover:bg-[#301e27]/60 transition-colors">
                     <td className="py-3.5 px-5">
                       <p className="font-bold text-white">{p.tournamentId?.title}</p>
                       <span className="text-[10px] text-slate-400 uppercase font-medium">
@@ -441,7 +441,7 @@ export default function AdminPrizes() {
 
                     <td className="py-3.5 px-5">
                       {p.offlineTransactionRef ? (
-                        <span className="font-mono text-slate-300 bg-[#0B0E14] px-2 py-0.5 rounded border border-[#1F293D] text-[11px]">
+                        <span className="font-mono text-slate-300 bg-[#160e13] px-2 py-0.5 rounded border border-[#49303a] text-[11px]">
                           {p.offlineTransactionRef}
                         </span>
                       ) : (
@@ -458,7 +458,7 @@ export default function AdminPrizes() {
                             setOfflineRef(p.offlineTransactionRef || '');
                             setNotes(p.notes || '');
                           }}
-                          className="px-3 py-1.5 rounded-lg bg-[#1F293D] hover:bg-brand-orange hover:text-white text-slate-200 text-xs font-bold transition-all"
+                          className="px-3 py-1.5 rounded-lg bg-[#49303a] hover:bg-brand-orange hover:text-white text-slate-200 text-xs font-bold transition-all"
                         >
                           {p.payoutStatus === 'paid' ? 'View / Edit Ref' : 'Disburse UPI'}
                         </button>
@@ -499,8 +499,8 @@ export default function AdminPrizes() {
       {/* Allocate New Prize Record Modal */}
       {isAllocateModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-[#121722] border border-[#1F293D] p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-[#1F293D] pb-3">
+          <div className="w-full max-w-md rounded-2xl bg-[#24171e] border border-[#49303a] p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#49303a] pb-3">
               <div className="flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-brand-orange" />
                 <h3 className="font-display text-lg font-bold uppercase text-white">
@@ -520,7 +520,7 @@ export default function AdminPrizes() {
                 <select
                   value={selectedTournamentId}
                   onChange={(e) => handleTournamentSelect(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-white"
+                  className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white"
                 >
                   {tournamentsList.map((t) => (
                     <option key={t._id} value={t._id}>
@@ -538,7 +538,7 @@ export default function AdminPrizes() {
                   <select
                     value={modalRank}
                     onChange={(e) => handleRankChange(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-white"
+                    className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white"
                   >
                     <option value={1}>1st Place (Winner)</option>
                     <option value={2}>2nd Place (Runner-Up)</option>
@@ -558,7 +558,7 @@ export default function AdminPrizes() {
                     value={modalAmount}
                     onChange={(e) => setModalAmount(e.target.value)}
                     placeholder="e.g. 120"
-                    className="w-full px-3 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-white font-mono font-bold"
+                    className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white font-mono font-bold"
                   />
                 </div>
               </div>
@@ -572,7 +572,7 @@ export default function AdminPrizes() {
                   required
                   value={modalTitle}
                   onChange={(e) => setModalTitle(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-white"
+                  className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white"
                 />
               </div>
 
@@ -589,7 +589,7 @@ export default function AdminPrizes() {
                         setModalWinnerRegId(e.target.value);
                         if (sel) setModalWinnerName(sel.teamName || sel.captain?.name || '');
                       }}
-                      className="w-full px-3 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-white"
+                      className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white"
                     >
                       {verifiedTeams.map((v) => (
                         <option key={v._id} value={v._id}>
@@ -605,7 +605,7 @@ export default function AdminPrizes() {
                       placeholder="Winner name"
                       value={modalWinnerName}
                       onChange={(e) => setModalWinnerName(e.target.value)}
-                      className="w-full px-3 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-white"
+                      className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white"
                     />
                   </div>
                 ) : (
@@ -615,7 +615,7 @@ export default function AdminPrizes() {
                     placeholder="e.g. Phoenix Fire"
                     value={modalWinnerName}
                     onChange={(e) => setModalWinnerName(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-white"
+                    className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white"
                   />
                 )}
               </div>
@@ -628,7 +628,7 @@ export default function AdminPrizes() {
                   <select
                     value={modalPayoutStatus}
                     onChange={(e) => setModalPayoutStatus(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-white"
+                    className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white"
                   >
                     <option value="pending">Pending</option>
                     <option value="paid">Paid (Sent via UPI)</option>
@@ -645,7 +645,7 @@ export default function AdminPrizes() {
                     placeholder="e.g. 4239812903"
                     value={modalOfflineRef}
                     onChange={(e) => setModalOfflineRef(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-white font-mono"
+                    className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white font-mono"
                   />
                 </div>
               </div>
@@ -659,15 +659,15 @@ export default function AdminPrizes() {
                   placeholder="e.g. Paid via Google Pay to student captain"
                   value={modalNotes}
                   onChange={(e) => setModalNotes(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-white"
+                  className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-[#1F293D]">
+              <div className="pt-2 flex justify-end gap-2 border-t border-[#49303a]">
                 <button
                   type="button"
                   onClick={() => setIsAllocateModalOpen(false)}
-                  className="px-4 py-2 rounded-lg bg-[#161B26] text-slate-400 hover:text-white"
+                  className="px-4 py-2 rounded-lg bg-[#301e27] text-slate-400 hover:text-white"
                 >
                   Cancel
                 </button>
@@ -687,8 +687,8 @@ export default function AdminPrizes() {
       {/* Update Payout Modal */}
       {selectedPrize && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-2xl bg-[#121722] border border-[#1F293D] p-6 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-[#1F293D] pb-3">
+          <div className="w-full max-w-md rounded-2xl bg-[#24171e] border border-[#49303a] p-6 space-y-4 shadow-2xl">
+            <div className="flex items-center justify-between border-b border-[#49303a] pb-3">
               <h3 className="font-display text-lg font-bold uppercase text-white">
                 Record Cash Payout
               </h3>
@@ -697,7 +697,7 @@ export default function AdminPrizes() {
               </button>
             </div>
 
-            <div className="p-3 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-xs space-y-1">
+            <div className="p-3 rounded-lg bg-[#160e13] border border-[#49303a] text-xs space-y-1">
               <p><strong>Tournament:</strong> {selectedPrize.tournamentId?.title}</p>
               <p><strong>Winner:</strong> {selectedPrize.winnerName}</p>
               <p><strong>Prize:</strong> <span className="text-emerald-400 font-bold">₹{selectedPrize.amount}</span></p>
@@ -709,7 +709,7 @@ export default function AdminPrizes() {
                 <select
                   value={payoutStatus}
                   onChange={(e) => setPayoutStatus(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-white"
+                  className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white"
                 >
                   <option value="paid">Paid (Disbursed via UPI)</option>
                   <option value="pending">Pending</option>
@@ -727,7 +727,7 @@ export default function AdminPrizes() {
                   placeholder="e.g. UPI-TRANSFER-928172918"
                   value={offlineRef}
                   onChange={(e) => setOfflineRef(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-white font-mono"
+                  className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white font-mono"
                 />
               </div>
 
@@ -738,15 +738,15 @@ export default function AdminPrizes() {
                   placeholder="e.g. Sent to Captain's UPI"
                   value={notes}
                   onChange={(e) => setNotes(e.target.value)}
-                  className="w-full px-3 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-white"
+                  className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white"
                 />
               </div>
 
-              <div className="pt-2 flex justify-end gap-2 border-t border-[#1F293D]">
+              <div className="pt-2 flex justify-end gap-2 border-t border-[#49303a]">
                 <button
                   type="button"
                   onClick={() => setSelectedPrize(null)}
-                  className="px-4 py-2 rounded-lg bg-[#161B26] text-slate-400 hover:text-white"
+                  className="px-4 py-2 rounded-lg bg-[#301e27] text-slate-400 hover:text-white"
                 >
                   Cancel
                 </button>

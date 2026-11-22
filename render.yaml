@@ -24,7 +24,7 @@ services:
       - key: EMAIL_FROM
         value: rittournament01@gmail.com
       - key: EMAIL_FROM_NAME
-        value: RIT Esports Arena
+        value: TH FREEFIRE
       - key: ADMIN_WHATSAPP_NUMBER
         value: 918114603994
       - key: WHATSAPP_COMMUNITY_URL
@@ -40,4 +40,14 @@ services:
       - key: ADMIN_BOOTSTRAP_EMAIL
         value: admin@ritesports.in
       - key: ADMIN_BOOTSTRAP_PASSWORD
+        sync: false
+      - key: SITE_NAME
+        value: TH FREEFIRE
+      - key: SITE_REGION
+        value: Odisha
+      - key: WALLET_DEPOSIT_PACKAGES
+        value: "50,100,200,500"
+      - key: WALLET_MIN_WITHDRAWAL
+        value: "10"
+      - key: CONTACT_EMAIL
         sync: false

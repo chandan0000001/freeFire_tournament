@@ -20,7 +20,7 @@ export default function AdminSettings() {
   const [message, setMessage] = useState({ type: '', text: '' });
 
   // Test email state
-  const [testEmail, setTestEmail] = useState('kumardalaichandan803@gmail.com');
+  const [testEmail, setTestEmail] = useState('');
   const [testingEmail, setTestingEmail] = useState(false);
   const [testEmailStatus, setTestEmailStatus] = useState(null);
 
@@ -30,11 +30,11 @@ export default function AdminSettings() {
         const res = await api.get('/admin/settings');
         if (res.success && res.settings) {
           setFormData({
-            collegeName: res.settings.collegeName || 'RIT Esports Arena',
+            collegeName: res.settings.collegeName || '',
             whatsappCommunityUrl: res.settings.whatsappCommunityUrl || '',
             adminWhatsAppNumber: res.settings.adminWhatsAppNumber || '',
-            upiId: res.settings.upiId || 'organizer@upi',
-            upiPayeeName: res.settings.upiPayeeName || 'RIT Esports Organizer',
+            upiId: res.settings.upiId || '',
+            upiPayeeName: res.settings.upiPayeeName || '',
             upiAid: res.settings.upiAid || '',
             announcementBanner: res.settings.announcementBanner || '',
             contactEmail: res.settings.contactEmail || '',
@@ -42,7 +42,7 @@ export default function AdminSettings() {
           });
         }
       } catch (err) {
-        console.error(err);
+        setMessage({ type: 'error', text: err.message || 'Unable to load settings' });
       } finally {
         setLoading(false);
       }
@@ -51,6 +51,7 @@ export default function AdminSettings() {
   }, []);
 
   const handleSendTestEmail = async () => {
+    if (!testEmail.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(testEmail.trim())) { setTestEmailStatus({ type: 'error', text: 'Enter a valid recipient email before sending a test.' }); return; }
     setTestingEmail(true);
     setTestEmailStatus(null);
     try {
@@ -92,7 +93,7 @@ export default function AdminSettings() {
           Community & Payment Settings
         </h1>
         <p className="text-xs text-slate-400 mt-1">
-          Configure the official WhatsApp community URL, Admin WhatsApp receipt contact, and college UPI details.
+          Configure the official WhatsApp community URL, Admin WhatsApp receipt contact, and organizer UPI details.
         </p>
       </div>
 
@@ -105,7 +106,7 @@ export default function AdminSettings() {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl bg-[#121722] border border-[#1F293D] space-y-5 text-xs">
+      <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-5 text-xs">
         
         <div>
           <label className="block font-semibold text-slate-300 uppercase mb-1">
@@ -116,7 +117,7 @@ export default function AdminSettings() {
             required
             value={formData.collegeName}
             onChange={(e) => setFormData({ ...formData, collegeName: e.target.value })}
-            className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+            className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
           />
         </div>
 
@@ -130,7 +131,7 @@ export default function AdminSettings() {
             placeholder="https://chat.whatsapp.com/..."
             value={formData.whatsappCommunityUrl}
             onChange={(e) => setFormData({ ...formData, whatsappCommunityUrl: e.target.value })}
-            className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+            className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
           />
           <span className="text-[10px] text-slate-500 mt-1 block">
             Used in the top navigation bar, homepage callout, and footer.
@@ -148,7 +149,7 @@ export default function AdminSettings() {
               placeholder="e.g. 919876543210"
               value={formData.adminWhatsAppNumber}
               onChange={(e) => setFormData({ ...formData, adminWhatsAppNumber: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
             />
             <span className="text-[10px] text-slate-500 mt-1 block">
               Number used for pre-filled payment confirmation chat links.
@@ -165,7 +166,7 @@ export default function AdminSettings() {
               placeholder="e.g. organizer@oksbi"
               value={formData.upiId}
               onChange={(e) => setFormData({ ...formData, upiId: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
             />
             <span className="text-[10px] text-slate-500 mt-1 block">
               Receiver VPA address for UPI transactions (e.g. ritesports@oksbi).
@@ -182,7 +183,7 @@ export default function AdminSettings() {
               placeholder="e.g. Srikant Panda"
               value={formData.upiPayeeName}
               onChange={(e) => setFormData({ ...formData, upiPayeeName: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
             />
             <span className="text-[10px] text-slate-500 mt-1 block">
               Merchant / Account holder name registered on UPI.
@@ -198,7 +199,7 @@ export default function AdminSettings() {
               placeholder="e.g. uGICAgIDP-4HlSw"
               value={formData.upiAid}
               onChange={(e) => setFormData({ ...formData, upiAid: e.target.value })}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
             />
             <span className="text-[10px] text-slate-500 mt-1 block">
               Optional UPI aid parameter used for direct Google Pay / PhonePe deep-links.
@@ -215,7 +216,7 @@ export default function AdminSettings() {
             required
             value={formData.brevoSenderEmail}
             onChange={(e) => setFormData({ ...formData, brevoSenderEmail: e.target.value })}
-            className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
+            className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
           />
           <span className="text-[10px] text-slate-400 mt-1 block">
             Must match an active, verified sender address in your <a href="https://app.brevo.com/senders" target="_blank" rel="noopener noreferrer" className="text-cyan-400 hover:underline inline-flex items-center gap-0.5">Brevo Senders Dashboard <ExternalLink className="w-2.5 h-2.5" /></a>.
@@ -230,11 +231,11 @@ export default function AdminSettings() {
             type="text"
             value={formData.announcementBanner}
             onChange={(e) => setFormData({ ...formData, announcementBanner: e.target.value })}
-            className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+            className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
           />
         </div>
 
-        <div className="pt-3 border-t border-[#1F293D] flex justify-end">
+        <div className="pt-3 border-t border-[#49303a] flex justify-end">
           <button
             type="submit"
             disabled={saving}
@@ -247,7 +248,7 @@ export default function AdminSettings() {
       </form>
 
       {/* Live Brevo Email Delivery Test Box */}
-      <div className="p-6 rounded-2xl bg-[#121722] border border-[#1F293D] space-y-4">
+      <div className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-4">
         <div className="flex items-center gap-2">
           <Mail className="w-5 h-5 text-cyan-400" />
           <h3 className="font-display text-lg font-bold uppercase text-white">Live Brevo Email Delivery Tester</h3>
@@ -288,7 +289,7 @@ export default function AdminSettings() {
             value={testEmail}
             onChange={(e) => setTestEmail(e.target.value)}
             placeholder="Enter destination email address"
-            className="flex-1 px-4 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white font-mono focus:outline-none focus:border-cyan-400"
+            className="flex-1 px-4 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white font-mono focus:outline-none focus:border-cyan-400"
           />
           <button
             type="button"

@@ -4,11 +4,11 @@ const siteSettingSchema = new mongoose.Schema(
   {
     collegeName: {
       type: String,
-      default: 'RIT Esports Arena',
+      default: () => process.env.SITE_NAME || '',
     },
     whatsappCommunityUrl: {
       type: String,
-      default: 'https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2',
+      default: () => process.env.WHATSAPP_COMMUNITY_URL || '',
     },
     adminWhatsAppNumber: {
       type: String,
@@ -16,11 +16,11 @@ const siteSettingSchema = new mongoose.Schema(
     },
     upiId: {
       type: String,
-      default: () => process.env.ADMIN_UPI_ID || 'organizer@upi',
+      default: () => process.env.ADMIN_UPI_ID || '',
     },
     upiPayeeName: {
       type: String,
-      default: () => process.env.ADMIN_UPI_NAME || 'RIT Esports Organizer',
+      default: () => process.env.ADMIN_UPI_NAME || process.env.SITE_NAME || '',
     },
     upiAid: {
       type: String,
@@ -36,15 +36,15 @@ const siteSettingSchema = new mongoose.Schema(
     },
     announcementBanner: {
       type: String,
-      default: 'Welcome to RIT Esports Arena! Register now for Week 01 Squad & Solo Battles!',
+      default: () => process.env.SITE_ANNOUNCEMENT || '',
     },
     contactEmail: {
       type: String,
-      default: 'kumardalaichandan803@gmail.com',
+      default: () => process.env.CONTACT_EMAIL || process.env.EMAIL_FROM || '',
     },
     brevoSenderEmail: {
       type: String,
-      default: 'kumardalaichandan803@gmail.com',
+      default: () => process.env.CONTACT_EMAIL || process.env.EMAIL_FROM || '',
     },
   },
   {

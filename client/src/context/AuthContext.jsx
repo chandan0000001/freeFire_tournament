@@ -27,7 +27,7 @@ export const AuthProvider = ({ children }) => {
           }
         }
       } catch (err) {
-        if (isMounted) {
+        if (isMounted && [401, 403].includes(err.status)) {
           localStorage.removeItem('re_token');
           localStorage.removeItem('rit_token');
           setUser(null);

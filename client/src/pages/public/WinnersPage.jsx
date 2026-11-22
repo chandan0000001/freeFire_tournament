@@ -8,30 +8,38 @@ export default function WinnersPage() {
   const [winnerTournaments, setWinnerTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [error, setError] = useState('');
+  const [retry, setRetry] = useState(0);
+
   useEffect(() => {
+    let active = true;
+    setError('');
+    setLoading(true);
     const fetchWinners = async () => {
       try {
         const res = await api.get('/winners');
-        if (res.success) {
+        if (active && res.success) {
           setWinnerTournaments(res.winners || []);
         }
       } catch (err) {
-        console.error('Failed to load winners', err);
+        if (active) setError(err.message);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
     fetchWinners();
-  }, []);
+    return () => { active = false; };
+  }, [retry]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-10">
       
+      {error && <div className="arena-empty" role="alert"><h3>Could not load the latest data</h3><p>{error}</p><button className="arena-button secondary" onClick={() => setRetry(retry + 1)}>Try again</button></div>}
       {/* Header */}
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-amber/10 text-brand-amber border border-brand-amber/30 text-xs font-bold uppercase tracking-wider">
           <Trophy className="w-4 h-4" />
-          <span>RIT Hall of Fame</span>
+          <span>Hall of Fame</span>
         </div>
         <h1 className="font-display text-4xl sm:text-5xl font-extrabold uppercase text-white tracking-wide">
           Tournament Champions
@@ -44,16 +52,16 @@ export default function WinnersPage() {
       {loading ? (
         <div className="space-y-8">
           {[1, 2].map((n) => (
-            <div key={n} className="h-64 rounded-2xl bg-[#121722] border border-[#1F293D] animate-pulse"></div>
+            <div key={n} className="h-64 rounded-2xl bg-[#24171e] border border-[#49303a] animate-pulse"></div>
           ))}
         </div>
       ) : winnerTournaments.length > 0 ? (
         <div className="space-y-12">
           {winnerTournaments.map((item, idx) => (
-            <div key={idx} className="rounded-2xl bg-[#121722] border border-[#1F293D] p-6 sm:p-8 space-y-6 shadow-xl">
+            <div key={idx} className="rounded-2xl bg-[#24171e] border border-[#49303a] p-6 sm:p-8 space-y-6 shadow-xl">
               
               {/* Tournament Title */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#1F293D] pb-4 gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#49303a] pb-4 gap-2">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest">
                     {item.tournament?.format?.toUpperCase()} TOURNAMENT
@@ -75,10 +83,10 @@ export default function WinnersPage() {
                     key={podium.rank}
                     className={`p-6 rounded-xl border text-center space-y-3 relative overflow-hidden ${
                       podium.rank === 1
-                        ? 'bg-gradient-to-b from-amber-500/10 to-[#0B0E14] border-amber-500/50 shadow-glow-orange'
+                        ? 'bg-gradient-to-b from-amber-500/10 to-[#160e13] border-amber-500/50 shadow-glow-orange'
                         : podium.rank === 2
-                        ? 'bg-[#0B0E14] border-slate-600'
-                        : 'bg-[#0B0E14] border-amber-800/40'
+                        ? 'bg-[#160e13] border-slate-600'
+                        : 'bg-[#160e13] border-amber-800/40'
                     }`}
                   >
                     <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center font-display font-extrabold text-lg">
@@ -96,7 +104,7 @@ export default function WinnersPage() {
                       </h4>
                     </div>
 
-                    <div className="pt-2 border-t border-[#1F293D]">
+                    <div className="pt-2 border-t border-[#49303a]">
                       <p className="text-[10px] uppercase font-bold text-slate-400">Cash Prize</p>
                       <p className="font-display text-2xl font-extrabold text-emerald-400">
                         ₹{podium.amount}
@@ -108,11 +116,11 @@ export default function WinnersPage() {
 
                     {/* Consented Player Rosters */}
                     {podium.players && podium.players.length > 0 && (
-                      <div className="pt-2 text-left border-t border-[#1F293D] space-y-1">
+                      <div className="pt-2 text-left border-t border-[#49303a] space-y-1">
                         <p className="text-[9px] uppercase font-bold text-slate-500">Roster:</p>
                         <div className="flex flex-wrap gap-1">
                           {podium.players.map((pl, pIdx) => (
-                            <span key={pIdx} className="text-[10px] px-2 py-0.5 rounded bg-[#161B26] text-slate-300">
+                            <span key={pIdx} className="text-[10px] px-2 py-0.5 rounded bg-[#301e27] text-slate-300">
                               {pl.inGameName} {pl.freeFireUid ? `(${pl.freeFireUid})` : ''}
                             </span>
                           ))}
@@ -128,7 +136,7 @@ export default function WinnersPage() {
         </div>
       ) : (
         <div className="space-y-8">
-          <div className="text-center py-12 bg-[#121722] rounded-2xl border border-[#1F293D] p-8 space-y-3">
+          <div className="text-center py-12 bg-[#24171e] rounded-2xl border border-[#49303a] p-8 space-y-3">
             <Trophy className="w-12 h-12 text-brand-amber mx-auto" />
             <h3 className="font-display text-2xl font-bold uppercase text-white">Hall of Fame Awaits Week 01 Champions</h3>
             <p className="text-xs text-slate-400 max-w-lg mx-auto leading-relaxed">
@@ -138,7 +146,7 @@ export default function WinnersPage() {
 
           {/* RIT Champions Spotlight Showcase */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="rounded-2xl bg-[#121722] border border-amber-500/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-amber-400 transition-all">
+            <div className="rounded-2xl bg-[#24171e] border border-amber-500/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-amber-400 transition-all">
               <div className="w-28 h-32 rounded-xl mx-auto overflow-hidden border border-white/10 shadow-lg">
                 <img src="/images/ff-character-1.webp" alt="Solo Champion" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>
@@ -149,7 +157,7 @@ export default function WinnersPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-[#121722] border border-brand-orange/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-brand-orange transition-all">
+            <div className="rounded-2xl bg-[#24171e] border border-brand-orange/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-brand-orange transition-all">
               <div className="w-28 h-32 rounded-xl mx-auto overflow-hidden border border-white/10 shadow-lg">
                 <img src="/images/ff-banner.webp" alt="Squad Champions" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>
@@ -160,7 +168,7 @@ export default function WinnersPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-[#121722] border border-cyan-500/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-cyan-400 transition-all">
+            <div className="rounded-2xl bg-[#24171e] border border-cyan-500/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-cyan-400 transition-all">
               <div className="w-28 h-32 rounded-xl mx-auto overflow-hidden border border-white/10 shadow-lg">
                 <img src="/images/ff-character-2.webp" alt="MVP Gunslinger" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>

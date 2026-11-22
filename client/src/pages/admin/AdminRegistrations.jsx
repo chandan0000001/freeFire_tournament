@@ -162,14 +162,14 @@ export default function AdminRegistrations() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="p-4 rounded-xl bg-[#121722] border border-[#1F293D] flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="p-4 rounded-xl bg-[#24171e] border border-[#49303a] flex flex-col md:flex-row items-center justify-between gap-4">
         
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           {/* Tournament Dropdown */}
           <select
             value={selectedTournament}
             onChange={(e) => setSelectedTournament(e.target.value)}
-            className="px-3 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-xs text-white focus:outline-none focus:border-brand-orange"
+            className="px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
           >
             <option value="">All Tournaments</option>
             {tournaments.map((t) => (
@@ -183,7 +183,7 @@ export default function AdminRegistrations() {
           <select
             value={selectedStatus}
             onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-xs text-white focus:outline-none focus:border-brand-orange"
+            className="px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
           >
             <option value="">All Payment Statuses</option>
             <option value="pending">Pending Review</option>
@@ -199,7 +199,7 @@ export default function AdminRegistrations() {
             placeholder="Search Ref ID or Name..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-orange"
+            className="w-full pl-9 pr-4 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-orange"
           />
           <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
         </form>
@@ -207,10 +207,10 @@ export default function AdminRegistrations() {
       </div>
 
       {/* Registrations Table */}
-      <div className="rounded-2xl bg-[#121722] border border-[#1F293D] overflow-hidden shadow-xl">
+      <div className="rounded-2xl bg-[#24171e] border border-[#49303a] overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-[#0B0E14] text-[10px] uppercase font-bold text-slate-400 border-b border-[#1F293D]">
+            <thead className="bg-[#160e13] text-[10px] uppercase font-bold text-slate-400 border-b border-[#49303a]">
               <tr>
                 <th className="py-3 px-5">Ref ID</th>
                 <th className="py-3 px-5">Tournament</th>
@@ -221,7 +221,7 @@ export default function AdminRegistrations() {
                 <th className="py-3 px-5 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#1F293D] text-xs">
+            <tbody className="divide-y divide-[#49303a] text-xs">
               {loading ? (
                 <tr>
                   <td colSpan="7" className="py-12 text-center text-slate-500">
@@ -230,7 +230,7 @@ export default function AdminRegistrations() {
                 </tr>
               ) : registrations.length > 0 ? (
                 registrations.map((reg) => (
-                  <tr key={reg._id} className="hover:bg-[#161B26] transition-colors">
+                  <tr key={reg._id} className="hover:bg-[#301e27] transition-colors">
                     <td className="py-3 px-5 font-mono font-bold text-brand-orange">
                       {reg.referenceId}
                     </td>
@@ -264,7 +264,7 @@ export default function AdminRegistrations() {
                       <div className="flex items-center justify-end gap-2">
                         <button
                           onClick={() => openVerifyModal(reg)}
-                          className="px-3 py-1.5 rounded-lg bg-[#1F293D] hover:bg-brand-orange hover:text-white text-slate-300 text-xs font-bold transition-colors"
+                          className="px-3 py-1.5 rounded-lg bg-[#49303a] hover:bg-brand-orange hover:text-white text-slate-300 text-xs font-bold transition-colors"
                         >
                           Manage
                         </button>
@@ -295,9 +295,9 @@ export default function AdminRegistrations() {
       {/* Verification / Action Modal */}
       {selectedReg && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div className="w-full max-w-lg rounded-2xl bg-[#121722] border border-[#1F293D] p-6 space-y-5 shadow-2xl">
+          <div className="w-full max-w-lg rounded-2xl bg-[#24171e] border border-[#49303a] p-6 space-y-5 shadow-2xl">
             
-            <div className="flex items-center justify-between border-b border-[#1F293D] pb-3">
+            <div className="flex items-center justify-between border-b border-[#49303a] pb-3">
               <div>
                 <span className="text-[10px] font-bold uppercase text-brand-orange">Review Payment</span>
                 <h3 className="font-display text-xl font-bold uppercase text-white">
@@ -318,7 +318,7 @@ export default function AdminRegistrations() {
               </div>
             )}
 
-            <div className="space-y-2 text-xs text-slate-300 bg-[#0B0E14] p-4 rounded-xl border border-[#1F293D]">
+            <div className="space-y-2 text-xs text-slate-300 bg-[#160e13] p-4 rounded-xl border border-[#49303a]">
               <p><strong>Tournament:</strong> {selectedReg.tournamentId?.title}</p>
               <p><strong>Team / Player:</strong> {selectedReg.teamName || selectedReg.players[0]?.inGameName}</p>
               <p><strong>Captain:</strong> {selectedReg.captain.name} ({selectedReg.captain.phone})</p>
@@ -336,7 +336,7 @@ export default function AdminRegistrations() {
                 placeholder="e.g. 429819283741"
                 value={utrInput}
                 onChange={(e) => setUtrInput(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-xs text-white focus:outline-none focus:border-brand-orange font-mono"
+                className="w-full px-3.5 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange font-mono"
               />
             </div>
 
@@ -350,7 +350,7 @@ export default function AdminRegistrations() {
                 placeholder="e.g. Verified via WhatsApp screenshot"
                 value={adminNotes}
                 onChange={(e) => setAdminNotes(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-xs text-white focus:outline-none focus:border-brand-orange"
+                className="w-full px-3.5 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
               />
             </div>
 
@@ -364,12 +364,12 @@ export default function AdminRegistrations() {
                 placeholder="e.g. Invalid UTR or duplicate payment screenshot"
                 value={rejectionReason}
                 onChange={(e) => setRejectionReason(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-xs text-white focus:outline-none focus:border-rose-500"
+                className="w-full px-3.5 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-rose-500"
               />
             </div>
 
             {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-[#1F293D]">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-[#49303a]">
               <button
                 type="button"
                 disabled={submittingAction}

@@ -8,14 +8,14 @@ export default function NotFoundPage() {
 
   return (
     <div className="min-h-[70vh] flex items-center justify-center px-4 py-16">
-      <div className="max-w-md w-full text-center space-y-6 bg-[#121722] border border-[#1F293D] p-8 rounded-2xl shadow-2xl relative overflow-hidden">
+      <div className="max-w-md w-full text-center space-y-6 bg-[#24171e] border border-[#49303a] p-8 rounded-2xl shadow-2xl relative overflow-hidden">
         
         {/* Glow backdrop */}
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-brand-orange/20 blur-[90px] pointer-events-none rounded-full"></div>
 
         <div className="relative">
-          <div className="w-20 h-20 rounded-2xl bg-[#0B0E14] border-2 border-brand-orange/50 mx-auto flex items-center justify-center shadow-glow-orange">
-            <img src="/images/rit-logo.webp" alt="RIT Crest" className="w-14 h-14 object-contain" />
+          <div className="w-20 h-20 rounded-2xl bg-[#160e13] border-2 border-brand-orange/50 mx-auto flex items-center justify-center shadow-glow-orange">
+            <Trophy className="w-10 h-10 text-brand-orange" />
           </div>
           <span className="inline-block mt-4 px-3 py-1 rounded-full bg-rose-950/80 text-rose-400 border border-rose-500/40 text-[10px] font-black uppercase tracking-wider">
             Zone Shrink Elimination
@@ -40,7 +40,7 @@ export default function NotFoundPage() {
           </Link>
           <Link
             to="/tournaments"
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#161B26] hover:bg-[#1F293D] text-slate-200 border border-[#1F293D] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
+            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#301e27] hover:bg-[#49303a] text-slate-200 border border-[#49303a] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5"
           >
             <Trophy className="w-4 h-4 text-brand-amber" /> View Tournaments
           </Link>

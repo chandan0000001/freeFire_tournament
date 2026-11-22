@@ -1,5 +1,7 @@
+import { site } from '../../config/site.js';
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { tournamentAvailability } from '../../utils/tournament.js';
 import api from '../../services/api.js';
 import usePageMeta from '../../hooks/usePageMeta.js';
 import { 
@@ -21,24 +23,28 @@ export default function TournamentDetailPage() {
   const [activeTab, setActiveTab] = useState('overview');
 
   usePageMeta(
-    tournament ? `${tournament.title} | Free Fire Tournament | Rahul Esports` : 'Tournament Details | Rahul Esports Arena',
-    tournament ? `Join ${tournament.title} with prize pool of ₹${tournament.prizePool || 0}. Format: ${tournament.gameMode || 'Battle Royale'}, Entry: ₹${tournament.entryFee || 0}. Open to all competitive players.` : 'View Free Fire tournament details, schedules, scoring system, and prize breakdown.'
+    tournament ? `${tournament.title} | Free Fire Tournament | {site.name}` : 'Tournament Details | {site.name}',
+    tournament ? `Join ${tournament.title} with prize pool of ₹${tournament.prizeConfig?.totalPool ?? 0}. Format: ${tournament.gameMode || 'Battle Royale'}, Entry: ₹${tournament.entryFee || 0}. Open to all competitive players.` : 'View Free Fire tournament details, schedules, scoring system, and prize breakdown.'
   );
 
   useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setTournament(null);
     const fetchTournament = async () => {
       try {
         const res = await api.get(`/tournaments/${slug}`);
-        if (res.success) {
+        if (active && res.success) {
           setTournament(res.tournament);
         }
       } catch (err) {
         console.error('Failed to load tournament', err);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
     fetchTournament();
+    return () => { active = false; };
   }, [slug]);
 
   if (loading) {
@@ -63,13 +69,11 @@ export default function TournamentDetailPage() {
     );
   }
 
+  const availability = tournamentAvailability(tournament);
   const isMarkedFull = tournament.status === 'full' || tournament.registeredSlots >= tournament.maxSlots;
-  const isFinishedOrLocked = ['full', 'room_ready', 'live', 'completed'].includes(tournament.status);
-  const displayRegisteredSlots = isFinishedOrLocked ? tournament.maxSlots : tournament.registeredSlots;
-  const remaining = isFinishedOrLocked ? 0 : Math.max(0, tournament.maxSlots - tournament.registeredSlots);
-  const fillPercentage = isFinishedOrLocked
-    ? 100
-    : Math.min(100, Math.round((tournament.registeredSlots / tournament.maxSlots) * 100));
+  const displayRegisteredSlots = availability.registered;
+  const remaining = availability.remaining;
+  const fillPercentage = availability.percentage;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
@@ -80,7 +84,7 @@ export default function TournamentDetailPage() {
       </Link>
 
       {/* Hero Header Card */}
-      <div className="relative rounded-2xl bg-[#121722] border border-[#1F293D] overflow-hidden">
+      <div className="relative rounded-2xl bg-[#24171e] border border-[#49303a] overflow-hidden">
         
         {/* Background Banner */}
         <div className="relative h-64 sm:h-80 w-full bg-slate-900">
@@ -89,7 +93,7 @@ export default function TournamentDetailPage() {
             alt={tournament.title}
             className="w-full h-full object-cover object-center opacity-75"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#121722] via-[#121722]/60 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#24171e] via-[#24171e]/60 to-transparent"></div>
           
           {/* Status & Format Floating Badges */}
           <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
@@ -98,7 +102,7 @@ export default function TournamentDetailPage() {
             </span>
             <span className="px-3 py-1.5 rounded-lg bg-black/60 backdrop-blur-md text-white border border-white/20 text-xs font-bold uppercase tracking-wider flex items-center gap-1.5">
               <Users className="w-4 h-4 text-brand-orange" />
-              {tournament.format === 'squad' ? 'Squad (4v4)' : 'Solo'}
+              {tournament.format === 'squad' ? 'Squad' : 'Solo'}
             </span>
           </div>
 
@@ -121,7 +125,7 @@ export default function TournamentDetailPage() {
         </div>
 
         {/* Action & Metric Bar */}
-        <div className="p-6 bg-[#0B0E14] border-t border-[#1F293D] flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="p-6 bg-[#160e13] border-t border-[#49303a] flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="grid grid-cols-3 gap-4 sm:gap-8 w-full md:w-auto">
             <div>
               <p className="text-[10px] uppercase font-bold text-slate-400">Entry Fee</p>
@@ -141,7 +145,7 @@ export default function TournamentDetailPage() {
 
           {/* Register Action CTA */}
           <div className="w-full md:w-auto flex items-center gap-3">
-            {tournament.status === 'registration_open' && !isMarkedFull ? (
+            {availability.canRegister ? (
               <Link
                 to={tournament.format === 'squad' ? `/join/squad/${tournament._id}` : `/join/solo/${tournament._id}`}
                 className="w-full md:w-auto px-8 py-3 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber text-white font-display font-bold text-sm uppercase tracking-wider shadow-glow-orange hover:brightness-110 active:scale-95 transition-all text-center"
@@ -172,7 +176,7 @@ export default function TournamentDetailPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-[#1F293D] flex items-center gap-6 text-sm font-display uppercase tracking-wider">
+      <div className="border-b border-[#49303a] flex items-center gap-6 text-sm font-display uppercase tracking-wider">
         {[
           { id: 'overview', label: 'Overview & Prizes' },
           { id: 'rules', label: 'Scoring & Rules' },
@@ -198,7 +202,7 @@ export default function TournamentDetailPage() {
           
           {/* Main Info */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="p-6 rounded-xl bg-[#121722] border border-[#1F293D] space-y-4">
+            <div className="p-6 rounded-xl bg-[#24171e] border border-[#49303a] space-y-4">
               <h3 className="font-display text-xl font-bold uppercase text-white">About the Tournament</h3>
               <p className="text-sm text-slate-300 leading-relaxed">
                 {tournament.description || 'Welcome to this week’s official Free Fire college match! Bring your best team and battle for the Booyah.'}
@@ -206,28 +210,28 @@ export default function TournamentDetailPage() {
             </div>
 
             {/* Prize Breakdown */}
-            <div className="p-6 rounded-xl bg-[#121722] border border-[#1F293D] space-y-4">
+            <div className="p-6 rounded-xl bg-[#24171e] border border-[#49303a] space-y-4">
               <h3 className="font-display text-xl font-bold uppercase text-white flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-brand-amber" /> Prize Pool Distribution
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                <div className="p-4 rounded-lg bg-[#0B0E14] border border-brand-amber/30 text-center">
+                <div className="p-4 rounded-lg bg-[#160e13] border border-brand-amber/30 text-center">
                   <p className="text-xs uppercase font-bold text-brand-amber">1st Place (Booyah)</p>
                   <p className="text-2xl font-display font-extrabold text-white mt-1">₹{tournament.prizeConfig?.firstPlace || 0}</p>
                 </div>
-                <div className="p-4 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-center">
+                <div className="p-4 rounded-lg bg-[#160e13] border border-[#49303a] text-center">
                   <p className="text-xs uppercase font-bold text-slate-400">2nd Place</p>
                   <p className="text-2xl font-display font-extrabold text-white mt-1">₹{tournament.prizeConfig?.secondPlace || 0}</p>
                 </div>
-                <div className="p-4 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-center">
+                <div className="p-4 rounded-lg bg-[#160e13] border border-[#49303a] text-center">
                   <p className="text-xs uppercase font-bold text-slate-400">3rd Place</p>
                   <p className="text-2xl font-display font-extrabold text-white mt-1">₹{tournament.prizeConfig?.thirdPlace || 0}</p>
                 </div>
               </div>
 
               {tournament.prizeConfig?.terms && (
-                <p className="text-xs text-slate-400 pt-2 border-t border-[#1F293D]">
+                <p className="text-xs text-slate-400 pt-2 border-t border-[#49303a]">
                   <strong>Prize Terms:</strong> {tournament.prizeConfig.terms}
                 </p>
               )}
@@ -236,7 +240,7 @@ export default function TournamentDetailPage() {
 
           {/* Right Sidebar: Slot Capacity & Match Details */}
           <div className="space-y-6">
-            <div className="p-6 rounded-xl bg-[#121722] border border-[#1F293D] space-y-4">
+            <div className="p-6 rounded-xl bg-[#24171e] border border-[#49303a] space-y-4">
               <h4 className="font-display text-lg font-bold uppercase text-white">Slot Availability</h4>
               
               <div className="space-y-2">
@@ -244,7 +248,7 @@ export default function TournamentDetailPage() {
                   <span>Registered: <strong>{displayRegisteredSlots}</strong></span>
                   <span>Max: <strong>{tournament.maxSlots}</strong></span>
                 </div>
-                <div className="w-full h-3 bg-[#0B0E14] rounded-full overflow-hidden border border-[#1F293D]">
+                <div className="w-full h-3 bg-[#160e13] rounded-full overflow-hidden border border-[#49303a]">
                   <div
                     className={`h-full transition-all duration-500 ${
                       fillPercentage >= 90
@@ -267,7 +271,7 @@ export default function TournamentDetailPage() {
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-[#1F293D] space-y-3 text-xs text-slate-300">
+              <div className="pt-4 border-t border-[#49303a] space-y-3 text-xs text-slate-300">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>Open to all verified mobile players</span>
@@ -278,7 +282,7 @@ export default function TournamentDetailPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-                  <span>Room ID & Pass sent by Brevo Email</span>
+                  <span>Room details sent to your registered email</span>
                 </div>
               </div>
             </div>
@@ -292,27 +296,27 @@ export default function TournamentDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Scoring Engine Config */}
-          <div className="p-6 rounded-xl bg-[#121722] border border-[#1F293D] space-y-4">
+          <div className="p-6 rounded-xl bg-[#24171e] border border-[#49303a] space-y-4">
             <h3 className="font-display text-xl font-bold uppercase text-white flex items-center gap-2">
               <Flame className="w-5 h-5 text-brand-orange" /> Configured Scoring Formula
             </h3>
 
-            <div className="p-4 rounded-lg bg-[#0B0E14] border border-brand-orange/30">
+            <div className="p-4 rounded-lg bg-[#160e13] border border-brand-orange/30">
               <p className="text-xs font-mono text-brand-amber uppercase">
-                Total Match Points = (Kills × {tournament.scoringConfig?.killPointValue || 1}) + Booyah Bonus ({tournament.scoringConfig?.booyahBonus || 12})
+                Total Match Points = (Kills × {tournament.scoringConfig?.killPointValue ?? '—'}) + Booyah Bonus ({tournament.scoringConfig?.booyahBonus ?? '—'})
               </p>
             </div>
 
             <ul className="space-y-3 text-xs text-slate-300 pt-2">
-              <li className="flex justify-between border-b border-[#1F293D] pb-2">
+              <li className="flex justify-between border-b border-[#49303a] pb-2">
                 <span>Kill Point Value</span>
-                <strong className="text-white font-mono">{tournament.scoringConfig?.killPointValue || 1} Point per Kill</strong>
+                <strong className="text-white font-mono">{tournament.scoringConfig?.killPointValue ?? '—'} Point per Kill</strong>
               </li>
-              <li className="flex justify-between border-b border-[#1F293D] pb-2">
+              <li className="flex justify-between border-b border-[#49303a] pb-2">
                 <span>Booyah Bonus (1st Place)</span>
-                <strong className="text-brand-amber font-mono">+{tournament.scoringConfig?.booyahBonus || 12} Points</strong>
+                <strong className="text-brand-amber font-mono">+{tournament.scoringConfig?.booyahBonus ?? '—'} Points</strong>
               </li>
-              <li className="flex justify-between border-b border-[#1F293D] pb-2">
+              <li className="flex justify-between border-b border-[#49303a] pb-2">
                 <span>Tie-Breaker Hierarchy</span>
                 <strong className="text-white">Booyahs &gt; Kills &gt; Best Placement</strong>
               </li>
@@ -320,11 +324,11 @@ export default function TournamentDetailPage() {
           </div>
 
           {/* Official Rules */}
-          <div className="p-6 rounded-xl bg-[#121722] border border-[#1F293D] space-y-4">
+          <div className="p-6 rounded-xl bg-[#24171e] border border-[#49303a] space-y-4">
             <h3 className="font-display text-xl font-bold uppercase text-white flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-cyan-400" /> Competition Guidelines
             </h3>
-            <div className="text-xs text-slate-300 leading-relaxed whitespace-pre-line bg-[#0B0E14] p-4 rounded-lg border border-[#1F293D]">
+            <div className="text-xs text-slate-300 leading-relaxed whitespace-pre-line bg-[#160e13] p-4 rounded-lg border border-[#49303a]">
               {tournament.rules || 'Standard Free Fire rules apply.'}
             </div>
           </div>

@@ -15,19 +15,20 @@ const seedDatabase = async () => {
     console.log('[Seed] Connected successfully.');
 
     // 1. Seed Superadmin
-    const adminEmail = (process.env.ADMIN_BOOTSTRAP_EMAIL || 'admin@rahulesports.in').toLowerCase();
-    const adminPassword = process.env.ADMIN_BOOTSTRAP_PASSWORD || 'Admin@RE2026!';
+    const adminEmail = (process.env.ADMIN_BOOTSTRAP_EMAIL || '').toLowerCase();
+    const adminPassword = process.env.ADMIN_BOOTSTRAP_PASSWORD;
     
+    if (!adminEmail || !adminPassword) throw new Error('Set ADMIN_BOOTSTRAP_EMAIL and ADMIN_BOOTSTRAP_PASSWORD before seeding');
     let admin = await User.findOne({ email: adminEmail });
     if (!admin) {
       admin = await User.create({
-        name: 'Rahul Esports Administrator',
+        name: `${process.env.SITE_NAME || ''} Administrator`,
         email: adminEmail,
         password: adminPassword,
         role: ROLES.SUPERADMIN,
         isActive: true,
       });
-      console.log(`[Seed] Superadmin created: ${adminEmail} / ${adminPassword}`);
+      console.log('[Seed] Superadmin created.');
     } else {
       console.log(`[Seed] Superadmin already exists: ${adminEmail}`);
     }
@@ -36,7 +37,7 @@ const seedDatabase = async () => {
     let settings = await SiteSetting.findOne();
     if (!settings) {
       settings = await SiteSetting.create({
-        collegeName: 'Rahul Esports Arena',
+        collegeName: process.env.SITE_NAME || '',
         whatsappCommunityUrl: process.env.WHATSAPP_COMMUNITY_URL || '',
         adminWhatsAppNumber: process.env.ADMIN_WHATSAPP_NUMBER || '',
         upiId: process.env.ADMIN_UPI_ID || 'organizer@upi',
@@ -45,7 +46,7 @@ const seedDatabase = async () => {
       });
       console.log('[Seed] Site settings created with WhatsApp and UPI configurations.');
     } else {
-      settings.collegeName = 'Rahul Esports Arena';
+      settings.collegeName = process.env.SITE_NAME || settings.collegeName;
       settings.whatsappCommunityUrl = process.env.WHATSAPP_COMMUNITY_URL || settings.whatsappCommunityUrl;
       settings.adminWhatsAppNumber = process.env.ADMIN_WHATSAPP_NUMBER || settings.adminWhatsAppNumber;
       settings.upiId = process.env.ADMIN_UPI_ID || settings.upiId;

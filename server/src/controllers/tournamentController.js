@@ -79,7 +79,7 @@ export const getTournamentBySlug = async (req, res, next) => {
       return res.json({ success: true, tournament: cached, cached: true });
     }
 
-    const tournament = await Tournament.findOne({ slug: slug.toLowerCase() }).lean();
+    const tournament = await Tournament.findOne({ slug: slug.toLowerCase(), isPublic: true }).lean();
     if (!tournament) {
       return res.status(404).json({ success: false, message: 'Tournament not found' });
     }

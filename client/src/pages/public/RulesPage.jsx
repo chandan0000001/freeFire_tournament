@@ -1,3 +1,4 @@
+import { site } from '../../config/site.js';
 import React from 'react';
 import usePageMeta from '../../hooks/usePageMeta.js';
 import { BookOpen, ShieldCheck, Flame, AlertTriangle, Trophy, CheckCircle } from 'lucide-react';
@@ -17,12 +18,12 @@ export default function RulesPage() {
           Rules & Regulations
         </h1>
         <p className="text-xs text-slate-400 mt-1">
-          Rahul Esports Arena competitive rules for weekly Free Fire custom rooms.
+          {site.name} competitive rules for weekly Free Fire custom rooms.
         </p>
       </div>
 
       {/* Fair Play Mascot & Pledge Card */}
-      <div className="p-6 rounded-2xl bg-[#121722] border border-brand-orange/40 flex flex-col sm:flex-row items-center gap-6 shadow-xl relative overflow-hidden">
+      <div className="p-6 rounded-2xl bg-[#24171e] border border-brand-orange/40 flex flex-col sm:flex-row items-center gap-6 shadow-xl relative overflow-hidden">
         <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-brand-orange/50 shadow-glow-orange shrink-0">
           <img src="/images/ff-character-4.webp" alt="Fair Play Guardian" className="w-full h-full object-cover" />
         </div>
@@ -43,7 +44,7 @@ export default function RulesPage() {
       <div className="space-y-6">
         
         {/* Section 1: Eligibility */}
-        <div id="eligibility" className="p-6 rounded-2xl bg-[#121722] border border-[#1F293D] space-y-3">
+        <div id="eligibility" className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-3">
           <h3 className="font-display text-xl font-bold uppercase text-white flex items-center gap-2">
             <ShieldCheck className="w-5 h-5 text-emerald-400" /> 1. Player Eligibility
           </h3>
@@ -64,7 +65,7 @@ export default function RulesPage() {
         </div>
 
         {/* Section 2: Device & Anti-Cheat */}
-        <div id="anti-cheat" className="p-6 rounded-2xl bg-[#121722] border border-[#1F293D] space-y-3">
+        <div id="anti-cheat" className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-3">
           <h3 className="font-display text-xl font-bold uppercase text-white flex items-center gap-2">
             <AlertTriangle className="w-5 h-5 text-rose-400" /> 2. Device & Anti-Cheat Policy
           </h3>
@@ -85,30 +86,30 @@ export default function RulesPage() {
         </div>
 
         {/* Section 3: Kill + Booyah Scoring */}
-        <div id="scoring" className="p-6 rounded-2xl bg-[#121722] border border-[#1F293D] space-y-3">
+        <div id="scoring" className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-3">
           <h3 className="font-display text-xl font-bold uppercase text-white flex items-center gap-2">
             <Flame className="w-5 h-5 text-brand-orange" /> 3. Scoring System
           </h3>
           <p className="text-xs text-slate-300 leading-relaxed">
             Total match points are calculated using pure skill metrics:
           </p>
-          <div className="p-4 rounded-xl bg-[#0B0E14] border border-brand-orange/30 font-mono text-xs text-brand-amber">
+          <div className="p-4 rounded-xl bg-[#160e13] border border-brand-orange/30 font-mono text-xs text-brand-amber">
             Total Points = (Total Kills × Kill Point Value) + Booyah Bonus Points
           </div>
           <ul className="text-xs text-slate-300 space-y-1.5 pt-1">
-            <li>• Standard Kill Value: <strong>1 Point per verified Kill</strong></li>
-            <li>• Standard Booyah Bonus: <strong>12 Points for 1st Place</strong></li>
+            <li>• Standard Kill Value: <strong>See each tournament’s scoring configuration</strong></li>
+            <li>• Standard Booyah Bonus: <strong>See each tournament’s scoring configuration</strong></li>
             <li>• Multi-Round Tie Breakers: <strong>1. Most Booyahs &gt; 2. Most Kills &gt; 3. Best Placement</strong></li>
           </ul>
         </div>
 
         {/* Section 4: Cash Prizes & Payouts */}
-        <div className="p-6 rounded-2xl bg-[#121722] border border-[#1F293D] space-y-3">
+        <div className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-3">
           <h3 className="font-display text-xl font-bold uppercase text-white flex items-center gap-2">
             <Trophy className="w-5 h-5 text-brand-amber" /> 4. Cash Prize Payouts
           </h3>
           <ul className="text-xs text-slate-300 space-y-2 leading-relaxed">
-            <li>• Winners receive cash prizes sent via UPI directly by the tournament admin within 24 hours of result approval.</li>
+            <li>• Winners receive cash prizes sent via UPI directly by the tournament admin according to the published tournament payout terms.</li>
             <li>• The platform records payout status and transaction details internally for complete auditability.</li>
             <li>• This is not a gambling or wagering platform; fees cover tournament organization, custom room creation, and guaranteed announced prizes.</li>
           </ul>

@@ -1,5 +1,5 @@
-import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import React, { Suspense, lazy, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
 import { Analytics } from '@vercel/analytics/react';
 
@@ -22,6 +22,7 @@ const ResultsPage = lazy(() => import('./pages/public/ResultsPage.jsx'));
 const WinnersPage = lazy(() => import('./pages/public/WinnersPage.jsx'));
 const RulesPage = lazy(() => import('./pages/public/RulesPage.jsx'));
 const PrivacyPolicyPage = lazy(() => import('./pages/public/PrivacyPolicyPage.jsx'));
+const ContactPage = lazy(() => import('./pages/public/ContactPage.jsx'));
 const WalletPage = lazy(() => import('./pages/public/WalletPage.jsx'));
 const NotFoundPage = lazy(() => import('./pages/public/NotFoundPage.jsx'));
 
@@ -51,7 +52,7 @@ function PublicShell({ children }) {
   return (
     <div className="flex flex-col min-h-screen">
       <Navbar />
-      <main className="flex-1">{children}</main>
+      <main id="main-content" className="flex-1">{children}</main>
       <Footer />
     </div>
   );
@@ -61,6 +62,7 @@ export default function App() {
   return (
     <AuthProvider>
       <Router>
+        <ScrollToTop />
         <Routes>
           {/* Immediate HomePage - NO full-page loading spinner */}
           <Route path="/" element={<PublicShell><HomePage /></PublicShell>} />
@@ -80,7 +82,7 @@ export default function App() {
                   <Route path="/results" element={<PublicShell><ResultsPage /></PublicShell>} />
                   <Route path="/winners" element={<PublicShell><WinnersPage /></PublicShell>} />
                   <Route path="/rules" element={<PublicShell><RulesPage /></PublicShell>} />
-                  <Route path="/contact" element={<PublicShell><RulesPage /></PublicShell>} />
+                  <Route path="/contact" element={<PublicShell><ContactPage /></PublicShell>} />
                   <Route path="/privacy" element={<PublicShell><PrivacyPolicyPage /></PublicShell>} />
                   <Route path="/wallet" element={<PublicShell><WalletPage /></PublicShell>} />
 
@@ -118,3 +120,5 @@ export default function App() {
     </AuthProvider>
   );
 }
+
+function ScrollToTop() { const { pathname } = useLocation(); useEffect(() => { window.scrollTo(0, 0); }, [pathname]); return null; }

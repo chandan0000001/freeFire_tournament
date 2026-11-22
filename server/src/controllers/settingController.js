@@ -1,3 +1,4 @@
+import { getWalletConfig } from '../config/wallet.js';
 import { SiteSetting } from '../models/SiteSetting.js';
 import { AuditLog } from '../models/AuditLog.js';
 import { Tournament } from '../models/Tournament.js';
@@ -11,32 +12,33 @@ export const getPublicSettings = async (req, res, next) => {
   try {
     const cached = await cache.get('settings:public');
     if (cached) {
-      return res.json({ success: true, settings: cached, cached: true });
+      return res.json({ success: true, settings: { ...cached, walletConfig: getWalletConfig() }, cached: true });
     }
 
     let setting = await SiteSetting.findOne().lean();
     if (!setting) {
       setting = {
-        collegeName: 'Rahul Esports Arena',
+        collegeName: (process.env.SITE_NAME || ''),
         whatsappCommunityUrl: process.env.WHATSAPP_COMMUNITY_URL || '',
         adminWhatsAppNumber: process.env.ADMIN_WHATSAPP_NUMBER || '',
-        upiId: process.env.ADMIN_UPI_ID || 'organizer@upi',
-        upiPayeeName: process.env.ADMIN_UPI_NAME || 'Rahul Esports Organizer',
+        upiId: process.env.ADMIN_UPI_ID || '',
+        upiPayeeName: process.env.ADMIN_UPI_NAME || process.env.SITE_NAME || '',
         upiAid: process.env.ADMIN_UPI_AID || '',
         upiUriTemplate: process.env.ADMIN_UPI_URI || '',
         upiQrCodeUrl: '',
-        announcementBanner: 'Welcome to Rahul Esports Arena! Register now for Weekly Free Fire Tournaments!',
-        contactEmail: process.env.EMAIL_FROM || 'admin@rahulesports.in',
+        announcementBanner: process.env.SITE_ANNOUNCEMENT || '',
+        contactEmail: process.env.CONTACT_EMAIL || process.env.EMAIL_FROM || '',
       };
     } else {
       // Ensure defaults if fields were empty
-      setting.collegeName = setting.collegeName || 'Rahul Esports Arena';
-      setting.upiId = setting.upiId || process.env.ADMIN_UPI_ID || 'organizer@upi';
-      setting.upiPayeeName = setting.upiPayeeName || process.env.ADMIN_UPI_NAME || 'Rahul Esports Organizer';
+      setting.collegeName = setting.collegeName || (process.env.SITE_NAME || '');
+      setting.upiId = setting.upiId || process.env.ADMIN_UPI_ID || '';
+      setting.upiPayeeName = setting.upiPayeeName || process.env.ADMIN_UPI_NAME || process.env.SITE_NAME || '';
       setting.upiAid = setting.upiAid || process.env.ADMIN_UPI_AID || '';
       setting.upiUriTemplate = setting.upiUriTemplate || process.env.ADMIN_UPI_URI || '';
     }
 
+    setting.walletConfig = getWalletConfig();
     await cache.set('settings:public', setting, 300);
     res.json({ success: true, settings: setting });
   } catch (error) {
@@ -51,8 +53,8 @@ export const getAdminSettings = async (req, res, next) => {
       setting = await SiteSetting.create({
         whatsappCommunityUrl: process.env.WHATSAPP_COMMUNITY_URL || '',
         adminWhatsAppNumber: process.env.ADMIN_WHATSAPP_NUMBER || '',
-        upiId: process.env.ADMIN_UPI_ID || 'organizer@upi',
-        upiPayeeName: process.env.ADMIN_UPI_NAME || 'Rahul Esports Organizer',
+        upiId: process.env.ADMIN_UPI_ID || '',
+        upiPayeeName: process.env.ADMIN_UPI_NAME || process.env.SITE_NAME || '',
         upiAid: process.env.ADMIN_UPI_AID || '',
         upiUriTemplate: process.env.ADMIN_UPI_URI || '',
       });
@@ -147,14 +149,15 @@ export const getDashboardStats = async (req, res, next) => {
 export const sendTestBrevoEmail = async (req, res, next) => {
   try {
     const { targetEmail } = req.body;
-    const recipient = targetEmail || 'kumardalaichandan803@gmail.com';
+    const recipient = targetEmail || process.env.CONTACT_EMAIL;
+    if (!recipient) return res.status(400).json({ success: false, message: 'Provide a test recipient email.' });
     const { sendEmail } = await import('../services/emailService.js');
 
     const emailResult = await sendEmail({
       to: recipient,
-      subject: 'Live Brevo Delivery Test — Rahul Esports Arena',
+      subject: `Email delivery test — ${process.env.SITE_NAME || ''}`,
       htmlContent: `<div style="font-family: Arial, sans-serif; background-color: #0b0e14; color: #f1f5f9; padding: 25px; border-radius: 8px;">
-        <h2 style="color: #ff5722; margin-top: 0;">Rahul Esports Arena — Live Email Delivery Test</h2>
+        <h2 style="color: #ff5722; margin-top: 0;">Email Delivery Test</h2>
         <p>Hello!</p>
         <p>If you are reading this email, Brevo email dispatch is working with <strong>100% success</strong>!</p>
         <p style="font-size: 13px; color: #94a3b8;">Sent via Brevo API on ${new Date().toLocaleString('en-IN')}</p>

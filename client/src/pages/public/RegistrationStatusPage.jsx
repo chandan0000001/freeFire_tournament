@@ -1,3 +1,4 @@
+import { site } from '../../config/site.js';
 import React, { useState } from 'react';
 import api from '../../services/api.js';
 import usePageMeta from '../../hooks/usePageMeta.js';
@@ -37,7 +38,7 @@ export default function RegistrationStatusPage() {
     setData(null);
 
     try {
-      const res = await api.get(`/registrations/check/${refInput.trim()}`);
+      const res = await api.get(`/registrations/check/${encodeURIComponent(refInput.trim())}`);
       if (res.success) {
         setData(res.registration);
       }
@@ -86,7 +87,7 @@ export default function RegistrationStatusPage() {
           Registration Status Check
         </h1>
         <p className="text-xs text-slate-400">
-          Enter your unique Reference ID (e.g., <span className="font-mono text-brand-orange">RIT-FF-SQ-00101</span>) to track payment and slot confirmation.
+          Enter your unique Reference ID (e.g., <span className="font-mono text-brand-orange">RE-FF-SQ-…</span>) to track payment and slot confirmation.
         </p>
       </div>
 
@@ -96,10 +97,10 @@ export default function RegistrationStatusPage() {
           <input
             type="text"
             required
-            placeholder="Enter Reference ID (e.g. RIT-FF-SQ-XXXXX)"
+            placeholder="Enter Reference ID (e.g. RE-FF-SQ-…)"
             value={refInput}
             onChange={(e) => setRefInput(e.target.value.toUpperCase())}
-            className="w-full px-4 py-3 rounded-xl bg-[#121722] border border-[#1F293D] text-white font-mono text-sm placeholder-slate-500 focus:outline-none focus:border-brand-orange uppercase"
+            className="w-full px-4 py-3 rounded-xl bg-[#24171e] border border-[#49303a] text-white font-mono text-sm placeholder-slate-500 focus:outline-none focus:border-brand-orange uppercase"
           />
           <Search className="w-4 h-4 text-slate-500 absolute right-4 top-1/2 -translate-y-1/2" />
         </div>
@@ -121,8 +122,8 @@ export default function RegistrationStatusPage() {
 
       {/* Result Card */}
       {data && (
-        <div className="p-6 sm:p-8 rounded-2xl bg-[#121722] border border-[#1F293D] space-y-6">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#1F293D] pb-4">
+        <div className="p-6 sm:p-8 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#49303a] pb-4">
             <div>
               <p className="text-[10px] uppercase font-bold text-slate-400">Reference ID</p>
               <p className="font-mono text-xl font-bold text-brand-orange">{data.referenceId}</p>
@@ -131,19 +132,19 @@ export default function RegistrationStatusPage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-            <div className="p-3 rounded-lg bg-[#0B0E14] border border-[#1F293D]">
+            <div className="p-3 rounded-lg bg-[#160e13] border border-[#49303a]">
               <span className="text-slate-400 block text-[10px] uppercase font-bold">Tournament</span>
               <span className="text-white font-bold text-sm">{data.tournamentTitle}</span>
             </div>
-            <div className="p-3 rounded-lg bg-[#0B0E14] border border-[#1F293D]">
+            <div className="p-3 rounded-lg bg-[#160e13] border border-[#49303a]">
               <span className="text-slate-400 block text-[10px] uppercase font-bold">Team / Player</span>
               <span className="text-white font-bold text-sm">{data.teamOrPlayerName}</span>
             </div>
-            <div className="p-3 rounded-lg bg-[#0B0E14] border border-[#1F293D]">
+            <div className="p-3 rounded-lg bg-[#160e13] border border-[#49303a]">
               <span className="text-slate-400 block text-[10px] uppercase font-bold">Format</span>
               <span className="text-white font-bold text-sm uppercase">{data.format}</span>
             </div>
-            <div className="p-3 rounded-lg bg-[#0B0E14] border border-[#1F293D]">
+            <div className="p-3 rounded-lg bg-[#160e13] border border-[#49303a]">
               <span className="text-slate-400 block text-[10px] uppercase font-bold">Room Credentials</span>
               <span className="text-white font-bold text-sm capitalize">
                 {data.roomCredentialStatus === 'sent' ? 'Dispatched to Email' : 'Scheduled before match'}
@@ -159,7 +160,7 @@ export default function RegistrationStatusPage() {
                 Your slot is reserved temporarily. To confirm your entry, please send your UPI payment screenshot to the official admin WhatsApp contact.
               </p>
               <a
-                href={adminWhatsApp ? `https://wa.me/${adminWhatsApp}` : 'https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2'}
+                href={adminWhatsApp ? `https://wa.me/${adminWhatsApp}` : (site.communityUrl || '/contact')}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="inline-flex items-center gap-1.5 text-emerald-400 font-bold hover:underline"
@@ -170,7 +171,7 @@ export default function RegistrationStatusPage() {
           )}
 
           {/* Admin WhatsApp Screenshot Instructions */}
-          <div className="pt-4 border-t border-[#1F293D] space-y-3">
+          <div className="pt-4 border-t border-[#49303a] space-y-3">
             <div className="flex items-center gap-2">
               <MessageCircle className="w-4 h-4 text-emerald-400" />
               <h3 className="font-display text-sm font-bold uppercase text-white">
@@ -184,7 +185,7 @@ export default function RegistrationStatusPage() {
             <a
               href={adminWhatsApp ? `https://wa.me/${adminWhatsApp}?text=${encodeURIComponent(
                 `Hello Admin!\n*Reference ID:* ${data.referenceId}\n*Tournament:* ${data.tournamentTitle}\n*Team/Player:* ${data.teamOrPlayerName}\nAttached is my payment receipt / match scoreboard screenshot.`
-              )}` : 'https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2'}
+              )}` : (site.communityUrl || '/contact')}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-950/70 hover:bg-emerald-900 text-emerald-300 border border-emerald-500/40 text-xs font-bold transition-all shadow-md"

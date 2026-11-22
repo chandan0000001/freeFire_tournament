@@ -1,3 +1,4 @@
+import { getWalletConfig } from '../config/wallet.js';
 import mongoose from 'mongoose';
 
 export const WITHDRAWAL_STATUS = {
@@ -47,7 +48,7 @@ const withdrawalRequestSchema = new mongoose.Schema(
     coinsRequested: {
       type: Number,
       required: [true, 'Coins requested is required'],
-      min: [10, 'Minimum withdrawal is 10 coins'],
+      validate: { validator: value => Number.isSafeInteger(value) && getWalletConfig().minimumWithdrawal != null && value >= getWalletConfig().minimumWithdrawal, message: 'Amount is below the configured minimum or is not a whole coin amount.' },
     },
     amountInr: {
       type: Number,

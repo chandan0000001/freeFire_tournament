@@ -1,3 +1,4 @@
+import { site } from '../../config/site.js';
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api.js';
 import usePageMeta from '../../hooks/usePageMeta.js';
@@ -31,19 +32,20 @@ export default function WalletPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
-  const [adminUpi, setAdminUpi] = useState('srikantap571-1@okaxis');
-  const [adminPayeeName, setAdminPayeeName] = useState('Rahul Esports');
+  const [adminUpi, setAdminUpi] = useState('');
+  const [adminPayeeName, setAdminPayeeName] = useState('');
   const [copiedUpi, setCopiedUpi] = useState(false);
+  const [walletConfig, setWalletConfig] = useState({ depositPackages: [], minimumWithdrawal: null });
 
   // Deposit Form State (Default minimum: 50 coins)
-  const [depositCoins, setDepositCoins] = useState(50);
+  const [depositCoins, setDepositCoins] = useState(0);
   const [utrNumber, setUtrNumber] = useState('');
   const [playerName, setPlayerName] = useState('');
   const [phone, setPhone] = useState('');
   const [depositLoading, setDepositLoading] = useState(false);
 
   // Dynamic UPI Deep Link & QR Code for Deposit
-  const depositUpiUri = `upi://pay?pa=${encodeURIComponent(adminUpi)}&pn=${encodeURIComponent(adminPayeeName)}&am=${depositCoins}&cu=INR&tn=${encodeURIComponent(`Topup ${depositCoins} Coins - ${emailInput || 'Rahul Esports'}`)}`;
+  const depositUpiUri = `upi://pay?pa=${encodeURIComponent(adminUpi)}&pn=${encodeURIComponent(adminPayeeName)}&am=${depositCoins}&cu=INR&tn=${encodeURIComponent(`Topup ${depositCoins} Coins - ${wallet?.userEmail || site.name}`)}`;
   const depositQrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=260x260&data=${encodeURIComponent(depositUpiUri)}`;
 
   // Withdrawal Form State
@@ -56,14 +58,16 @@ export default function WalletPage() {
   useEffect(() => {
     api.get('/settings/public')
       .then((res) => {
-        if (res.success && res.settings?.upiId) {
-          setAdminUpi(res.settings.upiId);
+        if (res.success && res.settings) {
+          setWalletConfig(res.settings.walletConfig || { depositPackages: [], minimumWithdrawal: null });
+          setDepositCoins(res.settings.walletConfig?.depositPackages?.[0] || 0);
+          setAdminUpi(res.settings.upiId || '');
           if (res.settings.upiPayeeName) {
             setAdminPayeeName(res.settings.upiPayeeName);
           }
         }
       })
-      .catch(() => {});
+      .catch(() => setError('Payment configuration could not be loaded. Please reload before making a payment.'));
   }, []);
 
   // Auto load wallet if email is already in localStorage
@@ -76,6 +80,8 @@ export default function WalletPage() {
   const fetchWallet = async (email) => {
     if (!email) return;
     setLoading(true);
+    setWallet(null);
+    setTransactions([]);
     setError('');
     try {
       const res = await api.get(`/wallet/${encodeURIComponent(email.toLowerCase().trim())}`);
@@ -99,10 +105,9 @@ export default function WalletPage() {
     }
   };
 
-  const handleCopyUpi = () => {
-    navigator.clipboard.writeText(adminUpi);
-    setCopiedUpi(true);
-    setTimeout(() => setCopiedUpi(false), 2000);
+  const handleCopyUpi = async () => {
+    try { await navigator.clipboard.writeText(adminUpi); setCopiedUpi(true); setTimeout(() => setCopiedUpi(false), 2000); }
+    catch { setError('Could not copy. Please select and copy the UPI ID manually.'); }
   };
 
   const handleDepositSubmit = async (e) => {
@@ -111,8 +116,8 @@ export default function WalletPage() {
       setError('Please enter your email above first.');
       return;
     }
-    if (depositCoins < 50) {
-      setError('Minimum deposit is 50 coins (₹50). Please select an allowed package: 50, 100, 200, or 500.');
+    if (!adminUpi || !walletConfig.depositPackages.includes(depositCoins)) {
+      setError('Payment settings are unavailable or the package is invalid. Please reload and try again.');
       return;
     }
     if (!/^\d{12}$/.test(utrNumber.trim())) {
@@ -126,7 +131,7 @@ export default function WalletPage() {
 
     try {
       const res = await api.post('/wallet/deposit', {
-        userEmail: emailInput.trim(),
+        userEmail: wallet?.userEmail || emailInput.trim().toLowerCase(),
         playerName,
         phone,
         coinsRequested: depositCoins,
@@ -151,9 +156,10 @@ export default function WalletPage() {
       setError('Please enter your email above first.');
       return;
     }
-    const coins = parseInt(withdrawCoins, 10);
-    if (isNaN(coins) || coins < 10) {
-      setError('Minimum withdrawal is 10 coins (₹10).');
+    if (!wallet || wallet.userEmail !== emailInput.trim().toLowerCase()) { setError('Look up this email’s wallet before requesting a withdrawal.'); return; }
+    const coins = Number(withdrawCoins);
+    if (!walletConfig.minimumWithdrawal || !Number.isSafeInteger(coins) || coins < walletConfig.minimumWithdrawal) {
+      setError(`Minimum withdrawal is ${walletConfig.minimumWithdrawal ?? 'not configured'} coins.`);
       return;
     }
     if (!upiId.trim() || upiId.trim().length < 5) {
@@ -167,7 +173,7 @@ export default function WalletPage() {
 
     try {
       const res = await api.post('/wallet/withdraw', {
-        userEmail: emailInput.trim(),
+        userEmail: wallet?.userEmail || emailInput.trim().toLowerCase(),
         playerName: playerName || wallet?.playerName,
         phone: phone || wallet?.phone,
         freeFireUid: ffUid || wallet?.freeFireUid,
@@ -194,7 +200,7 @@ export default function WalletPage() {
       <div className="text-center max-w-2xl mx-auto space-y-2">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-orange/10 border border-brand-orange/30 text-brand-orange text-xs font-bold uppercase tracking-wider">
           <Coins className="w-4 h-4 text-brand-orange" />
-          <span>Rahul Esports Coin Economy</span>
+          <span>{site.name} Coin Economy</span>
         </div>
         <h1 className="font-display text-3xl sm:text-4xl font-extrabold uppercase text-white tracking-wide">
           Player Wallet & Coins
@@ -205,7 +211,7 @@ export default function WalletPage() {
       </div>
 
       {/* Account / Email Selector Bar */}
-      <div className="p-4 sm:p-5 rounded-2xl bg-[#101522] border border-[#1E2638] shadow-lg">
+      <div className="p-4 sm:p-5 rounded-2xl bg-[#24171e] border border-[#49303a] shadow-lg">
         <form onSubmit={handleLookupSubmit} className="flex flex-col sm:flex-row items-center gap-3">
           <div className="flex-1 w-full relative">
             <input
@@ -214,7 +220,7 @@ export default function WalletPage() {
               value={emailInput}
               onChange={(e) => setEmailInput(e.target.value)}
               placeholder="Enter your registered Captain / Player Email"
-              className="w-full px-4 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-white text-xs sm:text-sm focus:outline-none focus:border-brand-orange"
+              className="w-full px-4 py-2.5 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-xs sm:text-sm focus:outline-none focus:border-brand-orange"
             />
           </div>
           <button
@@ -247,7 +253,7 @@ export default function WalletPage() {
       {wallet && (
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
           {/* Total Playable Balance */}
-          <div className="p-5 rounded-2xl bg-[#101522] border border-brand-orange/40 relative overflow-hidden shadow-glow-orange">
+          <div className="p-5 rounded-2xl bg-[#24171e] border border-brand-orange/40 relative overflow-hidden shadow-glow-orange">
             <span className="text-[10px] uppercase font-bold text-brand-orange tracking-wider block">
               Total Playable Coins
             </span>
@@ -263,7 +269,7 @@ export default function WalletPage() {
           </div>
 
           {/* Deposit Coins */}
-          <div className="p-5 rounded-2xl bg-[#101522] border border-[#1E2638]">
+          <div className="p-5 rounded-2xl bg-[#24171e] border border-[#49303a]">
             <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
               Deposit Coins (Purchased)
             </span>
@@ -279,7 +285,7 @@ export default function WalletPage() {
           </div>
 
           {/* Winning Coins (Withdrawable) */}
-          <div className="p-5 rounded-2xl bg-[#101522] border border-emerald-500/40">
+          <div className="p-5 rounded-2xl bg-[#24171e] border border-emerald-500/40">
             <div className="flex items-center justify-between">
               <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider block">
                 Winning Coins (Withdrawable)
@@ -308,14 +314,14 @@ export default function WalletPage() {
       )}
 
       {/* Tabs Switcher */}
-      <div className="flex items-center gap-2 border-b border-[#1E2638] pb-2">
+      <div className="flex items-center gap-2 border-b border-[#49303a] pb-2">
         <button
           type="button"
           onClick={() => setActiveTab('deposit')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all ${
             activeTab === 'deposit'
               ? 'bg-brand-orange text-white shadow-glow-orange'
-              : 'text-slate-400 hover:text-white bg-[#101522]'
+              : 'text-slate-400 hover:text-white bg-[#24171e]'
           }`}
         >
           <ArrowDownLeft className="w-4 h-4" />
@@ -328,7 +334,7 @@ export default function WalletPage() {
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all ${
             activeTab === 'withdraw'
               ? 'bg-emerald-600 text-white shadow-lg'
-              : 'text-slate-400 hover:text-white bg-[#101522]'
+              : 'text-slate-400 hover:text-white bg-[#24171e]'
           }`}
         >
           <ArrowUpRight className="w-4 h-4" />
@@ -340,8 +346,8 @@ export default function WalletPage() {
           onClick={() => setActiveTab('history')}
           className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all ${
             activeTab === 'history'
-              ? 'bg-[#1E2638] text-white'
-              : 'text-slate-400 hover:text-white bg-[#101522]'
+              ? 'bg-[#49303a] text-white'
+              : 'text-slate-400 hover:text-white bg-[#24171e]'
           }`}
         >
           <Clock className="w-4 h-4" />
@@ -350,9 +356,10 @@ export default function WalletPage() {
       </div>
 
       {/* TAB 1: ADD COINS (DEPOSIT) */}
-      {activeTab === 'deposit' && (
-        <div className="p-6 rounded-2xl bg-[#101522] border border-[#1E2638] space-y-6 shadow-xl">
-          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-[#1A2234]">
+      {activeTab === 'deposit' && (!adminUpi || !depositCoins) && <div className="arena-empty" role="status">Deposits are unavailable until the organizer payment settings are loaded.</div>}
+      {activeTab === 'deposit' && adminUpi && depositCoins > 0 && (
+        <div className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-6 shadow-xl">
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 pb-4 border-b border-[#412a34]">
             <div>
               <h3 className="font-display text-lg font-bold text-white uppercase">
                 Purchase Tournament Coins
@@ -363,7 +370,7 @@ export default function WalletPage() {
             </div>
             
             {/* Quick UPI ID Box */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#090C12] border border-brand-orange/40">
+            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#1b1017] border border-brand-orange/40">
               <span className="text-[10px] uppercase font-bold text-slate-400">Official UPI:</span>
               <span className="text-xs font-mono font-bold text-brand-orange">{adminUpi}</span>
               <button
@@ -381,12 +388,12 @@ export default function WalletPage() {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <label className="block text-xs font-bold text-slate-300 uppercase">
-                1. Select Coin Top-Up Package (Minimum 50 Coins)
+                1. Select Coin Top-Up Package (Minimum {walletConfig.depositPackages[0]} Coins)
               </label>
               <span className="text-[11px] text-brand-orange font-bold">1 Coin = ₹1 INR</span>
             </div>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              {[50, 100, 200, 500].map((pack) => (
+              {walletConfig.depositPackages.map((pack) => (
                 <button
                   key={pack}
                   type="button"
@@ -394,7 +401,7 @@ export default function WalletPage() {
                   className={`p-4 rounded-xl border text-center transition-all ${
                     depositCoins === pack
                       ? 'border-brand-orange bg-brand-orange/20 shadow-glow-orange scale-[1.02]'
-                      : 'border-[#1E2638] bg-[#090C12] hover:border-slate-600'
+                      : 'border-[#49303a] bg-[#1b1017] hover:border-slate-600'
                   }`}
                 >
                   <div className="flex items-center justify-center gap-1.5 text-white">
@@ -415,8 +422,8 @@ export default function WalletPage() {
           </div>
 
           {/* Step 2: DYNAMIC SCANNABLE UPI QR CODE CARD */}
-          <div className="p-5 sm:p-6 rounded-2xl bg-[#090C12] border border-brand-orange/40 space-y-4">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-[#1A2234] pb-3 text-center sm:text-left">
+          <div className="p-5 sm:p-6 rounded-2xl bg-[#1b1017] border border-brand-orange/40 space-y-4">
+            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-[#412a34] pb-3 text-center sm:text-left">
               <div>
                 <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest block">
                   2. Scan QR Code to Pay ₹{depositCoins}
@@ -433,7 +440,7 @@ export default function WalletPage() {
             <div className="flex flex-col md:flex-row items-center gap-6 justify-center py-2">
               {/* QR Code Container */}
               <div className="text-center space-y-2 shrink-0">
-                <div className="inline-block p-3 rounded-2xl bg-white shadow-2xl border-4 border-[#1E2638]">
+                <div className="inline-block p-3 rounded-2xl bg-white shadow-2xl border-4 border-[#49303a]">
                   <img
                     src={depositQrUrl}
                     alt={`Scan to Pay ₹${depositCoins}`}
@@ -447,7 +454,7 @@ export default function WalletPage() {
 
               {/* Instructions & 1-Tap Mobile Link */}
               <div className="space-y-3.5 max-w-sm text-center md:text-left">
-                <div className="p-3 rounded-xl bg-[#121722] border border-[#1E2638] space-y-1">
+                <div className="p-3 rounded-xl bg-[#24171e] border border-[#49303a] space-y-1">
                   <span className="text-[10px] uppercase font-bold text-slate-400 block">Payee Details</span>
                   <p className="text-xs text-white font-semibold">
                     UPI ID: <span className="font-mono text-cyan-400">{adminUpi}</span>
@@ -484,7 +491,7 @@ export default function WalletPage() {
                   <label className="block text-[11px] font-bold text-slate-400 uppercase mb-1">
                     Coins Package Selected
                   </label>
-                  <div className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-brand-orange font-display font-extrabold text-base flex items-center justify-between">
+                  <div className="w-full px-3.5 py-2.5 rounded-xl bg-[#1b1017] border border-[#49303a] text-brand-orange font-display font-extrabold text-base flex items-center justify-between">
                     <span>{depositCoins} Coins</span>
                     <span className="text-xs text-slate-400 font-mono">₹{depositCoins}</span>
                   </div>
@@ -501,7 +508,7 @@ export default function WalletPage() {
                     value={utrNumber}
                     onChange={(e) => setUtrNumber(e.target.value.replace(/\D/g, ''))}
                     placeholder="e.g. 432198765432"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-white text-xs sm:text-sm font-mono tracking-widest focus:border-brand-orange"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-xs sm:text-sm font-mono tracking-widest focus:border-brand-orange"
                   />
                   {utrNumber && utrNumber.length < 12 && (
                     <span className="text-[10px] text-rose-400 mt-1 block">
@@ -519,14 +526,14 @@ export default function WalletPage() {
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
                     placeholder="Your WhatsApp number"
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-white text-xs sm:text-sm focus:border-brand-orange"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-xs sm:text-sm focus:border-brand-orange"
                   />
                 </div>
               </div>
 
               <button
                 type="submit"
-                disabled={depositLoading || !emailInput.trim() || utrNumber.length !== 12}
+                disabled={!adminUpi || !depositCoins || depositLoading || !emailInput.trim() || utrNumber.length !== 12}
                 className="w-full py-3.5 rounded-xl bg-gradient-to-r from-brand-orange to-brand-amber font-display font-bold uppercase tracking-wider text-white text-sm hover:brightness-110 active:scale-95 shadow-glow-orange transition-all disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 <CheckCircle className="w-4 h-4" />
@@ -539,7 +546,7 @@ export default function WalletPage() {
 
       {/* TAB 2: WITHDRAW WINNINGS */}
       {activeTab === 'withdraw' && (
-        <div className="p-6 rounded-2xl bg-[#101522] border border-[#1E2638] space-y-6 shadow-xl">
+        <div className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-6 shadow-xl">
           <div>
             <h3 className="font-display text-lg font-bold text-white uppercase">
               Withdraw Match Winnings to UPI
@@ -570,13 +577,13 @@ export default function WalletPage() {
                 </label>
                 <input
                   type="number"
-                  min="10"
+                  min={walletConfig.minimumWithdrawal}
                   max={wallet?.withdrawableCoins || 0}
                   required
                   value={withdrawCoins}
                   onChange={(e) => setWithdrawCoins(e.target.value)}
-                  placeholder={`Enter coins (Min 10, Max ${wallet?.withdrawableCoins || 0})`}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-white text-xs sm:text-sm font-bold focus:border-emerald-500"
+                  placeholder={`Enter coins (Min ${walletConfig.minimumWithdrawal}, Max ${wallet?.withdrawableCoins || 0})`}
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-xs sm:text-sm font-bold focus:border-emerald-500"
                 />
               </div>
 
@@ -590,14 +597,14 @@ export default function WalletPage() {
                   value={upiId}
                   onChange={(e) => setUpiId(e.target.value)}
                   placeholder="e.g. player@okhdfcbank or 9876543210@paytm"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-white text-xs sm:text-sm font-mono focus:border-emerald-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-xs sm:text-sm font-mono focus:border-emerald-500"
                 />
               </div>
             </div>
 
             <button
               type="submit"
-              disabled={withdrawLoading || !wallet || (wallet?.withdrawableCoins || 0) < 10}
+              disabled={withdrawLoading || !wallet || !walletConfig.minimumWithdrawal || (wallet?.withdrawableCoins || 0) < walletConfig.minimumWithdrawal}
               className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-500 font-display font-bold uppercase tracking-wider text-white text-sm hover:brightness-110 active:scale-95 shadow-lg transition-all disabled:opacity-50"
             >
               {withdrawLoading ? 'Submitting Withdrawal...' : 'Request Instant UPI Withdrawal'}
@@ -608,7 +615,7 @@ export default function WalletPage() {
 
       {/* TAB 3: PASSBOOK & TRANSACTION HISTORY */}
       {activeTab === 'history' && (
-        <div className="p-6 rounded-2xl bg-[#101522] border border-[#1E2638] space-y-4 shadow-xl">
+        <div className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-4 shadow-xl">
           <h3 className="font-display text-lg font-bold text-white uppercase">
             Coin Passbook & Transaction Ledger
           </h3>
@@ -616,7 +623,7 @@ export default function WalletPage() {
           {transactions.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-[#090C12] text-slate-400 uppercase text-[10px] tracking-wider border-b border-[#1E2638]">
+                <thead className="bg-[#1b1017] text-slate-400 uppercase text-[10px] tracking-wider border-b border-[#49303a]">
                   <tr>
                     <th className="p-3">Reference / Date</th>
                     <th className="p-3">Type</th>
@@ -625,7 +632,7 @@ export default function WalletPage() {
                     <th className="p-3 text-center">Status</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1A2234]">
+                <tbody className="divide-y divide-[#412a34]">
                   {transactions.map((tx) => {
                     const isCredit = ['DEPOSIT', 'TOURNAMENT_WIN', 'WITHDRAWAL_REFUND'].includes(tx.type);
                     return (

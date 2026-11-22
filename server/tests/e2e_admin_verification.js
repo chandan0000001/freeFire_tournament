@@ -1,9 +1,10 @@
 import dotenv from 'dotenv';
 dotenv.config({ path: './server/.env' });
 
-const API_BASE = 'http://localhost:5000/api';
-const EMAIL = process.env.ADMIN_BOOTSTRAP_EMAIL || 'admin@ritesports.in';
-const PASSWORD = process.env.ADMIN_BOOTSTRAP_PASSWORD || 'Admin@RIT2026!';
+const API_BASE = process.env.TEST_API_BASE_URL || 'http://localhost:5000/api';
+const EMAIL = process.env.ADMIN_BOOTSTRAP_EMAIL;
+const PASSWORD = process.env.ADMIN_BOOTSTRAP_PASSWORD;
+if (!EMAIL || !PASSWORD) throw new Error('Configure admin test credentials in server/.env');
 
 let token = '';
 let testTournamentId = '';

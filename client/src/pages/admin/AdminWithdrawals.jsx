@@ -191,7 +191,7 @@ export default function AdminWithdrawals() {
         <button
           onClick={fetchData}
           disabled={loading}
-          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#161B26] hover:bg-[#1F293D] text-slate-200 text-xs font-bold border border-[#243048]"
+          className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#301e27] hover:bg-[#49303a] text-slate-200 text-xs font-bold border border-[#243048]"
         >
           <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
           <span>Refresh Queue</span>
@@ -200,21 +200,21 @@ export default function AdminWithdrawals() {
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl bg-[#101522] border border-amber-500/30">
+        <div className="p-4 rounded-xl bg-[#24171e] border border-amber-500/30">
           <span className="text-[10px] uppercase font-bold text-amber-400 tracking-wider block">Pending Withdrawals</span>
           <span className="font-display text-2xl font-extrabold text-white mt-1 block">
             {stats.pendingCount} Requests
           </span>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#101522] border border-emerald-500/30">
+        <div className="p-4 rounded-xl bg-[#24171e] border border-emerald-500/30">
           <span className="text-[10px] uppercase font-bold text-emerald-400 tracking-wider block">Total Disbursed (Paid Out)</span>
           <span className="font-display text-2xl font-extrabold text-emerald-400 mt-1 block">
             ₹{stats.totalPaidInr}
           </span>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#101522] border border-[#1E2638]">
+        <div className="p-4 rounded-xl bg-[#24171e] border border-[#49303a]">
           <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Coin Economy Rate</span>
           <span className="font-display text-2xl font-extrabold text-brand-orange mt-1 block">
             1 Coin = ₹1 INR
@@ -237,14 +237,14 @@ export default function AdminWithdrawals() {
       )}
 
       {/* Navigation Tabs */}
-      <div className="flex items-center gap-2 border-b border-[#1E2638] pb-2">
+      <div className="flex items-center gap-2 border-b border-[#49303a] pb-2">
         <button
           type="button"
           onClick={() => setActiveTab('withdrawals')}
           className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
             activeTab === 'withdrawals'
               ? 'bg-brand-orange text-white shadow-glow-orange'
-              : 'text-slate-400 hover:text-white bg-[#101522]'
+              : 'text-slate-400 hover:text-white bg-[#24171e]'
           }`}
         >
           Withdrawal Requests ({withdrawals.filter(w => w.status === 'PENDING').length})
@@ -256,7 +256,7 @@ export default function AdminWithdrawals() {
           className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
             activeTab === 'deposits'
               ? 'bg-brand-orange text-white shadow-glow-orange'
-              : 'text-slate-400 hover:text-white bg-[#101522]'
+              : 'text-slate-400 hover:text-white bg-[#24171e]'
           }`}
         >
           Deposit Verification ({deposits.filter(d => d.status === 'PENDING').length})
@@ -267,8 +267,8 @@ export default function AdminWithdrawals() {
           onClick={() => setActiveTab('adjust')}
           className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all ${
             activeTab === 'adjust'
-              ? 'bg-[#1E2638] text-white'
-              : 'text-slate-400 hover:text-white bg-[#101522]'
+              ? 'bg-[#49303a] text-white'
+              : 'text-slate-400 hover:text-white bg-[#24171e]'
           }`}
         >
           Manual Coin Adjustment
@@ -277,7 +277,7 @@ export default function AdminWithdrawals() {
 
       {/* TAB 1: WITHDRAWAL REQUESTS */}
       {activeTab === 'withdrawals' && (
-        <div className="p-5 rounded-2xl bg-[#101522] border border-[#1E2638] space-y-4 shadow-xl">
+        <div className="p-5 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-4 shadow-xl">
           <h3 className="font-display text-base font-bold text-white uppercase">
             Player Payout Requests
           </h3>
@@ -285,7 +285,7 @@ export default function AdminWithdrawals() {
           {withdrawals.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-[#090C12] text-slate-400 uppercase text-[10px] tracking-wider border-b border-[#1E2638]">
+                <thead className="bg-[#1b1017] text-slate-400 uppercase text-[10px] tracking-wider border-b border-[#49303a]">
                   <tr>
                     <th className="p-3">Reference / Date</th>
                     <th className="p-3">Player Info</th>
@@ -295,7 +295,7 @@ export default function AdminWithdrawals() {
                     <th className="p-3 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1A2234]">
+                <tbody className="divide-y divide-[#412a34]">
                   {withdrawals.map((w) => (
                     <tr key={w._id} className="hover:bg-[#141A26] transition-colors">
                       <td className="p-3">
@@ -322,7 +322,7 @@ export default function AdminWithdrawals() {
                       </td>
                       <td className="p-3">
                         <div className="flex items-center gap-1.5">
-                          <code className="px-2 py-1 rounded bg-[#090C12] border border-emerald-500/30 text-emerald-300 font-mono text-xs">
+                          <code className="px-2 py-1 rounded bg-[#1b1017] border border-emerald-500/30 text-emerald-300 font-mono text-xs">
                             {w.upiId}
                           </code>
                           <button
@@ -402,7 +402,7 @@ export default function AdminWithdrawals() {
 
       {/* TAB 2: DEPOSIT VERIFICATION */}
       {activeTab === 'deposits' && (
-        <div className="p-5 rounded-2xl bg-[#101522] border border-[#1E2638] space-y-4 shadow-xl">
+        <div className="p-5 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-4 shadow-xl">
           <h3 className="font-display text-base font-bold text-white uppercase">
             Coin Purchase Requests (UTR Verification)
           </h3>
@@ -410,7 +410,7 @@ export default function AdminWithdrawals() {
           {deposits.length > 0 ? (
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-[#090C12] text-slate-400 uppercase text-[10px] tracking-wider border-b border-[#1E2638]">
+                <thead className="bg-[#1b1017] text-slate-400 uppercase text-[10px] tracking-wider border-b border-[#49303a]">
                   <tr>
                     <th className="p-3">Reference / Date</th>
                     <th className="p-3">Player Email</th>
@@ -420,7 +420,7 @@ export default function AdminWithdrawals() {
                     <th className="p-3 text-right">Action</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#1A2234]">
+                <tbody className="divide-y divide-[#412a34]">
                   {deposits.map((d) => (
                     <tr key={d._id} className="hover:bg-[#141A26] transition-colors">
                       <td className="p-3">
@@ -432,7 +432,7 @@ export default function AdminWithdrawals() {
                         🪙 {d.coinsRequested} (₹{d.amountInr})
                       </td>
                       <td className="p-3">
-                        <code className="px-2 py-1 rounded bg-[#090C12] border border-[#1E2638] text-brand-amber font-mono text-xs">
+                        <code className="px-2 py-1 rounded bg-[#1b1017] border border-[#49303a] text-brand-amber font-mono text-xs">
                           {d.utrNumber}
                         </code>
                       </td>
@@ -484,7 +484,7 @@ export default function AdminWithdrawals() {
 
       {/* TAB 3: MANUAL COIN ADJUSTMENT */}
       {activeTab === 'adjust' && (
-        <div className="p-6 rounded-2xl bg-[#101522] border border-[#1E2638] max-w-xl space-y-4 shadow-xl">
+        <div className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] max-w-xl space-y-4 shadow-xl">
           <h3 className="font-display text-base font-bold text-white uppercase">
             Manual Coin Grant / Deduction
           </h3>
@@ -503,7 +503,7 @@ export default function AdminWithdrawals() {
                 value={adjustEmail}
                 onChange={(e) => setAdjustEmail(e.target.value)}
                 placeholder="player@gmail.com"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-white text-xs sm:text-sm focus:border-brand-orange"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-xs sm:text-sm focus:border-brand-orange"
               />
             </div>
 
@@ -518,7 +518,7 @@ export default function AdminWithdrawals() {
                   value={adjustAmount}
                   onChange={(e) => setAdjustAmount(e.target.value)}
                   placeholder="e.g. 50"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-white text-xs sm:text-sm font-bold focus:border-brand-orange"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-xs sm:text-sm font-bold focus:border-brand-orange"
                 />
               </div>
 
@@ -529,7 +529,7 @@ export default function AdminWithdrawals() {
                 <select
                   value={adjustType}
                   onChange={(e) => setAdjustType(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-white text-xs sm:text-sm focus:border-brand-orange"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-xs sm:text-sm focus:border-brand-orange"
                 >
                   <option value="DEPOSIT">Deposit Coins (Tournament Play)</option>
                   <option value="WINNING">Winning Coins (Withdrawable)</option>
@@ -547,7 +547,7 @@ export default function AdminWithdrawals() {
                 value={adjustReason}
                 onChange={(e) => setAdjustReason(e.target.value)}
                 placeholder="e.g. Compensation for match cancellation / Promotional grant"
-                className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-white text-xs sm:text-sm focus:border-brand-orange"
+                className="w-full px-3.5 py-2.5 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-xs sm:text-sm focus:border-brand-orange"
               />
             </div>
 
@@ -565,12 +565,12 @@ export default function AdminWithdrawals() {
       {/* MODAL: APPROVE WITHDRAWAL */}
       {selectedWithdrawal && !showRejectModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#101522] border border-[#1E2638] rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+          <div className="bg-[#24171e] border border-[#49303a] rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <h3 className="font-display text-lg font-bold text-white uppercase">
               Approve Payout: ₹{selectedWithdrawal.amountInr}
             </h3>
             
-            <div className="p-3 rounded-xl bg-[#090C12] border border-[#1E2638] space-y-2 text-xs">
+            <div className="p-3 rounded-xl bg-[#1b1017] border border-[#49303a] space-y-2 text-xs">
               <div className="flex justify-between">
                 <span className="text-slate-400">Player:</span>
                 <span className="text-white font-semibold">{selectedWithdrawal.playerName || selectedWithdrawal.userEmail}</span>
@@ -595,7 +595,7 @@ export default function AdminWithdrawals() {
                   value={payoutUtr}
                   onChange={(e) => setPayoutUtr(e.target.value)}
                   placeholder="Paste bank transfer reference or UTR"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-white text-xs sm:text-sm font-mono focus:border-emerald-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-xs sm:text-sm font-mono focus:border-emerald-500"
                 />
               </div>
 
@@ -623,7 +623,7 @@ export default function AdminWithdrawals() {
       {/* MODAL: REJECT WITHDRAWAL */}
       {selectedWithdrawal && showRejectModal && (
         <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-[#101522] border border-rose-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+          <div className="bg-[#24171e] border border-rose-500/40 rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl">
             <h3 className="font-display text-lg font-bold text-white uppercase text-rose-400">
               Reject Withdrawal & Refund Coins
             </h3>
@@ -643,7 +643,7 @@ export default function AdminWithdrawals() {
                   value={rejectReason}
                   onChange={(e) => setRejectReason(e.target.value)}
                   placeholder="e.g. Invalid UPI ID / Account suspended / Free Fire UID mismatch"
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#090C12] border border-[#1E2638] text-white text-xs focus:border-rose-500"
+                  className="w-full px-3.5 py-2.5 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-xs focus:border-rose-500"
                 ></textarea>
               </div>
 

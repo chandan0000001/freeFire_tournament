@@ -8,25 +8,33 @@ export default function ResultsPage() {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [error, setError] = useState('');
+  const [retry, setRetry] = useState(0);
+
   useEffect(() => {
+    let active = true;
+    setError('');
+    setLoading(true);
     const fetchResults = async () => {
       try {
         const res = await api.get('/results');
-        if (res.success) {
+        if (active && res.success) {
           setResults(res.results || []);
         }
       } catch (err) {
-        console.error('Failed to load published results', err);
+        if (active) setError(err.message);
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
     fetchResults();
-  }, []);
+    return () => { active = false; };
+  }, [retry]);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 space-y-8">
       
+      {error && <div className="arena-empty" role="alert"><h3>Could not load the latest data</h3><p>{error}</p><button className="arena-button secondary" onClick={() => setRetry(retry + 1)}>Try again</button></div>}
       {/* Header */}
       <div>
         <div className="flex items-center gap-2 text-brand-orange text-xs font-bold uppercase tracking-wider mb-1">
@@ -44,16 +52,16 @@ export default function ResultsPage() {
       {loading ? (
         <div className="space-y-6">
           {[1, 2].map((n) => (
-            <div key={n} className="h-64 rounded-2xl bg-[#121722] border border-[#1F293D] animate-pulse"></div>
+            <div key={n} className="h-64 rounded-2xl bg-[#24171e] border border-[#49303a] animate-pulse"></div>
           ))}
         </div>
       ) : results.length > 0 ? (
         <div className="space-y-8">
           {results.map((r) => (
-            <div key={r.id} className="rounded-2xl bg-[#121722] border border-[#1F293D] overflow-hidden shadow-xl">
+            <div key={r.id} className="rounded-2xl bg-[#24171e] border border-[#49303a] overflow-hidden shadow-xl">
               
               {/* Match Header Bar */}
-              <div className="p-5 bg-[#0B0E14] border-b border-[#1F293D] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="p-5 bg-[#160e13] border-b border-[#49303a] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest">
                     Match #{r.match?.matchNumber || 1} • {r.tournament?.format?.toUpperCase()}
@@ -83,7 +91,7 @@ export default function ResultsPage() {
               {/* Match Scorecard Table */}
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-[#161B26] text-[10px] uppercase font-bold text-slate-400 border-b border-[#1F293D]">
+                  <thead className="bg-[#301e27] text-[10px] uppercase font-bold text-slate-400 border-b border-[#49303a]">
                     <tr>
                       <th className="py-3 px-6">Placement</th>
                       <th className="py-3 px-6">Participant / Team</th>
@@ -92,11 +100,11 @@ export default function ResultsPage() {
                       <th className="py-3 px-6 text-right">Points</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#1F293D]">
+                  <tbody className="divide-y divide-[#49303a]">
                     {r.entries.map((entry, idx) => (
                       <tr
                         key={idx}
-                        className={entry.placement === 1 ? 'bg-amber-500/5' : 'hover:bg-[#161B26]/50'}
+                        className={entry.placement === 1 ? 'bg-amber-500/5' : 'hover:bg-[#301e27]/50'}
                       >
                         <td className="py-3 px-6 font-display font-bold">
                           {entry.placement === 1 ? (
@@ -133,7 +141,7 @@ export default function ResultsPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 bg-[#121722] rounded-2xl border border-[#1F293D] p-8">
+        <div className="text-center py-20 bg-[#24171e] rounded-2xl border border-[#49303a] p-8">
           <Flame className="w-12 h-12 text-slate-600 mx-auto mb-3" />
           <h3 className="text-lg font-bold text-white">No Match Results Published Yet</h3>
           <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">

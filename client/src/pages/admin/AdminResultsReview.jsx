@@ -346,8 +346,8 @@ export default function AdminResultsReview() {
                   onClick={() => selectResult(r)}
                   className={`p-4 rounded-xl border cursor-pointer transition-all ${
                     activeResult?._id === r._id
-                      ? 'bg-[#161B26] border-brand-orange shadow-md'
-                      : 'bg-[#121722] border-[#1F293D] hover:border-slate-600'
+                      ? 'bg-[#301e27] border-brand-orange shadow-md'
+                      : 'bg-[#24171e] border-[#49303a] hover:border-slate-600'
                   }`}
                 >
                   <div className="flex items-center justify-between text-[11px] mb-1">
@@ -367,13 +367,13 @@ export default function AdminResultsReview() {
                 </div>
               ))
             ) : (
-              <div className="p-8 rounded-xl bg-[#121722] border border-[#1F293D] text-center text-xs text-slate-500 space-y-3">
+              <div className="p-8 rounded-xl bg-[#24171e] border border-[#49303a] text-center text-xs text-slate-500 space-y-3">
                 <Trophy className="w-8 h-8 text-slate-600 mx-auto" />
                 <p>No match results submitted yet.</p>
                 <button
                   type="button"
                   onClick={openRecordModal}
-                  className="px-3 py-1.5 rounded-lg bg-[#161B26] hover:bg-[#1F293D] text-brand-orange text-xs font-bold border border-brand-orange/30 transition-all"
+                  className="px-3 py-1.5 rounded-lg bg-[#301e27] hover:bg-[#49303a] text-brand-orange text-xs font-bold border border-brand-orange/30 transition-all"
                 >
                   Record First Result
                 </button>
@@ -387,7 +387,7 @@ export default function AdminResultsReview() {
           <div className="lg:col-span-2 space-y-6">
             
             {/* Tournament Details Banner */}
-            <div className="p-5 rounded-2xl bg-[#121722] border border-[#1F293D] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-5 rounded-2xl bg-[#24171e] border border-[#49303a] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest">
                   Match #{activeResult.matchId?.matchNumber || 1} • {activeResult.tournamentId?.format?.toUpperCase()}
@@ -402,7 +402,7 @@ export default function AdminResultsReview() {
                   type="button"
                   disabled={saving}
                   onClick={handleSaveEdits}
-                  className="px-4 py-2 rounded-lg bg-[#161B26] hover:bg-[#1F293D] text-slate-300 border border-[#1F293D] text-xs font-bold uppercase flex items-center gap-1.5 transition-colors"
+                  className="px-4 py-2 rounded-lg bg-[#301e27] hover:bg-[#49303a] text-slate-300 border border-[#49303a] text-xs font-bold uppercase flex items-center gap-1.5 transition-colors"
                 >
                   <Save className="w-4 h-4 text-brand-orange" /> {saving ? 'Saving...' : 'Save Edits'}
                 </button>
@@ -421,10 +421,10 @@ export default function AdminResultsReview() {
             </div>
 
             {/* Scorecard Editable Table */}
-            <div className="rounded-2xl bg-[#121722] border border-[#1F293D] overflow-hidden shadow-xl">
+            <div className="rounded-2xl bg-[#24171e] border border-[#49303a] overflow-hidden shadow-xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-[#0B0E14] text-[10px] uppercase font-bold text-slate-400 border-b border-[#1F293D]">
+                  <thead className="bg-[#160e13] text-[10px] uppercase font-bold text-slate-400 border-b border-[#49303a]">
                     <tr>
                       <th className="py-3 px-4">Placement</th>
                       <th className="py-3 px-4">Participant / Squad</th>
@@ -433,16 +433,16 @@ export default function AdminResultsReview() {
                       <th className="py-3 px-4 text-right">Points</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#1F293D]">
+                  <tbody className="divide-y divide-[#49303a]">
                     {editedEntries.map((entry, idx) => (
-                      <tr key={idx} className="hover:bg-[#161B26]/60">
+                      <tr key={idx} className="hover:bg-[#301e27]/60">
                         <td className="py-2.5 px-4">
                           <input
                             type="number"
                             min="1"
                             value={entry.placement}
                             onChange={(e) => handleEntryChange(idx, 'placement', parseInt(e.target.value, 10))}
-                            className="w-16 px-2 py-1 rounded bg-[#0B0E14] border border-[#1F293D] text-white font-mono text-center"
+                            className="w-16 px-2 py-1 rounded bg-[#160e13] border border-[#49303a] text-white font-mono text-center"
                           />
                         </td>
                         <td className="py-2.5 px-4 font-bold text-white flex items-center gap-2">
@@ -455,7 +455,7 @@ export default function AdminResultsReview() {
                             min="0"
                             value={entry.kills}
                             onChange={(e) => handleEntryChange(idx, 'kills', parseInt(e.target.value, 10))}
-                            className="w-16 px-2 py-1 rounded bg-[#0B0E14] border border-[#1F293D] text-white font-mono text-center"
+                            className="w-16 px-2 py-1 rounded bg-[#160e13] border border-[#49303a] text-white font-mono text-center"
                           />
                         </td>
                         <td className="py-2.5 px-4 text-center">
@@ -478,7 +478,7 @@ export default function AdminResultsReview() {
 
             {/* Supporting Captain Screenshots Section */}
             {activeResult.captainEvidence && activeResult.captainEvidence.length > 0 && (
-              <div className="p-5 rounded-2xl bg-[#121722] border border-[#1F293D] space-y-3">
+              <div className="p-5 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-3">
                 <h4 className="font-display text-sm font-bold uppercase text-white flex items-center gap-2">
                   <Eye className="w-4 h-4 text-cyan-400" /> Captain-Submitted Supporting Screenshots ({activeResult.captainEvidence.length})
                 </h4>
@@ -491,14 +491,14 @@ export default function AdminResultsReview() {
                           href={img.screenshotUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="block rounded-lg overflow-hidden border border-[#1F293D] hover:border-cyan-400 transition-colors"
+                          className="block rounded-lg overflow-hidden border border-[#49303a] hover:border-cyan-400 transition-colors"
                         >
                           <img
                             src={img.screenshotUrl}
                             alt="Evidence screenshot"
                             className="h-28 w-full object-cover"
                           />
-                          <span className="block p-1 text-[10px] text-slate-300 truncate bg-[#0B0E14]">
+                          <span className="block p-1 text-[10px] text-slate-300 truncate bg-[#160e13]">
                             {ev.teamName || 'Solo'}: {img.notes || 'Evidence'}
                           </span>
                         </a>
@@ -510,7 +510,7 @@ export default function AdminResultsReview() {
             )}
 
             {/* Admin Review Notes */}
-            <div className="p-5 rounded-2xl bg-[#121722] border border-[#1F293D] space-y-2">
+            <div className="p-5 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-2">
               <label className="block text-xs font-semibold text-slate-300 uppercase">
                 Admin Review Notes / Audit Justification
               </label>
@@ -519,13 +519,13 @@ export default function AdminResultsReview() {
                 placeholder="e.g. Cross-checked with scoreboard screenshot; kill counts matched."
                 value={adminNotes}
                 onChange={(e) => setAdminNotes(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-xs text-white focus:outline-none focus:border-brand-orange"
+                className="w-full px-3.5 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
               />
             </div>
 
           </div>
         ) : (
-          <div className="lg:col-span-2 p-12 text-center rounded-2xl bg-[#121722] border border-[#1F293D] space-y-4 flex flex-col items-center justify-center">
+          <div className="lg:col-span-2 p-12 text-center rounded-2xl bg-[#24171e] border border-[#49303a] space-y-4 flex flex-col items-center justify-center">
             <div className="w-16 h-16 rounded-full bg-brand-orange/10 border border-brand-orange/30 flex items-center justify-center text-brand-orange">
               <Trophy className="w-8 h-8" />
             </div>
@@ -553,10 +553,10 @@ export default function AdminResultsReview() {
       {/* Record Match & Declare Winner Modal */}
       {isRecordModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-[#121722] border border-[#1F293D] rounded-2xl max-w-3xl w-full p-6 space-y-6 shadow-2xl my-8">
+          <div className="bg-[#24171e] border border-[#49303a] rounded-2xl max-w-3xl w-full p-6 space-y-6 shadow-2xl my-8">
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-[#1F293D] pb-4">
+            <div className="flex items-center justify-between border-b border-[#49303a] pb-4">
               <div className="flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-brand-orange" />
                 <h3 className="font-display text-lg font-bold uppercase text-white">
@@ -566,7 +566,7 @@ export default function AdminResultsReview() {
               <button
                 type="button"
                 onClick={() => setIsRecordModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-[#161B26] text-slate-400 hover:text-white"
+                className="p-1 rounded-lg hover:bg-[#301e27] text-slate-400 hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -582,7 +582,7 @@ export default function AdminResultsReview() {
                   <select
                     value={selectedTournamentId}
                     onChange={(e) => handleTournamentSelect(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
                   >
                     {tournamentsList.map((t) => (
                       <option key={t._id} value={t._id}>
@@ -599,7 +599,7 @@ export default function AdminResultsReview() {
                   <select
                     value={modalMap}
                     onChange={(e) => setModalMap(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
                   >
                     <option value="Bermuda">Bermuda</option>
                     <option value="Purgatory">Purgatory</option>
@@ -610,7 +610,7 @@ export default function AdminResultsReview() {
               </div>
 
               {selectedTournament && (
-                <div className="p-3 rounded-xl bg-[#0B0E14] border border-[#1F293D] flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-[#160e13] border border-[#49303a] flex flex-wrap items-center justify-between gap-3 text-xs">
                   <span className="text-slate-400">
                     Format: <strong className="text-white uppercase">{selectedTournament.format}</strong>
                   </span>
@@ -644,9 +644,9 @@ export default function AdminResultsReview() {
                   Loading verified tournament participants...
                 </div>
               ) : (
-                <div className="rounded-xl border border-[#1F293D] overflow-hidden bg-[#0B0E14]">
+                <div className="rounded-xl border border-[#49303a] overflow-hidden bg-[#160e13]">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-[#121722] text-[10px] uppercase font-bold text-slate-400 border-b border-[#1F293D]">
+                    <thead className="bg-[#24171e] text-[10px] uppercase font-bold text-slate-400 border-b border-[#49303a]">
                       <tr>
                         <th className="py-2.5 px-3">Rank</th>
                         <th className="py-2.5 px-3">Team / Player Name</th>
@@ -656,12 +656,12 @@ export default function AdminResultsReview() {
                         <th className="py-2.5 px-3 text-center">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#1F293D]">
+                    <tbody className="divide-y divide-[#49303a]">
                       {modalEntries.map((entry, idx) => (
                         <tr
                           key={idx}
                           className={`${
-                            entry.placement === 1 ? 'bg-amber-950/20' : 'hover:bg-[#161B26]/40'
+                            entry.placement === 1 ? 'bg-amber-950/20' : 'hover:bg-[#301e27]/40'
                           }`}
                         >
                           <td className="py-2 px-3">
@@ -672,7 +672,7 @@ export default function AdminResultsReview() {
                               onChange={(e) =>
                                 handleModalEntryChange(idx, 'placement', parseInt(e.target.value, 10))
                               }
-                              className="w-14 px-2 py-1 rounded bg-[#121722] border border-[#1F293D] text-white font-mono text-center font-bold"
+                              className="w-14 px-2 py-1 rounded bg-[#24171e] border border-[#49303a] text-white font-mono text-center font-bold"
                             />
                           </td>
                           <td className="py-2 px-3">
@@ -683,7 +683,7 @@ export default function AdminResultsReview() {
                                 handleModalEntryChange(idx, 'participantName', e.target.value)
                               }
                               placeholder="e.g. Phoenix Fire"
-                              className="w-full px-2.5 py-1 rounded bg-[#121722] border border-[#1F293D] text-white font-semibold"
+                              className="w-full px-2.5 py-1 rounded bg-[#24171e] border border-[#49303a] text-white font-semibold"
                             />
                           </td>
                           <td className="py-2 px-3 text-center">
@@ -694,7 +694,7 @@ export default function AdminResultsReview() {
                               onChange={(e) =>
                                 handleModalEntryChange(idx, 'kills', parseInt(e.target.value, 10))
                               }
-                              className="w-16 px-2 py-1 rounded bg-[#121722] border border-[#1F293D] text-white font-mono text-center"
+                              className="w-16 px-2 py-1 rounded bg-[#24171e] border border-[#49303a] text-white font-mono text-center"
                             />
                           </td>
                           <td className="py-2 px-3 text-center">
@@ -751,7 +751,7 @@ export default function AdminResultsReview() {
                   placeholder="https://... image link"
                   value={modalScreenshot}
                   onChange={(e) => setModalScreenshot(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#0B0E14] border border-[#1F293D] text-xs text-white focus:outline-none focus:border-brand-orange"
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
                 />
               </div>
               <div>
@@ -763,17 +763,17 @@ export default function AdminResultsReview() {
                   placeholder="e.g. Final custom room Booyah match."
                   value={modalNotes}
                   onChange={(e) => setModalNotes(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#0B0E14] border border-[#1F293D] text-xs text-white focus:outline-none focus:border-brand-orange"
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
                 />
               </div>
             </div>
 
             {/* Modal Actions */}
-            <div className="pt-4 border-t border-[#1F293D] flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="pt-4 border-t border-[#49303a] flex flex-col sm:flex-row items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => setIsRecordModalOpen(false)}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#161B26] hover:bg-[#1F293D] text-slate-300 text-xs font-bold uppercase transition-colors"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#301e27] hover:bg-[#49303a] text-slate-300 text-xs font-bold uppercase transition-colors"
               >
                 Cancel
               </button>
@@ -783,7 +783,7 @@ export default function AdminResultsReview() {
                   type="button"
                   disabled={isSubmittingRecord}
                   onClick={() => handleSubmitRecord(false)}
-                  className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-[#161B26] hover:bg-[#1F293D] text-slate-200 border border-[#1F293D] text-xs font-bold uppercase transition-colors"
+                  className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-[#301e27] hover:bg-[#49303a] text-slate-200 border border-[#49303a] text-xs font-bold uppercase transition-colors"
                 >
                   Save as Draft to Queue
                 </button>

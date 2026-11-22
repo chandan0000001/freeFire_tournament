@@ -1,5 +1,7 @@
+import { site } from '../../config/site.js';
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
+import { tournamentAvailability } from '../../utils/tournament.js';
 import api from '../../services/api.js';
 import usePageMeta from '../../hooks/usePageMeta.js';
 import { 
@@ -61,6 +63,10 @@ export default function SoloRegisterPage() {
     e.preventDefault();
     setError('');
 
+    if (!tournament || tournament.format !== 'solo' || !tournamentAvailability(tournament).canRegister) {
+      setError('Registration is unavailable for this tournament or format. Please choose an open match.');
+      return;
+    }
     if (!agreed) {
       setError('Please agree to the tournament fair play rules & eligibility notice');
       return;
@@ -149,7 +155,7 @@ export default function SoloRegisterPage() {
 
     return (
       <div className="max-w-xl mx-auto px-4 py-10">
-        <div className="p-6 sm:p-8 rounded-2xl bg-[#121722] border border-emerald-500/40 text-center space-y-6 shadow-2xl">
+        <div className="p-6 sm:p-8 rounded-2xl bg-[#24171e] border border-emerald-500/40 text-center space-y-6 shadow-2xl">
           <div className="w-14 h-14 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto">
             <CheckCircle className="w-7 h-7" />
           </div>
@@ -167,14 +173,14 @@ export default function SoloRegisterPage() {
           </div>
 
           {/* Reference ID Callout Box */}
-          <div className="p-4 rounded-xl bg-[#0B0E14] border border-[#1F293D] flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-[#160e13] border border-[#49303a] flex items-center justify-between">
             <div className="text-left">
               <p className="text-[10px] uppercase font-bold text-slate-400">Your Reference ID</p>
               <p className="font-mono text-xl font-bold text-brand-orange">{registration?.referenceId}</p>
             </div>
             <button
               onClick={() => copyToClipboard(registration?.referenceId || '')}
-              className="px-3 py-1.5 rounded-lg bg-[#161B26] text-xs text-slate-300 hover:text-white flex items-center gap-1.5 border border-[#1F293D]"
+              className="px-3 py-1.5 rounded-lg bg-[#301e27] text-xs text-slate-300 hover:text-white flex items-center gap-1.5 border border-[#49303a]"
             >
               <Copy className="w-3.5 h-3.5" />
               {copied ? 'Copied!' : 'Copy'}
@@ -204,8 +210,8 @@ export default function SoloRegisterPage() {
           {/* UPI Payment Instructions Card */}
           {!isCoinsPaid && paymentInstructions && (
             <>
-              <div className="p-5 rounded-xl bg-[#0B0E14] border border-brand-amber/30 text-left space-y-4">
-                <div className="flex items-center justify-between border-b border-[#1F293D] pb-3">
+              <div className="p-5 rounded-xl bg-[#160e13] border border-brand-amber/30 text-left space-y-4">
+                <div className="flex items-center justify-between border-b border-[#49303a] pb-3">
                   <div>
                     <span className="text-[10px] font-bold uppercase text-brand-amber">Payment Details</span>
                     <p className="text-xs text-slate-300">
@@ -219,7 +225,7 @@ export default function SoloRegisterPage() {
                 </div>
 
                 {/* UPI ID with 1-click copy */}
-                <div className="flex items-center justify-between p-3 rounded-lg bg-[#161B26] border border-[#1F293D]">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-[#301e27] border border-[#49303a]">
                   <div>
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">UPI ID</span>
                     <span className="font-mono font-bold text-sm text-cyan-400">{paymentInstructions.upiId}</span>
@@ -316,7 +322,7 @@ export default function SoloRegisterPage() {
       )}
 
       {/* Form Card */}
-      <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl bg-[#121722] border border-[#1F293D] space-y-6">
+      <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-6">
         
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -327,7 +333,7 @@ export default function SoloRegisterPage() {
               placeholder="e.g. Rahul Sharma"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
             />
           </div>
 
@@ -339,7 +345,7 @@ export default function SoloRegisterPage() {
               placeholder="e.g. Bhubaneswar, Odisha"
               value={collegeRollNo}
               onChange={(e) => setCollegeRollNo(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
             />
           </div>
 
@@ -351,7 +357,7 @@ export default function SoloRegisterPage() {
               placeholder="e.g. Apex_Sniper"
               value={inGameName}
               onChange={(e) => setInGameName(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
             />
           </div>
 
@@ -366,7 +372,7 @@ export default function SoloRegisterPage() {
               placeholder="e.g. 1401364963"
               value={freeFireUid}
               onChange={(e) => setFreeFireUid(e.target.value.replace(/[^0-9]/g, '').slice(0, 17))}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
             />
             {freeFireUid && freeFireUid.length < 6 && (
               <span className="text-[10px] text-rose-400 mt-1 block">
@@ -383,7 +389,7 @@ export default function SoloRegisterPage() {
               placeholder="yourname@gmail.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
             />
           </div>
 
@@ -395,7 +401,7 @@ export default function SoloRegisterPage() {
               placeholder="10-digit mobile number"
               value={phone}
               onChange={(e) => setPhone(e.target.value)}
-              className="w-full px-3.5 py-2.5 rounded-lg bg-[#0B0E14] border border-[#1F293D] text-sm text-white focus:outline-none focus:border-brand-orange"
+              className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
             />
           </div>
         </div>
@@ -407,7 +413,7 @@ export default function SoloRegisterPage() {
               type="checkbox"
               checked={isConsentPublic}
               onChange={(e) => setIsConsentPublic(e.target.checked)}
-              className="w-4 h-4 rounded text-brand-orange focus:ring-0 bg-[#0B0E14] border-[#1F293D]"
+              className="w-4 h-4 rounded text-brand-orange focus:ring-0 bg-[#160e13] border-[#49303a]"
             />
             <span className="text-xs text-slate-300">
               Allow displaying my Free Fire UID on public leaderboard and winners podium.
@@ -427,7 +433,7 @@ export default function SoloRegisterPage() {
               className={`p-4 rounded-xl border text-left transition-all ${
                 paymentMethod === 'WALLET_COINS'
                   ? 'border-brand-orange bg-brand-orange/15 shadow-glow-orange'
-                  : 'border-[#1F293D] bg-[#0B0E14] hover:border-slate-600'
+                  : 'border-[#49303a] bg-[#160e13] hover:border-slate-600'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -450,7 +456,7 @@ export default function SoloRegisterPage() {
               className={`p-4 rounded-xl border text-left transition-all ${
                 paymentMethod === 'MANUAL_UPI'
                   ? 'border-brand-amber bg-brand-amber/15 shadow-md'
-                  : 'border-[#1F293D] bg-[#0B0E14] hover:border-slate-600'
+                  : 'border-[#49303a] bg-[#160e13] hover:border-slate-600'
               }`}
             >
               <div className="flex items-center justify-between">
@@ -476,10 +482,10 @@ export default function SoloRegisterPage() {
               type="checkbox"
               checked={agreed}
               onChange={(e) => setAgreed(e.target.checked)}
-              className="mt-1 w-4 h-4 rounded text-brand-orange focus:ring-0 bg-[#0B0E14] border-[#1F293D]"
+              className="mt-1 w-4 h-4 rounded text-brand-orange focus:ring-0 bg-[#160e13] border-[#49303a]"
             />
             <span className="text-xs text-slate-300 leading-relaxed">
-              I certify that I am playing on a mobile device without teaming or hacks, and agree to Rahul Esports official tournament rules.
+              I certify that I am playing on a mobile device without teaming or hacks, and agree to {site.name} official tournament rules.
             </span>
           </label>
         </div>

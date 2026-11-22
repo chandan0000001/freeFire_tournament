@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { site } from '../config/site.js';
 
 /**
  * Custom hook to dynamically update page title and meta description
@@ -7,9 +8,12 @@ import { useEffect } from 'react';
  */
 export default function usePageMeta(title, description) {
   useEffect(() => {
+    description = description?.replace(/Rahul Esports(?: Arena| Odisha)?|RIT Esports Arena|Roland Institute of Technology/g, site.name);
     // Update title
     if (title) {
-      document.title = title.includes('RIT') ? title : `${title} | RIT Esports Arena`;
+      const cleanTitle = title.replace(/\s*\|\s*(?:RIT|Rahul).*$/, '');
+      document.title = `${cleanTitle} | ${site.name}`;
+      document.querySelector('meta[property="og:title"]')?.setAttribute('content', document.title);
     }
 
     // Update meta description

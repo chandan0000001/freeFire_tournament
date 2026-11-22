@@ -1,3 +1,4 @@
+import { getWalletConfig } from '../config/wallet.js';
 import { Wallet } from '../models/Wallet.js';
 import { WalletTransaction, TRANSACTION_TYPES } from '../models/WalletTransaction.js';
 import { WithdrawalRequest, WITHDRAWAL_STATUS } from '../models/WithdrawalRequest.js';
@@ -94,11 +95,11 @@ export const createDepositRequest = async (req, res, next) => {
     }
 
     const email = userEmail.toLowerCase().trim();
-    const coins = parseInt(coinsRequested, 10);
-    if (isNaN(coins) || coins < 50) {
+    const coins = Number(coinsRequested);
+    if (!Number.isSafeInteger(coins) || !getWalletConfig().depositPackages.includes(coins)) {
       return res.status(400).json({
         success: false,
-        message: 'Minimum deposit is 50 coins (₹50). Allowed packages: 50, 100, 200, 500 coins.',
+        message: `Select an allowed deposit package: ${getWalletConfig().depositPackages.join(', ')} coins.`,
       });
     }
 
@@ -171,11 +172,11 @@ export const createWithdrawalRequest = async (req, res, next) => {
     }
 
     const email = userEmail.toLowerCase().trim();
-    const coins = parseInt(coinsRequested, 10);
-    if (isNaN(coins) || coins < 10) {
+    const coins = Number(coinsRequested);
+    if (!getWalletConfig().minimumWithdrawal || !Number.isSafeInteger(coins) || coins < getWalletConfig().minimumWithdrawal) {
       return res.status(400).json({
         success: false,
-        message: 'Minimum withdrawal amount is 10 coins (₹10).',
+        message: `Minimum withdrawal is ${getWalletConfig().minimumWithdrawal ?? 'not configured'} coins.`,
       });
     }
 
