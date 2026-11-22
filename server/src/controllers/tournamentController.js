@@ -5,21 +5,13 @@ import { MatchResult } from '../models/MatchResult.js';
 import { Prize } from '../models/Prize.js';
 import { TOURNAMENT_STATUS } from '../constants/statuses.js';
 import { logAudit } from '../services/auditService.js';
-import { cache } from '../config/redis.js';
 import { escapeRegex } from '../utils/security.js';
 
 export const getTournaments = async (req, res, next) => {
   try {
     const { status, format, search, limit } = req.query;
-    const cacheKey = `tournaments:list:${status || 'all'}:${format || 'all'}:${search || 'none'}:${limit || 'none'}`;
 
-    const cached = await cache.get(cacheKey);
-    if (cached) {
-      return res.json({
-        ...cached,
-        cached: true,
-      });
-    }
+
 
     const query = { isPublic: true, status: { $ne: 'draft' } };
 
@@ -62,8 +54,7 @@ export const getTournaments = async (req, res, next) => {
       tournaments: formatted,
     };
 
-    // Cache list for 30s in Redis
-    await cache.set(cacheKey, responsePayload, 30);
+
 
     res.json(responsePayload);
   } catch (error) {
@@ -74,11 +65,7 @@ export const getTournaments = async (req, res, next) => {
 export const getTournamentBySlug = async (req, res, next) => {
   try {
     const { slug } = req.params;
-    const cacheKey = `tournament:slug:${slug}`;
-    const cached = await cache.get(cacheKey);
-    if (cached) {
-      return res.json({ success: true, tournament: cached, cached: true });
-    }
+
 
     const tournament = await Tournament.findOne({ slug: slug.toLowerCase(), isPublic: true, status: { $ne: 'draft' } }).lean();
     if (!tournament) {
@@ -92,7 +79,6 @@ export const getTournamentBySlug = async (req, res, next) => {
       remainingSlots: tournament.status === TOURNAMENT_STATUS.FULL ? 0 : Math.max(0, tournament.maxSlots - slots),
     };
 
-    await cache.set(cacheKey, result, 60); // 60s cache
     res.json({ success: true, tournament: result });
   } catch (error) {
     next(error);
@@ -110,7 +96,7 @@ export const createTournament = async (req, res, next) => {
     }
 
     const tournament = await Tournament.create(data);
-    await cache.delPattern('tournaments:*');
+
 
     await logAudit({
       action: 'TOURNAMENT_CREATED',
@@ -145,11 +131,7 @@ export const updateTournament = async (req, res, next) => {
     Object.assign(existing, data);
     const updated = await existing.save();
 
-    await cache.delPattern('tournaments:*');
-    await cache.del(`tournament:slug:${existing.slug}`);
-    if (updated.slug !== existing.slug) {
-      await cache.del(`tournament:slug:${updated.slug}`);
-    }
+
 
     await logAudit({
       action: 'TOURNAMENT_UPDATED',
@@ -189,8 +171,7 @@ export const updateTournamentStatus = async (req, res, next) => {
     tournament.status = status;
     await tournament.save();
 
-    await cache.delPattern('tournaments:*');
-    await cache.del(`tournament:slug:${tournament.slug}`);
+
 
     await logAudit({
       action: 'TOURNAMENT_STATUS_CHANGED',
@@ -223,8 +204,7 @@ export const deleteTournament = async (req, res, next) => {
     await Match.deleteMany({ tournamentId: id });
     await Tournament.findByIdAndDelete(id);
 
-    await cache.delPattern('tournaments:*');
-    await cache.del(`tournament:slug:${tournament.slug}`);
+
 
 
     await logAudit({

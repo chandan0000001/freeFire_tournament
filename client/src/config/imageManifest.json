@@ -1,0 +1,92 @@
+{
+  "/images/odisha-squad.webp": {
+    "width": 1280,
+    "height": 720,
+    "variants": [
+      {
+        "src": "/images/odisha-squad-480.webp",
+        "width": 480
+      },
+      {
+        "src": "/images/odisha-squad-768.webp",
+        "width": 768
+      },
+      {
+        "src": "/images/odisha-squad.webp",
+        "width": 1280
+      }
+    ]
+  },
+  "/images/chilika-solo.webp": {
+    "width": 1280,
+    "height": 720,
+    "variants": [
+      {
+        "src": "/images/chilika-solo-480.webp",
+        "width": 480
+      },
+      {
+        "src": "/images/chilika-solo-768.webp",
+        "width": 768
+      },
+      {
+        "src": "/images/chilika-solo.webp",
+        "width": 1280
+      }
+    ]
+  },
+  "/images/arena-account.webp": {
+    "width": 1280,
+    "height": 720,
+    "variants": [
+      {
+        "src": "/images/arena-account-480.webp",
+        "width": 480
+      },
+      {
+        "src": "/images/arena-account-768.webp",
+        "width": 768
+      },
+      {
+        "src": "/images/arena-account.webp",
+        "width": 1280
+      }
+    ]
+  },
+  "/images/konark-squad.webp": {
+    "width": 1280,
+    "height": 720,
+    "variants": [
+      {
+        "src": "/images/konark-squad-480.webp",
+        "width": 480
+      },
+      {
+        "src": "/images/konark-squad-768.webp",
+        "width": 768
+      },
+      {
+        "src": "/images/konark-squad.webp",
+        "width": 1280
+      }
+    ]
+  },
+  "/images/odisha-champion.webp": {
+    "width": 1086,
+    "height": 1448,
+    "variants": [
+      {
+        "src": "/images/odisha-champion-480.webp",
+        "width": 480
+      },
+      {
+        "src": "/images/odisha-champion-768.webp",
+        "width": 768
+      },
+      {
+        "src": "/images/odisha-champion.webp",
+        "width": 1086
+      }
+    ]
+  }
+}

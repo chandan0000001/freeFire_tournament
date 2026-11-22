@@ -4,7 +4,9 @@ import { cache } from '../config/redis.js';
 // from a request that began before an administrator committed a change.
 export const publicCache = (handler, group, ttl = 30) => async (req, res, next) => {
   try {
-    const payload = await cache.remember(`${group}:http:${req.originalUrl}`, ttl, async () => {
+    const url = new URL(req.originalUrl, 'http://cache.local');
+    url.searchParams.sort();
+    const payload = await cache.remember(`${group}:http:${url.pathname}${url.search}`, ttl, async () => {
       let body;
       let status = 200;
       const reply = { status(code) { status = code; return reply; }, json(value) { body = value; return reply; } };

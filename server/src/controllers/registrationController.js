@@ -11,7 +11,6 @@ import { escapeRegex } from '../utils/security.js';
 import { sendRegistrationEmail, sendPaymentVerifiedEmail } from '../services/emailService.js';
 import { logAudit } from '../services/auditService.js';
 import { PAYMENT_STATUS, TOURNAMENT_FORMAT } from '../constants/statuses.js';
-import { cache } from '../config/redis.js';
 
 export const registerSquad = async (req, res, next) => {
   let reservedTournament = null;
@@ -135,7 +134,6 @@ export const registerSquad = async (req, res, next) => {
     );
     const whatsappUrl = `https://wa.me/${adminWhatsApp}?text=${prefilledText}`;
 
-    await cache.delPattern('tournaments:*');
 
     res.status(201).json({
       success: true,
@@ -251,7 +249,6 @@ export const registerSolo = async (req, res, next) => {
     );
     const whatsappUrl = `https://wa.me/${adminWhatsApp}?text=${prefilledText}`;
 
-    await cache.delPattern('tournaments:*');
 
     res.status(201).json({
       success: true,

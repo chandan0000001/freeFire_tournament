@@ -1,7 +1,6 @@
 import { Tournament } from '../models/Tournament.js';
 import { Registration } from '../models/Registration.js';
 import { TOURNAMENT_STATUS, PAYMENT_STATUS } from '../constants/statuses.js';
-import { cache } from '../config/redis.js';
 
 /**
  * Recalculate and synchronize tournament registeredSlots based on verified registrations
@@ -28,9 +27,8 @@ export const syncTournamentSlots = async (tournamentId) => {
   tournament.status = nextStatus;
   await tournament.save();
 
-  // Invalidate Redis caches
-  await cache.delPattern('tournaments:*');
-  await cache.del(`tournament:slug:${tournament.slug}`);
+
+
 
   return tournament;
 };
@@ -60,7 +58,7 @@ export const checkAvailableCapacity = async (tournamentId) => {
     tournament.registeredSlots = verifiedCount;
     tournament.status = TOURNAMENT_STATUS.FULL;
     await tournament.save();
-    await cache.delPattern('tournaments:*');
+
     throw capacityError('Tournament is completely full. No remaining slots.');
   }
 
@@ -113,8 +111,7 @@ export const reserveSlot = async (tournamentId) => {
     await tournament.save();
   }
 
-  await cache.delPattern('tournaments:*');
-  await cache.del(`tournament:slug:${tournament.slug}`);
+
 
   return tournament;
 };
@@ -150,10 +147,6 @@ export const releaseSlot = async (tournamentId) => {
     { new: true }
   );
 
-  if (tournament) {
-    await cache.delPattern('tournaments:*');
-    await cache.del(`tournament:slug:${tournament.slug}`);
-  }
 
   return tournament;
 };

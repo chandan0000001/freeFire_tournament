@@ -19,6 +19,16 @@ export default function AdminSettings() {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState({ type: '', text: '' });
 
+  const [cacheStatus, setCacheStatus] = useState(null);
+  const [cacheError, setCacheError] = useState('');
+  const [checkingCache, setCheckingCache] = useState(false);
+  const refreshCacheStatus = async () => {
+    setCheckingCache(true); setCacheError('');
+    try { const result = await api.get('/admin/cache/status'); setCacheStatus(result.cache); }
+    catch (error) { setCacheError(error.message); }
+    finally { setCheckingCache(false); }
+  };
+  useEffect(() => { refreshCacheStatus(); }, []);
   // Test email state
   const [testEmail, setTestEmail] = useState('');
   const [testingEmail, setTestingEmail] = useState(false);
@@ -97,6 +107,14 @@ export default function AdminSettings() {
         </p>
       </div>
 
+      <section className="rounded-xl border border-[#393236] bg-[#1c1b1e] p-5 space-y-3" aria-label="Cache health">
+        <div className="flex items-center justify-between gap-4"><h2 className="font-semibold">Data cache</h2><button type="button" className="bg-slate-800" disabled={checkingCache} onClick={refreshCacheStatus}>{checkingCache ? 'Checking…' : 'Check connection'}</button></div>
+        {cacheError ? <p role="alert" className="text-rose-300">{cacheError}</p> : cacheStatus && <>
+          <p className={cacheStatus.backend === 'redis' ? 'text-emerald-300' : 'text-amber-200'}>{cacheStatus.backend === 'redis' ? 'Redis connected' : 'Local fallback active'}</p>
+          <p className="text-sm text-slate-400">{cacheStatus.metrics.hits} cache hits · {cacheStatus.metrics.misses} misses · {cacheStatus.metrics.coalesced} shared reads</p>
+          {cacheStatus.backend !== 'redis' && <p className="text-sm text-slate-400">The API is using memory on this server. Check the backend REDIS_URL and connection before running multiple instances.</p>}
+        </>}
+      </section>
       {message.text && (
         <div className={`p-4 rounded-xl text-xs flex items-center gap-2 ${
           message.type === 'error' ? 'bg-rose-950/60 border border-rose-500/40 text-rose-300' : 'bg-emerald-950/60 border border-emerald-500/40 text-emerald-300'

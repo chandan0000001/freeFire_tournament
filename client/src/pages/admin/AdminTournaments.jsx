@@ -1,5 +1,6 @@
+import ResponsiveImage from '../../components/common/ResponsiveImage.jsx';
 import useLiveRefresh from '../../hooks/useLiveRefresh.js';
-import { site } from '../../config/site.js';
+import { site, tournamentArtwork } from '../../config/site.js';
 import { toLocalDateTimeInput } from '../../utils/dateTime.js';
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api.js';
@@ -33,19 +34,11 @@ export default function AdminTournaments() {
     { label: 'Odisha squad champions (site default)', value: '' },
     { label: 'Odisha · Squad arena', value: site.tournamentImage },
     { label: 'Odisha · Chilika solo champion', value: site.soloImage },
-    { label: 'Rahul squad battle (16:9)', value: '/images/ff-banner-game-4y.webp' },
-    { label: 'Free Fire solo clash (16:9)', value: '/images/ff-banner-solo.webp' },
-    { label: 'Rampage battleground (16:9)', value: '/images/ff-banner-rampage.webp' },
-    { label: 'Free Fire championship (16:9)', value: '/images/ff-banner.webp' },
   ];
 
   const RANDOM_BANNERS = [
     '/images/odisha-squad.webp',
     '/images/chilika-solo.webp',
-    '/images/ff-banner-game-4y.webp',
-    '/images/ff-banner-solo.webp',
-    '/images/ff-banner-rampage.webp',
-    '/images/ff-banner.webp',
   ];
 
   // Form state
@@ -296,8 +289,8 @@ export default function AdminTournaments() {
             <div className="space-y-3">
               {/* Mini Banner Preview */}
               <div className="relative h-28 w-full rounded-xl overflow-hidden bg-slate-900 border border-[#393236]">
-                <img
-                  src={t.bannerUrl || '/images/ff-banner.webp'}
+                <ResponsiveImage sizes="(max-width: 600px) 100vw, 400px"
+                  src={tournamentArtwork(t)}
                   alt={t.title}
                   className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
                 />
@@ -551,9 +544,9 @@ export default function AdminTournaments() {
 
                   {/* Live Preview - 16:9 widescreen preview with no vertical distortion */}
                   <div className="relative w-full aspect-[16/9] max-h-44 rounded-xl overflow-hidden border border-[#393236] bg-slate-900 flex items-center justify-center shadow-inner">
-                    {(formData.bannerUrl || site.tournamentImage) ? (
-                      <img
-                        src={formData.bannerUrl || site.tournamentImage}
+                    {(tournamentArtwork(formData)) ? (
+                      <ResponsiveImage sizes="(max-width: 600px) 100vw, 400px"
+                        src={tournamentArtwork(formData)}
                         alt="Banner preview"
                         className="w-full h-full object-cover object-center"
                       />

@@ -102,7 +102,7 @@ app.use((req, res, next) => {
 
 // Mount Main API Routes
 app.use('/api', apiLimiter, dataSync);
-app.get('/api/sync', async (req, res) => res.json({ success: true, revision: await cache.revision() }));
+app.get('/api/sync', async (req, res) => res.json({ success: true, revision: await cache.currentRevision() }));
 app.use('/api', routes);
 
 // 404 Handler

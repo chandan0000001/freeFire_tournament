@@ -1,178 +1,102 @@
-# Rahul Esports · Odisha Free Fire Tournament Arena
+# Rahul Esports · Odisha Free Fire Arena
 
-A high-performance competitive Free Fire tournament platform built for Odisha's esports community. The platform features public tournament browsing, squad and solo registrations with UPI QR payments, match time sessions, real-time leaderboards with Free Fire player UIDs and IGNs, Brevo transactional emails, Redis revision-based caching with live client data synchronization, and a role-based admin workspace.
+React/Vite frontend and Express/MongoDB API for solo and squad tournaments. Players register with direct UPI payment details; organizers verify entries, distribute room credentials, publish results and record offline prize payouts. The wallet/coin subsystem has been removed.
 
-Frontend is built with React, Vite, and Tailwind CSS. Backend is powered by Node.js, Express, and MongoDB Mongoose.
+## Local setup
 
----
-
-## Architectural Highlights
-
-### 1. Odisha + Free Fire Identity & Responsive Media Pipeline
-- Sambalpuri-inspired geometric borders, lac red, vermilion, brass, and Konark wheel motifs.
-- Distinct Free Fire battle artwork curated per format and tournament:
-  - Squad battle hero: `odisha-squad.webp`.
-  - Solo competition: `chilika-solo.webp`.
-  - Account and auth: `arena-account.webp`.
-- `ResponsiveImage` component leverages asynchronous image decoding, priority fetching, and browser-native responsive srcset selection for low-bandwidth mobile devices.
-
-### 2. High-Performance Redis Caching & Invalidation
-- **Revision-Based Cache Namespace**: Fast cache invalidation via atomic `cache.bumpRevision()`. Mutation of tournaments, registrations, match results, or site settings immediately obsoletes stale cache without costly wildcard scans.
-- **Coalesced Fetching (`remember`)**: Concurrent requests for identical resources share a single execution promise, preventing cache stampedes.
-- **Sliding & Fixed Window Rate Limiting**: Distributed rate limiters protecting authentication, registration, and password reset endpoints.
-- **Client Live Data Sync (`useLiveRefresh`)**: The frontend monitors server data revisions and automatically synchronizes tournaments, registrations, and leaderboard updates on window focus and periodic intervals without full page reloads.
-
-### 3. Unified Authentication & Security Guardrails
-- **Single Auth Path**: All users (players and administrators) authenticate exclusively through `/login` and `/register`. Dedicated `/admin/login` paths redirect seamlessly to `/login`.
-- **Streamlined Signup**: Essential player fields only: Full Name, Email, WhatsApp Mobile Number, and Password.
-- **Protected User Portals**: Tournament registration (`/join/squad/*`, `/join/solo/*`) and personal registration tracking (`/status`, `/my-registrations`) require authentication.
-- **Multi-Origin Password Reset**: Token-based password reset resolution safely parses single and comma-separated `CLIENT_URL` configurations, ensuring password reset links resolve to valid origins.
-
-### 4. Tournament Registration & Match Coordination
-- **Squad Roster & Team Leader Designation**: 4 player positions with interactive team leader highlighter marker/tick selection. Supports 3-player squads with automatic N/A assignment for the fourth position.
-- **Session Slots**: Daily time session selections:
-  - Morning Session: 10:00 AM – 12:30 PM (5 Matches)
-  - Afternoon Session: 2:00 PM – 4:30 PM (4 to 5 Matches)
-  - Evening Session: 6:00 PM – 8:30 PM (4 to 5 Matches)
-- **Direct UPI Checkout & UTR Verification**: Scannable dynamic QR code generated with tournament entry fee, copyable organizer UPI ID, and 12-digit UTR transaction input.
-- **Admin WhatsApp Coordination**: Post-registration screen provides pre-formatted WhatsApp link with registration reference ID, team details, and UTR for match schedule confirmation.
-- **Room Credential Dispatch**: Secure Custom Room ID and Password distribution via Brevo transactional email and Team Leader WhatsApp notification 15–20 minutes before kick-off.
-
-### 5. Competitive Leaderboard & Standings
-- Real-time tournament leaderboard tracking Squads and Individual Players.
-- Tracks Booyahs, kills, placement points, In-Game Names (IGN), and verified Free Fire UIDs with 1-click copy capability.
-- Admin result review interface supports manual or automated entry of player UIDs, kills, and ranks.
-- Idempotent prize allocation preventing duplicate cash rewards upon result re-publication.
-
----
-
-## Getting Started
-
-### Prerequisites
-- Node.js 20 or newer
-- npm 10 or newer
-- MongoDB instance (MongoDB Atlas or local replica set)
-- Redis instance (Redis Cloud or local redis-server)
-
-### Installation
-
-Clone the repository and install root and package dependencies:
+Requires Node.js 20+, npm, and MongoDB Atlas or a MongoDB replica set. Transactional admin operations do not support standalone MongoDB. Redis is recommended; the API has a bounded, process-local memory fallback.
 
 ```bash
-git clone https://github.com/chandan0000001/rahul-esports-arena.git
-cd rahul-esports-arena
-
+git clone git@github.com:chandan0000001/freeFire_tournament.git
+cd freeFire_tournament
 npm ci
 npm --prefix client ci
 npm --prefix server ci
-```
-
-### Environment Configuration
-
-Configure client and server environment files:
-
-```bash
 cp client/.env.example client/.env
 cp server/.env.example server/.env
-```
-
-#### Frontend (`client/.env`)
-```env
-VITE_API_BASE_URL=/api
-VITE_DEV_API_TARGET=http://localhost:5000
-VITE_SITE_NAME="Rahul Esports"
-VITE_SITE_REGION="Odisha"
-VITE_SITE_REGION_NATIVE="ଓଡ଼ିଶା"
-VITE_SITE_TAGLINE="Free Fire Competitive Arena"
-VITE_COMMUNITY_URL="https://chat.whatsapp.com/..."
-VITE_CONTACT_EMAIL="contact@rahulesports.in"
-VITE_ADMIN_UPI_ID="srikantap571-1@okaxis"
-VITE_ADMIN_UPI_NAME="Rahul Esports"
-VITE_ADMIN_WHATSAPP_NUMBER="918114603994"
-VITE_QR_CODE_API_URL="https://api.qrserver.com/v1/create-qr-code/"
-```
-
-#### Backend (`server/.env`)
-```env
-PORT=5000
-NODE_ENV=development
-CLIENT_URL=http://localhost:5173
-DEFAULT_CLIENT_URL=http://localhost:5173
-MONGODB_URI=mongodb+srv://<user>:<password>@cluster0.mongodb.net/rahul_esports
-JWT_SECRET=your_jwt_secret_key_minimum_32_characters
-REDIS_URL=redis://default:<password>@<host>:<port>
-REDIS_KEY_PREFIX=rahul-arena:
-BREVO_API_KEY=xkeysib-...
-EMAIL_FROM=contact@rahulesports.in
-EMAIL_FROM_NAME="Rahul Esports Arena"
-ADMIN_WHATSAPP_NUMBER=918114603994
-ADMIN_UPI_ID=srikantap571-1@okaxis
-ADMIN_UPI_NAME="Rahul Esports"
-QR_CODE_API_URL=https://api.qrserver.com/v1/create-qr-code/
-ADMIN_BOOTSTRAP_EMAIL=admin@rahulesports.in
-ADMIN_BOOTSTRAP_PASSWORD=Admin@RIT2026!
-```
-
-### Running Locally
-
-Start both client and server concurrently:
-
-```bash
+# Configure both environment files before starting.
 npm run dev
 ```
 
-- Frontend: `http://localhost:5173`
-- Backend API: `http://localhost:5000/api`
+Frontend: `http://localhost:5173`. API: `http://localhost:5000/api`.
 
----
+Set `VITE_API_BASE_URL=/api` and `VITE_DEV_API_TARGET=http://localhost:5000` for the development proxy. A separately hosted frontend needs its backend URL in `VITE_API_BASE_URL`.
 
-## Admin Workspace
+## Configuration
 
-Access the admin dashboard by signing in at `/login` with an administrator account:
-- Default Superadmin: `admin@rahulesports.in` / `Admin@RIT2026!`
+Use the package `.env.example` files as the configuration reference. Never place passwords, JWT secrets, database credentials or Redis credentials in frontend variables: every `VITE_*` value is public.
 
-Admin capabilities include:
-- Tournament lifecycle management (Draft, Registration Open, Room Ready, Live, Completed).
-- Registration verification, UTR confirmation, and slot capacity tracking.
-- Room credential distribution with automated Brevo email delivery.
-- Match results entry with Free Fire UID and IGN scoring.
-- Idempotent prize allocation and payout history.
-- Real-time audit logs and site settings configuration.
+Backend requirements:
 
----
+- `MONGODB_URI`, `JWT_SECRET`, and `CLIENT_URL` (comma-separated allowed frontend origins).
+- `REDIS_URL` and a deployment-specific `REDIS_KEY_PREFIX`. All instances of one deployment must share the prefix; separate deployments must use different prefixes.
+- `TRUST_PROXY_HOPS` matching the deployment topology; use `0` locally and the correct trusted hop count behind a proxy.
+- Organizer UPI, WhatsApp, identity and contact values come from server environment defaults and editable site settings.
+- `BREVO_API_KEY` and a verified `EMAIL_FROM` for real email delivery. Development/tests can use mock delivery; production without a configured provider reports failure.
 
-## Verification & Testing
+Players and administrators sign in at `/login`. Configure `ADMIN_BOOTSTRAP_EMAIL` and a private `ADMIN_BOOTSTRAP_PASSWORD` before using `npm run seed`. The seed also creates demonstration data and updates settings: inspect it before running it against an existing database. It does not reset existing account passwords. There is no documented default production password.
 
-Execute backend test suites:
+## Artwork and responsive layout
+
+The approved squad hero, Chilika artwork, account artwork and Rahul portrait are preserved. New Konark squad artwork replaces legacy game banners, and a centred champion portrait fits the registration panel. On phones, the registration image and caption occupy separate rows.
+
+Public asset configuration:
+
+| Variable | Bundled asset |
+| --- | --- |
+| `VITE_HERO_IMAGE` | `/images/odisha-squad.webp` |
+| `VITE_TOURNAMENT_IMAGE` | `/images/konark-squad.webp` |
+| `VITE_SOLO_IMAGE` | `/images/chilika-solo.webp` |
+| `VITE_ACCOUNT_IMAGE` | `/images/arena-account.webp` |
+| `VITE_CHAMPION_IMAGE` | `/images/odisha-champion.webp` |
+| `VITE_ORGANIZER_IMAGE` | `/images/rahul.webp` |
+
+`ResponsiveImage` uses `imageManifest.json` to serve 480px, 768px or full-width WebP files, reserve intrinsic dimensions, and lazy-load secondary artwork. Visible hero/auth images receive loading priority. Custom URLs remain supported without inventing nonexistent size variants. Add manifest entries when adding new resized artwork. Rebuild the client after changing frontend environment variables.
+
+## Redis and client synchronization
+
+Public tournament, standings, result, winner and settings routes use one response-cache layer. Identical concurrent misses share a loader within each Node process; query parameters are sorted for stable cache keys. Cache entries expire after 30 seconds unless the route specifies otherwise.
+
+Successful data mutations change a shared Redis revision **after** database transactions commit. Requests retain their original revision, so an older in-flight response cannot populate the newly active cache. Authentication requests do not invalidate public data. Revision values are unique across Redis restarts; recovery discards fallback data. Normal mutations do not scan keys or flush a shared Redis database.
+
+Authentication and API limits use Redis fixed-window counters with atomic increment/expiry. Password-reset tokens have a TTL and are also checked against MongoDB. Authentication checks current database account state, including token revocation; cached profiles never authorize users.
+
+During an outage, caching and rate limits fall back to bounded memory. This fallback is local to each process, so distributed rate-limit guarantees require a working Redis connection. Monitor **Admin → Settings → Data cache** or authenticated `GET /api/admin/cache/status`. Counters describe the current API process and never reveal connection credentials.
+
+Clients check `/api/sync` while visible, on focus, and at `VITE_SYNC_INTERVAL_MS` (default 30 seconds, minimum 10 seconds). Successful changes notify other open tabs immediately. Other browsers update on their next revision check. This is polling, not a WebSocket or a guaranteed instant push service.
+
+## Admin and payment behavior
+
+- Drafts stay private; the admin tournament list includes them.
+- Registration dates, capacity and format are enforced by the API and client availability controls.
+- Pending requests do not reserve slots. Payment verification reserves capacity transactionally.
+- A payment UTR cannot fund multiple approved registrations.
+- Public registration lookup excludes private contact/payment details; personal entries require ownership.
+- Result entries are validated before publication. Repeated publication does not allocate duplicate prize records. Published scores cannot be overwritten through the editor.
+- Room emails use Brevo. WhatsApp links open a manually composed message; there is no automated WhatsApp provider or scheduled 15-minute dispatch.
+- Prize payout status records an organizer's offline transfer; it does not initiate a bank transfer.
+- Current score calculation is kill points plus the Booyah bonus. It does not add the legacy placement-points map.
+
+## Verification
 
 ```bash
-# Unit & integration tests
 npm test
-
-# Comprehensive end-to-end system test suite (MongoDB + Redis lifecycle)
+npm --prefix client test
+npm run build
 node server/scripts/test-system.mjs
 ```
 
-Verify client production build:
+The system runner needs `mongod` and `redis-server` on PATH. It creates an isolated local MongoDB replica set and Redis service, generates temporary accounts, uses mock email and removes its test directory afterward. It does not load production `.env` data. Default ports are 27028 and 6388; override `TEST_MONGO_PORT` and `TEST_REDIS_PORT` if occupied. The older database integration test only runs when `TEST_MONGODB_URI` is explicitly supplied.
+
+Optional browser checks require Playwright Core and Chrome:
 
 ```bash
-npm --prefix client run build
+TEST_BROWSER=1 PLAYWRIGHT_MODULE=/absolute/path/to/playwright-core \
+CHROME_PATH=/absolute/path/to/chrome node server/scripts/test-system.mjs
 ```
 
----
+Checks include role boundaries, duplicate submissions, concurrent approvals, capacity, room delivery, results, prize operations, settings propagation, password-reset revocation, Redis expiry/recovery, stale-response isolation, browser controls and responsive layouts. External UPI transfers and real email delivery are not simulated as successful bank/provider transactions.
 
 ## Deployment
 
-### Frontend (Vercel / Netlify / Static CDN)
-Deploy the `client/` folder. Build command:
-```bash
-npm run build
-```
-Output directory: `dist`. Ensure single-page application (SPA) rewrite rules direct all unmatched paths to `/index.html`.
-
-### Backend (Render / Railway / VPS)
-Deploy the `server/` directory as a Node.js web service. Start command:
-```bash
-npm start
-```
-Ensure all required environment variables (`MONGODB_URI`, `JWT_SECRET`, `CLIENT_URL`, `REDIS_URL`, `ADMIN_UPI_ID`) are configured in the hosting provider dashboard.
+Build `client/` with `npm run build`, serve `client/dist`, and retain the SPA fallback. Deploy `server/` separately with `npm start`; `render.yaml` describes its environment configuration. Supply production environment values in the hosting dashboard and keep MongoDB transaction support enabled. A Git push does not configure hosting secrets or prove that a deployment is healthy.

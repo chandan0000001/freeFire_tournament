@@ -15,7 +15,8 @@ export const site = Object.freeze({
   heroImage: env.VITE_HERO_IMAGE || '/images/odisha-squad.webp',
   soloImage: env.VITE_SOLO_IMAGE || '/images/chilika-solo.webp',
   accountImage: env.VITE_ACCOUNT_IMAGE || '/images/arena-account.webp',
-  tournamentImage: env.VITE_TOURNAMENT_IMAGE || '/images/odisha-squad.webp',
+  tournamentImage: env.VITE_TOURNAMENT_IMAGE || '/images/konark-squad.webp',
+  championImage: env.VITE_CHAMPION_IMAGE || '/images/odisha-champion.webp',
   adminUpiId: env.VITE_ADMIN_UPI_ID || '',
   adminUpiName: env.VITE_ADMIN_UPI_NAME || env.VITE_SITE_NAME || 'Rahul Esports',
   adminWhatsAppNumber: env.VITE_ADMIN_WHATSAPP_NUMBER || '',
@@ -26,6 +27,6 @@ export const site = Object.freeze({
 
 export function tournamentArtwork(tournament) {
   const banner = tournament?.bannerUrl;
-  if (banner && !/\/(odisha-arena|ff-banner-squad)\.webp$/.test(banner)) return banner;
+  if (banner && !/^\/images\/(?:odisha-arena|ff-banner(?:-[\w-]+)?)\.webp$/.test(banner)) return banner;
   return tournament?.format === 'solo' ? site.soloImage : site.tournamentImage;
 }

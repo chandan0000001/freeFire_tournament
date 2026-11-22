@@ -25,7 +25,7 @@ let passed = 0;
 async function check(name, run) { await run(); passed++; console.log(`PASS ${name}`); }
 try {
   start('mongod', ['--dbpath', directory, '--port', String(mongoPort), '--bind_ip', '127.0.0.1', '--replSet', 'arenaTest', '--quiet']);
-  start('redis-server', ['--port', String(redisPort), '--bind', '127.0.0.1', '--save', '', '--appendonly', 'no']);
+  let redisProcess = start('redis-server', ['--port', String(redisPort), '--bind', '127.0.0.1', '--save', '', '--appendonly', 'no']);
   const uri = `mongodb://127.0.0.1:${mongoPort}/arena_test`;
   const bootstrap = new mongoose.mongo.MongoClient(`${uri}?directConnection=true`, { serverSelectionTimeoutMS: 1000 });
   for (let i = 0; ; i++) { try { await bootstrap.connect(); break; } catch (error) { if(i > 30) throw error; await sleep(500); } }
@@ -94,7 +94,7 @@ try {
     assert.equal((await admin(`/rooms/${tournament._id}/logs`)).status, 200);
     assert.ok(!JSON.stringify(await request('/tournaments/odisha-test')).includes('Private123'));
   });
-  await check('results review, publication and idempotent prize credit', async () => {
+  await check('results review, publication and idempotent prize allocation', async () => {
     const winner = await Registration.findOne({ paymentStatus: 'verified' });
     const record = await admin('/results/direct-record', 'POST', { tournamentId: tournament._id, autoPublish: false, entries: [{ registrationId: winner._id, participantName: winner.captain.name, placement: 1, kills: 5, isBooyah: true }] });
     assert.equal(record.status, 201, JSON.stringify(record));
@@ -131,8 +131,10 @@ try {
     assert.equal((await request('/auth/reset-password', 'POST', body)).status, 400);
     assert.equal((await request('/auth/login', 'POST', { email: users[3].email, password: newPassword })).status, 200);
     const missing = await request('/auth/forgot-password', 'POST', { email: 'missing@example.test' });
+    const publicRevision = await cache.revision();
     const existing = await request('/auth/forgot-password', 'POST', { email: users[3].email });
     assert.equal(existing.message, missing.message);
+    assert.equal(await cache.revision(), publicRevision);
   });
   await check('Redis coalescing, expiry, fixed windows and namespaced invalidation', async () => {
     let loads = 0;
@@ -142,6 +144,34 @@ try {
     await cache.scope(async () => { await cache.set('results:erase:1', 1); await cache.delPattern('results:erase:*'); assert.equal(await cache.get('results:erase:1'), null); });
     await cache.flush(); assert.equal(await redis.get('another-app:keep'), 'untouched');
     const first = await cache.counter('test-window', 200); await sleep(100); const second = await cache.counter('test-window', 200); assert.equal(second.totalHits, 2); assert.ok(Math.abs(first.resetTime - second.resetTime) < 20); await sleep(130); assert.equal((await cache.counter('test-window', 200)).totalHits, 1);
+  });
+  await check('Redis stale-writer isolation, expiry and restart recovery', async () => {
+    assert.equal((await admin('/cache/status')).cache.backend, 'redis');
+    const revisions = await Promise.all(Array.from({ length: 8 }, () => cache.bumpRevision()));
+    assert.equal(new Set(revisions).size, 8);
+    assert.equal((await request('/admin/cache/status')).status, 401);
+    await cache.scope(async () => {
+      await cache.set('results:expires', { value: 1 }, 1);
+      await sleep(1100); assert.equal(await cache.get('results:expires'), null);
+    });
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    let started;
+    const ready = new Promise(resolve => { started = resolve; });
+    const oldRead = cache.scope(async () => { started(); await gate; await cache.set('results:stale', 'old response'); });
+    await ready; await cache.bumpRevision(); release(); await oldRead;
+    await cache.scope(async () => { assert.equal(await cache.get('results:stale'), null); });
+    const before = await cache.revision();
+    redisProcess.kill('SIGTERM'); await new Promise(resolve => redisProcess.once('exit', resolve));
+    for (let i = 0; redis.status === 'ready' && i < 20; i++) await sleep(50);
+    assert.equal((await admin('/cache/status')).cache.backend, 'memory');
+    assert.equal((await admin('/settings', 'PUT', { announcementBanner: 'Changed during Redis outage' })).status, 200);
+    assert.equal((await request('/settings/public')).settings.announcementBanner, 'Changed during Redis outage');
+    redisProcess = start('redis-server', ['--port', String(redisPort), '--bind', '127.0.0.1', '--save', '', '--appendonly', 'no']);
+    for (let i = 0; redis.status !== 'ready' && i < 60; i++) await sleep(100);
+    assert.equal(redis.status, 'ready');
+    assert.notEqual(await cache.revision(), before);
+    assert.equal((await request('/settings/public')).settings.announcementBanner, 'Changed during Redis outage');
   });
   if (process.env.TEST_BROWSER === '1') {
     await check('desktop/mobile browser routes, admin controls and live client updates', async () => {
@@ -164,7 +194,7 @@ try {
         assert.equal(await page.locator('#login-password').getAttribute('type'), 'text');
         await page.getByRole('button', { name: 'Sign in to account' }).click();
         await page.waitForURL('**/admin/dashboard');
-        for (const path of ['dashboard', 'tournaments', 'registrations', 'rooms', 'results', 'prizes', 'withdrawals', 'settings', 'audit-logs']) {
+        for (const path of ['dashboard', 'tournaments', 'registrations', 'rooms', 'results', 'prizes', 'settings', 'audit-logs']) {
           await page.goto(origin + '/admin/' + path); await page.waitForTimeout(500);
           assert.ok(!(await page.locator('body').innerText()).includes('Something went wrong'), path);
           assert.equal(await page.locator('.admin-shell').count(), 1, path);
@@ -196,6 +226,14 @@ try {
           assert.ok(await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `mobile overflow: ${path}`);
           assert.ok(!(await phone.locator('body').innerText()).includes('Something went wrong'), path);
         }
+        await phone.goto(origin + '/register'); await phone.waitForTimeout(400);
+        await phone.screenshot({ path: '/tmp/arena-register-mobile.png', fullPage: true });
+        for (const width of [320, 768, 1440]) {
+          await phone.setViewportSize({ width, height: 1000 }); await phone.waitForTimeout(200);
+          assert.ok(await phone.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), `registration overflow at ${width}`);
+        }
+        await phone.screenshot({ path: '/tmp/arena-register-desktop.png', fullPage: true });
+        await phone.setViewportSize({ width: 390, height: 844 });
         await phone.goto(origin); await phone.waitForTimeout(500);
         await phone.screenshot({ path: '/tmp/arena-home-mobile.png', fullPage: true });
         const image = await phone.locator('.hero-image').evaluate(img => ({ src: img.currentSrc, loaded: img.complete && img.naturalWidth > 0 }));

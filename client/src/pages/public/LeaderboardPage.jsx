@@ -1,3 +1,5 @@
+import { site } from '../../config/site.js';
+import ResponsiveImage from '../../components/common/ResponsiveImage.jsx';
 import useLiveRefresh from '../../hooks/useLiveRefresh.js';
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api.js';
@@ -117,7 +119,7 @@ export default function LeaderboardPage() {
       <div className="p-5 rounded-2xl bg-gradient-to-r from-[#1c1b1e] via-[#292428] to-[#111214] border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-amber-500/50 shadow-glow-orange shrink-0">
-            <img src="/images/ff-character-5.webp" alt="Top Fragger" className="w-full h-full object-cover" />
+            <ResponsiveImage sizes="(max-width: 640px) 100vw, 420px" src={site.championImage} alt="Top Fragger" className="w-full h-full object-cover" />
           </div>
           <div>
             <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400 block">Tournament MVP Spotlight</span>

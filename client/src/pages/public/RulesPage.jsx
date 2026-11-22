@@ -1,3 +1,4 @@
+import ResponsiveImage from '../../components/common/ResponsiveImage.jsx';
 import { site } from '../../config/site.js';
 import React from 'react';
 import usePageMeta from '../../hooks/usePageMeta.js';
@@ -25,7 +26,7 @@ export default function RulesPage() {
       {/* Fair Play Mascot & Pledge Card */}
       <div className="p-6 rounded-2xl bg-[#1c1b1e] border border-brand-orange/40 flex flex-col sm:flex-row items-center gap-6 shadow-xl relative overflow-hidden">
         <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden border-2 border-brand-orange/50 shadow-glow-orange shrink-0">
-          <img src="/images/ff-character-4.webp" alt="Fair Play Guardian" className="w-full h-full object-cover" />
+          <ResponsiveImage sizes="(max-width: 640px) 100vw, 420px" src={site.accountImage} alt="Fair Play Guardian" className="w-full h-full object-cover" />
         </div>
         <div className="space-y-1.5 text-center sm:text-left">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-brand-orange/15 text-brand-orange text-[10px] font-bold uppercase tracking-wider border border-brand-orange/30">

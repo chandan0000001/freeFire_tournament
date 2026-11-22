@@ -45,10 +45,6 @@ services:
         sync: false
       - key: SITE_REGION
         sync: false
-      - key: WALLET_DEPOSIT_PACKAGES
-        sync: false
-      - key: WALLET_MIN_WITHDRAWAL
-        sync: false
       - key: CONTACT_EMAIL
         sync: false
       - key: REDIS_KEY_PREFIX

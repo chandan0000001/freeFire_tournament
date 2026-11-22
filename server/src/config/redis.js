@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import Redis from 'ioredis';
 import { AsyncLocalStorage } from 'node:async_hooks';
 
@@ -6,7 +7,7 @@ const memory = new Map();
 const pending = new Map();
 const requestContext = new AsyncLocalStorage();
 const maxEntries = Number(process.env.CACHE_MAX_ENTRIES) || 1000;
-let fallbackRevision = `local-${Date.now()}`;
+let fallbackRevision = randomUUID();
 let redisClient = null;
 const metrics = { hits: 0, misses: 0, errors: 0, coalesced: 0 };
 
@@ -20,7 +21,7 @@ if (process.env.REDIS_URL) {
   redisClient.on('ready', () => {
     // Discard pre-outage data, including writes made while operating on memory.
     memory.clear();
-    redisClient.incr(`${prefix}revision`).catch(() => {});
+    redisClient.set(`${prefix}revision`, randomUUID()).catch(() => {});
   });
   redisClient.connect().catch(() => {});
 }
@@ -41,6 +42,8 @@ const fixedWindowScript = `local count = redis.call('INCR', KEYS[1]); if count =
 
 export const cache = {
   metrics,
+  currentRevision() { return requestContext.getStore()?.revision ?? cache.revision(); },
+  health() { return { backend: redisClient?.status === 'ready' ? 'redis' : 'memory', status: redisClient?.status || 'unconfigured', metrics: { ...metrics }, pendingLoads: pending.size, memoryEntries: memory.size }; },
   async revision() {
     if (redisClient?.status === 'ready') {
       try { return String(await redisClient.get(`${prefix}revision`) || '0'); } catch { metrics.errors++; }
@@ -48,10 +51,11 @@ export const cache = {
     return fallbackRevision;
   },
   async bumpRevision() {
-    fallbackRevision = `local-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    const revision = randomUUID();
+    fallbackRevision = revision;
     for (const key of memory.keys()) if (key.startsWith(`${prefix}data:`)) memory.delete(key);
     if (redisClient?.status === 'ready') {
-      try { return String(await redisClient.incr(`${prefix}revision`)); } catch { metrics.errors++; }
+      try { await redisClient.set(`${prefix}revision`, revision); return revision; } catch { metrics.errors++; }
     }
     return fallbackRevision;
   },

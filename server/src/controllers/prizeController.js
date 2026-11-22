@@ -3,7 +3,6 @@ import { Registration } from '../models/Registration.js';
 import { Prize } from '../models/Prize.js';
 import { logAudit } from '../services/auditService.js';
 import { PRIZE_PAYOUT_STATUS } from '../constants/statuses.js';
-import { cache } from '../config/redis.js';
 
 export const getAdminPrizes = async (req, res, next) => {
   try {
@@ -61,7 +60,6 @@ export const createAdminPrize = async (req, res, next) => {
       notes: notes.trim(),
     });
 
-    await cache.del('winners:halloffame');
 
     await logAudit({
       action: 'PRIZE_ALLOCATED',
@@ -88,7 +86,7 @@ export const deleteAdminPrize = async (req, res, next) => {
 
     if (prize.payoutStatus === 'paid') return res.status(409).json({ success: false, message: 'Paid prize records must be retained.' });
     await prize.deleteOne();
-    await cache.del('winners:halloffame');
+
 
     await logAudit({
       action: 'PRIZE_DELETED',
@@ -133,8 +131,7 @@ export const updatePayoutStatus = async (req, res, next) => {
 
     await prize.save();
 
-    // Invalidate cached public winners in Redis
-    await cache.del('winners:halloffame');
+
 
     await logAudit({
       action: 'PRIZE_PAYOUT_UPDATED',

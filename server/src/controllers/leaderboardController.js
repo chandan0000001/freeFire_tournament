@@ -4,7 +4,6 @@ import { Prize } from '../models/Prize.js';
 import { Registration } from '../models/Registration.js';
 import { RESULT_STATUS } from '../constants/statuses.js';
 import { rankParticipants } from '../services/scoringService.js';
-import { cache } from '../config/redis.js';
 import { escapeRegex } from '../utils/security.js';
 
 /**
@@ -13,11 +12,7 @@ import { escapeRegex } from '../utils/security.js';
 export const getLeaderboards = async (req, res, next) => {
   try {
     const { format = 'squad', tournamentId } = req.query;
-    const cacheKey = `leaderboard:${format}:${tournamentId || 'overall'}`;
-    const cached = await cache.get(cacheKey);
-    if (cached) {
-      return res.json({ success: true, ...cached, cached: true });
-    }
+
 
     const matchQuery = { status: RESULT_STATUS.PUBLISHED };
     if (tournamentId) {
@@ -79,7 +74,7 @@ export const getLeaderboards = async (req, res, next) => {
       }));
 
       const responsePayload = { format: 'squad', leaderboard: rankedSquads };
-      await cache.set(cacheKey, responsePayload, 120);
+
       return res.json({ success: true, ...responsePayload });
     }
 
@@ -157,7 +152,7 @@ export const getLeaderboards = async (req, res, next) => {
     }));
 
     const responsePayload = { format: 'individual', leaderboard: rankedPlayers };
-    await cache.set(cacheKey, responsePayload, 120);
+
     res.json({ success: true, ...responsePayload });
   } catch (error) {
     next(error);
@@ -169,11 +164,7 @@ export const getLeaderboards = async (req, res, next) => {
  */
 export const getWinners = async (req, res, next) => {
   try {
-    const cacheKey = 'winners:halloffame';
-    const cached = await cache.get(cacheKey);
-    if (cached) {
-      return res.json({ success: true, ...cached, cached: true });
-    }
+
 
     const prizes = await Prize.find()
       .populate('tournamentId', 'title format matchDate bannerUrl map')
@@ -211,7 +202,7 @@ export const getWinners = async (req, res, next) => {
 
     const results = Array.from(tournamentWinnersMap.values());
     const payload = { count: results.length, winners: results };
-    await cache.set(cacheKey, payload, 120);
+
     res.json({ success: true, ...payload });
   } catch (error) {
     next(error);

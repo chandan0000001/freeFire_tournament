@@ -7,7 +7,6 @@ import { Prize } from '../models/Prize.js';
 import { calculateEntryScore, rankParticipants } from '../services/scoringService.js';
 import { logAudit } from '../services/auditService.js';
 import { RESULT_STATUS, TOURNAMENT_STATUS } from '../constants/statuses.js';
-import { cache } from '../config/redis.js';
 
 /**
  * Public: Get published match results
@@ -197,9 +196,8 @@ export const publishMatchResult = async (req, res, next) => {
       }
     }
 
-    // Selectively invalidate leaderboard and tournament caches so fresh standings load
-    await cache.delPattern('leaderboard:*');
-    await cache.delPattern('tournaments:*');
+
+
 
     await logAudit({
       action: 'RESULT_PUBLISHED',

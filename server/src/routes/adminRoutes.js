@@ -1,3 +1,4 @@
+import { cache } from '../config/redis.js';
 import { transactional } from '../middleware/transactional.js';
 import { getAdminTournaments } from '../controllers/tournamentController.js';
 import express from 'express';
@@ -52,6 +53,9 @@ router.use((req, res, next) => {
   }
   next();
 });
+
+// Operational cache diagnostics are restricted to authenticated administrators.
+router.get('/cache/status', (req, res) => res.json({ success: true, cache: cache.health() }));
 
 // Dashboard KPI Stats
 router.get('/dashboard/stats', getDashboardStats);

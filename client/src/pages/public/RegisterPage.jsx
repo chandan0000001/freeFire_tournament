@@ -60,9 +60,9 @@ export default function RegisterPage() {
 
   return (
     <div className="auth-page-container">
-      <div className="admin-login">
+      <div className="admin-login auth-register">
       <div className="admin-login-art">
-        <ResponsiveImage priority sizes="(max-width: 600px) 100vw, 510px" src={site.soloImage} alt="Odisha community gaming artwork" />
+        <ResponsiveImage priority sizes="(max-width: 600px) 100vw, 510px" src={site.championImage} alt="Odisha battle royale champion wearing Sambalpuri-inspired gear" />
         <div>
           <span className="eyebrow">{site.region.toUpperCase()}’S ARENA</span>
           <h2>Your legacy.<br />Starts here.</h2>

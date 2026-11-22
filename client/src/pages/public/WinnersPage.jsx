@@ -1,3 +1,5 @@
+import { site } from '../../config/site.js';
+import ResponsiveImage from '../../components/common/ResponsiveImage.jsx';
 import useLiveRefresh from '../../hooks/useLiveRefresh.js';
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api.js';
@@ -151,7 +153,7 @@ export default function WinnersPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="rounded-2xl bg-[#1c1b1e] border border-amber-500/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-amber-400 transition-all">
               <div className="w-28 h-32 rounded-xl mx-auto overflow-hidden border border-white/10 shadow-lg">
-                <img src="/images/ff-character-1.webp" alt="Solo Champion" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                <ResponsiveImage sizes="(max-width: 640px) 100vw, 420px" src={site.soloImage} alt="Solo Champion" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>
               <div>
                 <span className="text-[10px] uppercase font-bold text-amber-400 block tracking-wider">Solo Battle Royale</span>
@@ -162,7 +164,7 @@ export default function WinnersPage() {
 
             <div className="rounded-2xl bg-[#1c1b1e] border border-brand-orange/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-brand-orange transition-all">
               <div className="w-28 h-32 rounded-xl mx-auto overflow-hidden border border-white/10 shadow-lg">
-                <img src="/images/ff-banner.webp" alt="Squad Champions" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                <ResponsiveImage sizes="(max-width: 640px) 100vw, 420px" src={site.tournamentImage} alt="Squad Champions" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>
               <div>
                 <span className="text-[10px] uppercase font-bold text-brand-orange block tracking-wider">Squad 4v4 Showdown</span>
@@ -173,7 +175,7 @@ export default function WinnersPage() {
 
             <div className="rounded-2xl bg-[#1c1b1e] border border-cyan-500/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-cyan-400 transition-all">
               <div className="w-28 h-32 rounded-xl mx-auto overflow-hidden border border-white/10 shadow-lg">
-                <img src="/images/ff-character-2.webp" alt="MVP Gunslinger" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+                <ResponsiveImage sizes="(max-width: 640px) 100vw, 420px" src={site.championImage} alt="MVP Gunslinger" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>
               <div>
                 <span className="text-[10px] uppercase font-bold text-cyan-400 block tracking-wider">Tournament MVP</span>

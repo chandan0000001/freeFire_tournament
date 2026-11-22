@@ -5,14 +5,9 @@ import { Registration } from '../models/Registration.js';
 import { Prize } from '../models/Prize.js';
 import { logAudit } from '../services/auditService.js';
 import { PAYMENT_STATUS } from '../constants/statuses.js';
-import { cache } from '../config/redis.js';
 
 export const getPublicSettings = async (req, res, next) => {
   try {
-    const cached = await cache.get('settings:public');
-    if (cached) {
-      return res.json({ success: true, settings: cached, cached: true });
-    }
 
     let setting = await SiteSetting.findOne().lean();
     if (!setting) {
@@ -37,7 +32,6 @@ export const getPublicSettings = async (req, res, next) => {
       setting.upiUriTemplate = setting.upiUriTemplate || process.env.ADMIN_UPI_URI || '';
     }
 
-    await cache.set('settings:public', setting, 300);
     res.json({ success: true, settings: setting });
   } catch (error) {
     next(error);
@@ -74,8 +68,7 @@ export const updateAdminSettings = async (req, res, next) => {
     for (const key of Object.keys(SiteSetting.schema.paths)) if (!['_id', '__v', 'createdAt', 'updatedAt'].includes(key) && Object.hasOwn(req.body, key)) setting[key] = req.body[key];
     await setting.save();
 
-    // Invalidate cached public settings in Redis
-    await cache.del('settings:public');
+
 
     await logAudit({
       action: 'SITE_SETTINGS_UPDATED',
