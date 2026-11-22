@@ -10,14 +10,13 @@ export default function TournamentCard({ tournament: t }) {
   const date = new Date(t.matchDate);
   const dateLabel = Number.isNaN(date.getTime())
     ? 'Schedule pending'
-    : date.toLocaleString(site.locale, {
+    : date.toLocaleDateString(site.locale, {
         timeZone: site.timeZone,
         day: 'numeric',
         month: 'short',
-        hour: 'numeric',
-        minute: '2-digit',
-        timeZoneName: 'short',
+        year: 'numeric',
       });
+  const recipientLabel = t.format === 'squad' ? 'Team Leader' : 'Player';
 
   return (
     <article className="tournament-card">
@@ -41,7 +40,7 @@ export default function TournamentCard({ tournament: t }) {
         <div className="card-meta">
           <span>
             <CalendarDays size={15} />
-            {dateLabel}
+            {dateLabel} · Timing sent to {recipientLabel}
           </span>
           <span>
             <MapPin size={15} />

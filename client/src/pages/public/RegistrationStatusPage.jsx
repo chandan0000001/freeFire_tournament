@@ -89,15 +89,18 @@ export default function RegistrationStatusPage() {
     return reg.captain || {};
   };
 
-  const getWhatsAppContactUrl = (reg) => {
+  const getWhatsAppContactUrl = (reg, action = 'approve') => {
     const leader = getLeader(reg);
+    const intent = action === 'refund'
+      ? 'I would like to request an immediate 100% refund to my UPI ID.'
+      : 'Please check and approve my registration status, or coordinate open session slots.';
     const text = encodeURIComponent(
-      `Hello Admin! I have registered for "${reg.tournamentId?.title || 'Free Fire Tournament'}".\n` +
+      `Hello Admin! Regarding tournament "${reg.tournamentId?.title || 'Free Fire Tournament'}":\n` +
       `*Reference ID:* ${reg.referenceId}\n` +
       `*Team / Player:* ${reg.teamName || leader.name || 'Participant'}\n` +
       `*Preferred Slot:* ${reg.slotTime || reg.preferredSlot || 'Scheduled Slot'}\n` +
       `*12-Digit UTR:* ${reg.paymentDetails?.utr || 'Submitted'}\n\n` +
-      `Please check and approve my registration status!`
+      intent
     );
     return `https://wa.me/${adminWhatsApp}?text=${text}`;
   };
@@ -388,12 +391,21 @@ export default function RegistrationStatusPage() {
                       </div>
                     </div>
 
-                    <div className="pt-2 flex items-center justify-end border-t border-rose-500/20">
+                    <div className="pt-2 flex flex-wrap items-center justify-end gap-2 border-t border-rose-500/20">
                       <a
-                        href={getWhatsAppContactUrl(reg)}
+                        href={getWhatsAppContactUrl(reg, 'refund')}
                         target="_blank"
                         rel="noreferrer"
-                        className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase transition-colors"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs uppercase transition-colors"
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>Claim 100% Refund</span>
+                      </a>
+                      <a
+                        href={getWhatsAppContactUrl(reg, 'approve')}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs uppercase transition-colors"
                       >
                         <MessageSquare className="w-3.5 h-3.5" />
                         <span>Contact Admin to Rectify</span>

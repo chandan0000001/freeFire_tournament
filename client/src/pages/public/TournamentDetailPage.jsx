@@ -17,6 +17,7 @@ import {
   ArrowLeft,
   CheckCircle,
   AlertCircle,
+  Clock,
   MessageCircle
 } from 'lucide-react';
 
@@ -121,7 +122,11 @@ export default function TournamentDetailPage() {
             <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-slate-300 mt-2 font-medium">
               <span className="flex items-center gap-1.5">
                 <Calendar className="w-4 h-4 text-brand-amber" />
-                {new Date(tournament.matchDate).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })} IST
+                {new Date(tournament.matchDate).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', day: 'numeric', month: 'short', year: 'numeric' })}
+              </span>
+              <span className="flex items-center gap-1.5">
+                <Clock className="w-4 h-4 text-brand-orange" />
+                Sessions: Morning · Afternoon · Evening
               </span>
               <span className="flex items-center gap-1.5">
                 <MapPin className="w-4 h-4 text-brand-cyan" />
@@ -132,7 +137,7 @@ export default function TournamentDetailPage() {
             {/* Room ID & Pass WhatsApp Dispatch Banner */}
             <div className="mt-4 flex items-center gap-2 py-2 px-3 rounded-xl bg-emerald-950/70 border border-emerald-500/40 text-xs text-emerald-300 w-fit">
               <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0" />
-              <span>Room ID & Password will be sent to your {tournament.format === 'squad' ? 'Team Leader' : 'Player'} WhatsApp 15-20 minutes before match start</span>
+              <span>Room ID, Password & Kick-Off Time sent to your {tournament.format === 'squad' ? 'Team Leader' : 'Player'} WhatsApp 15-20 minutes before each match</span>
             </div>
           </div>
         </div>

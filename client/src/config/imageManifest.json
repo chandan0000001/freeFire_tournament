@@ -81,218 +81,50 @@
   },
   "/images/puri-drop.webp": {
     "width": 1280,
-    "height": 720,
-    "variants": [
-      {
-        "src": "/images/puri-drop-480.webp",
-        "width": 480
-      },
-      {
-        "src": "/images/puri-drop-768.webp",
-        "width": 768
-      },
-      {
-        "src": "/images/puri-drop.webp",
-        "width": 1280
-      }
-    ]
+    "height": 720
   },
   "/images/chilika-recon.webp": {
     "width": 1280,
-    "height": 720,
-    "variants": [
-      {
-        "src": "/images/chilika-recon-480.webp",
-        "width": 480
-      },
-      {
-        "src": "/images/chilika-recon-768.webp",
-        "width": 768
-      },
-      {
-        "src": "/images/chilika-recon.webp",
-        "width": 1280
-      }
-    ]
+    "height": 720
   },
   "/images/sambalpur-night.webp": {
     "width": 1280,
-    "height": 720,
-    "variants": [
-      {
-        "src": "/images/sambalpur-night-480.webp",
-        "width": 480
-      },
-      {
-        "src": "/images/sambalpur-night-768.webp",
-        "width": 768
-      },
-      {
-        "src": "/images/sambalpur-night.webp",
-        "width": 1280
-      }
-    ]
+    "height": 720
   },
   "/images/berhampur-squad.webp": {
     "width": 1280,
-    "height": 720,
-    "variants": [
-      {
-        "src": "/images/berhampur-squad-480.webp",
-        "width": 480
-      },
-      {
-        "src": "/images/berhampur-squad-768.webp",
-        "width": 768
-      },
-      {
-        "src": "/images/berhampur-squad.webp",
-        "width": 1280
-      }
-    ]
+    "height": 720
   },
   "/images/similipal-squad.webp": {
     "width": 1280,
-    "height": 720,
-    "variants": [
-      {
-        "src": "/images/similipal-squad-480.webp",
-        "width": 480
-      },
-      {
-        "src": "/images/similipal-squad-768.webp",
-        "width": 768
-      },
-      {
-        "src": "/images/similipal-squad.webp",
-        "width": 1280
-      }
-    ]
+    "height": 720
   },
   "/images/paradip-solo.webp": {
     "width": 1280,
-    "height": 720,
-    "variants": [
-      {
-        "src": "/images/paradip-solo-480.webp",
-        "width": 480
-      },
-      {
-        "src": "/images/paradip-solo-768.webp",
-        "width": 768
-      },
-      {
-        "src": "/images/paradip-solo.webp",
-        "width": 1280
-      }
-    ]
+    "height": 720
   },
   "/images/konark-victory.webp": {
     "width": 1280,
-    "height": 720,
-    "variants": [
-      {
-        "src": "/images/konark-victory-480.webp",
-        "width": 480
-      },
-      {
-        "src": "/images/konark-victory-768.webp",
-        "width": 768
-      },
-      {
-        "src": "/images/konark-victory.webp",
-        "width": 1280
-      }
-    ]
+    "height": 720
   },
   "/images/fair-play-guardian.webp": {
     "width": 1280,
-    "height": 720,
-    "variants": [
-      {
-        "src": "/images/fair-play-guardian-480.webp",
-        "width": 480
-      },
-      {
-        "src": "/images/fair-play-guardian-768.webp",
-        "width": 768
-      },
-      {
-        "src": "/images/fair-play-guardian.webp",
-        "width": 1280
-      }
-    ]
+    "height": 720
   },
   "/images/odisha-community.webp": {
     "width": 1280,
-    "height": 720,
-    "variants": [
-      {
-        "src": "/images/odisha-community-480.webp",
-        "width": 480
-      },
-      {
-        "src": "/images/odisha-community-768.webp",
-        "width": 768
-      },
-      {
-        "src": "/images/odisha-community.webp",
-        "width": 1280
-      }
-    ]
+    "height": 720
   },
   "/images/championship-stage.webp": {
     "width": 1280,
-    "height": 720,
-    "variants": [
-      {
-        "src": "/images/championship-stage-480.webp",
-        "width": 480
-      },
-      {
-        "src": "/images/championship-stage-768.webp",
-        "width": 768
-      },
-      {
-        "src": "/images/championship-stage.webp",
-        "width": 1280
-      }
-    ]
+    "height": 720
   },
   "/images/room-command.webp": {
     "width": 1280,
-    "height": 720,
-    "variants": [
-      {
-        "src": "/images/room-command-480.webp",
-        "width": 480
-      },
-      {
-        "src": "/images/room-command-768.webp",
-        "width": 768
-      },
-      {
-        "src": "/images/room-command.webp",
-        "width": 1280
-      }
-    ]
+    "height": 720
   },
   "/images/odisha-mvp-spotlight.webp": {
     "width": 1280,
-    "height": 720,
-    "variants": [
-      {
-        "src": "/images/odisha-mvp-spotlight-480.webp",
-        "width": 480
-      },
-      {
-        "src": "/images/odisha-mvp-spotlight-768.webp",
-        "width": 768
-      },
-      {
-        "src": "/images/odisha-mvp-spotlight.webp",
-        "width": 1280
-      }
-    ]
+    "height": 720
   }
 }

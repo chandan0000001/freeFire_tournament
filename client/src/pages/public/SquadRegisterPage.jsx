@@ -39,6 +39,16 @@ export default function SquadRegisterPage() {
   // Flow step: 'form' -> 'payment' -> 'success'
   const [step, setStep] = useState('form');
 
+  // Saved Squad Auto-Fill State
+  const [savedSquad, setSavedSquad] = useState(() => {
+    try {
+      const raw = localStorage.getItem('savedSquadRoster');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+
   // Form State
   const [teamName, setTeamName] = useState('');
   const [preferredSlot, setPreferredSlot] = useState('morning');
@@ -99,6 +109,28 @@ export default function SquadRegisterPage() {
     fetchTournament();
   }, [tournamentId]);
 
+  const handleApplySavedSquad = () => {
+    if (!savedSquad) return;
+    if (savedSquad.teamName) setTeamName(savedSquad.teamName);
+    if (Array.isArray(savedSquad.players) && savedSquad.players.length >= 3) {
+      setPlayers([
+        { name: savedSquad.players[0]?.name || '', phone: savedSquad.players[0]?.phone || '' },
+        { name: savedSquad.players[1]?.name || '', phone: savedSquad.players[1]?.phone || '' },
+        { name: savedSquad.players[2]?.name || '', phone: savedSquad.players[2]?.phone || '' },
+        { name: savedSquad.players[3]?.name || '', phone: savedSquad.players[3]?.phone || '' },
+      ]);
+    }
+    if (typeof savedSquad.leaderIndex === 'number') setLeaderIndex(savedSquad.leaderIndex);
+    if (typeof savedSquad.hasFourthPlayer === 'boolean') setHasFourthPlayer(savedSquad.hasFourthPlayer);
+  };
+
+  const handleClearSavedSquad = () => {
+    try {
+      localStorage.removeItem('savedSquadRoster');
+    } catch {}
+    setSavedSquad(null);
+  };
+
   const handlePlayerChange = (index, field, value) => {
     const updated = [...players];
     updated[index] = { ...updated[index], [field]: value };
@@ -144,6 +176,18 @@ export default function SquadRegisterPage() {
       setError('Please select a valid Team Leader with a verified phone number.');
       return;
     }
+
+    // Persist squad roster for convenient 1-tap future registrations
+    try {
+      const rosterToSave = {
+        teamName: teamName.trim(),
+        players,
+        leaderIndex,
+        hasFourthPlayer,
+      };
+      localStorage.setItem('savedSquadRoster', JSON.stringify(rosterToSave));
+      setSavedSquad(rosterToSave);
+    } catch {}
 
     // Advance to Step 2: Payment
     setStep('payment');
@@ -273,6 +317,32 @@ export default function SquadRegisterPage() {
         </div>
       </div>
 
+      {/* Instant WhatsApp Support & 100% Refund Guarantee */}
+      <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5 sm:mt-0">
+            <MessageCircle className="w-4 h-4" />
+          </div>
+          <div className="text-xs space-y-0.5">
+            <strong className="text-emerald-300 block font-bold uppercase tracking-wider">
+              Slot Support & Instant Refund Assistance
+            </strong>
+            <p className="text-emerald-200/70 leading-relaxed">
+              Facing issues or session full? WhatsApp Admin at +91 81146 03994. If unable to join the custom room, immediate 100% UPI refund is issued.
+            </p>
+          </div>
+        </div>
+        <a
+          href={`https://wa.me/918114603994?text=${encodeURIComponent(`Hello Rahul Esports Admin! I am registering for "${tournament.title}". Please guide me on open slots or refund if slot is unavailable.`)}`}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider transition-colors shrink-0 shadow-lg"
+        >
+          <MessageCircle className="w-4 h-4" />
+          <span>WhatsApp Admin</span>
+        </a>
+      </div>
+
       {/* Error Alert */}
       {error && (
         <div className="p-4 rounded-xl bg-rose-950/80 border border-rose-500/40 text-rose-300 text-xs sm:text-sm flex items-center gap-2.5">
@@ -342,6 +412,38 @@ export default function SquadRegisterPage() {
                 Enter each player's name and WhatsApp number. Tap the highlight badge to designate the <strong>Team Leader</strong>.
               </p>
             </div>
+
+            {/* 1-Tap Auto-Fill Saved Squad Banner */}
+            {savedSquad && (
+              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                  <div className="text-xs">
+                    <span className="font-bold text-amber-200">Saved Squad: </span>
+                    <span className="text-white font-mono font-bold">{savedSquad.teamName || 'Saved Roster'}</span>
+                    <span className="text-amber-300/80 ml-1.5">
+                      ({savedSquad.players?.filter((p) => p.name).length || 4} Players)
+                    </span>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleApplySavedSquad}
+                    className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs uppercase tracking-wider transition-colors shadow"
+                  >
+                    Auto-Fill Squad
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClearSavedSquad}
+                    className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 text-xs uppercase transition-colors"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="space-y-1.5">
               <label className="block text-xs font-bold uppercase tracking-wider text-slate-300">

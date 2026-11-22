@@ -37,6 +37,16 @@ export default function SoloRegisterPage() {
   // Flow step: 'form' -> 'payment' -> 'success'
   const [step, setStep] = useState('form');
 
+  // Saved Solo Auto-Fill State
+  const [savedSolo, setSavedSolo] = useState(() => {
+    try {
+      const raw = localStorage.getItem('savedSoloRoster');
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+
   // Form State
   const [preferredSlot, setPreferredSlot] = useState('morning');
   const [name, setName] = useState(() => user?.name || '');
@@ -88,6 +98,21 @@ export default function SoloRegisterPage() {
     fetchTournament();
   }, [tournamentId]);
 
+  const handleApplySavedSolo = () => {
+    if (!savedSolo) return;
+    if (savedSolo.name) setName(savedSolo.name);
+    if (savedSolo.phone) setPhone(savedSolo.phone);
+    if (savedSolo.inGameName) setInGameName(savedSolo.inGameName);
+    if (savedSolo.freeFireUid) setFreeFireUid(savedSolo.freeFireUid);
+  };
+
+  const handleClearSavedSolo = () => {
+    try {
+      localStorage.removeItem('savedSoloRoster');
+    } catch {}
+    setSavedSolo(null);
+  };
+
   const handleGoToPayment = (e) => {
     e.preventDefault();
     setError('');
@@ -100,6 +125,18 @@ export default function SoloRegisterPage() {
       setError('Please enter a valid 10-digit WhatsApp phone number.');
       return;
     }
+
+    // Persist solo data for 1-tap future registrations
+    try {
+      const soloToSave = {
+        name: name.trim(),
+        phone: phone.trim(),
+        inGameName: inGameName.trim(),
+        freeFireUid: freeFireUid.trim(),
+      };
+      localStorage.setItem('savedSoloRoster', JSON.stringify(soloToSave));
+      setSavedSolo(soloToSave);
+    } catch {}
 
     setStep('payment');
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -208,6 +245,32 @@ export default function SoloRegisterPage() {
         </div>
       </div>
 
+      {/* Instant WhatsApp Support & 100% Refund Guarantee */}
+      <div className="p-4 rounded-2xl bg-emerald-950/40 border border-emerald-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-lg">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="w-8 h-8 rounded-full bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-emerald-400 shrink-0 mt-0.5 sm:mt-0">
+            <MessageCircle className="w-4 h-4" />
+          </div>
+          <div className="text-xs space-y-0.5">
+            <strong className="text-emerald-300 block font-bold uppercase tracking-wider">
+              Slot Support & Instant Refund Assistance
+            </strong>
+            <p className="text-emerald-200/70 leading-relaxed">
+              Session full or need help registering? WhatsApp Admin at +91 81146 03994. If unable to enter the match, immediate 100% UPI refund is sent to your account.
+            </p>
+          </div>
+        </div>
+        <a
+          href={`https://wa.me/918114603994?text=${encodeURIComponent(`Hello Rahul Esports Admin! I am registering for "${tournament.title}". Please guide me on open solo slots or refund if slot is unavailable.`)}`}
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider transition-colors shrink-0 shadow-lg"
+        >
+          <MessageCircle className="w-4 h-4" />
+          <span>WhatsApp Admin</span>
+        </a>
+      </div>
+
       {/* Error Alert */}
       {error && (
         <div className="p-4 rounded-xl bg-rose-950/80 border border-rose-500/40 text-rose-300 text-xs sm:text-sm flex items-center gap-2.5">
@@ -277,6 +340,40 @@ export default function SoloRegisterPage() {
                 Custom Room ID & Password will be delivered to this WhatsApp number before match start.
               </p>
             </div>
+
+            {/* 1-Tap Auto-Fill Saved Solo Banner */}
+            {savedSolo && (
+              <div className="p-3.5 rounded-xl bg-amber-500/10 border border-amber-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-2.5">
+                  <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                  <div className="text-xs">
+                    <span className="font-bold text-amber-200">Saved Player: </span>
+                    <span className="text-white font-mono font-bold">{savedSolo.name || 'Saved Solo'}</span>
+                    {savedSolo.inGameName && (
+                      <span className="text-amber-300/80 ml-1.5 font-mono">
+                        (IGN: {savedSolo.inGameName})
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    type="button"
+                    onClick={handleApplySavedSolo}
+                    className="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-400 text-black font-extrabold text-xs uppercase tracking-wider transition-colors shadow"
+                  >
+                    Auto-Fill Info
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClearSavedSolo}
+                    className="px-2.5 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-slate-400 text-xs uppercase transition-colors"
+                  >
+                    Clear
+                  </button>
+                </div>
+              </div>
+            )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
               <div>
