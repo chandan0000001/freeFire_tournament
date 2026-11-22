@@ -58,9 +58,6 @@ if (process.env.NODE_ENV !== 'test') {
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Static uploads directory (for screenshot evidence)
-app.use('/uploads', express.static(path.resolve('uploads')));
-
 // Root Welcome & Ping Route (prevents 404 when visiting primary backend URL)
 app.get('/', (req, res) => {
   res.status(200).json({
@@ -97,7 +94,6 @@ app.get('/api/health', (req, res) => {
 app.use((req, res, next) => {
   if (
     !req.path.startsWith('/api') &&
-    !req.path.startsWith('/uploads') &&
     req.path !== '/'
   ) {
     req.url = `/api${req.url}`;

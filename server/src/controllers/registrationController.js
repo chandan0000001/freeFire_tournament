@@ -342,42 +342,6 @@ export const getMyRegistrations = async (req, res, next) => {
   }
 };
 
-export const submitCaptainEvidence = async (req, res, next) => {
-  try {
-    const { referenceId, notes } = req.body;
-    if (!referenceId) {
-      return res.status(400).json({ success: false, message: 'Registration reference ID is required' });
-    }
-
-    if (!req.file) {
-      return res.status(400).json({ success: false, message: 'Screenshot evidence file is required' });
-    }
-
-    const registration = await Registration.findOne({ referenceId: referenceId.toUpperCase().trim() });
-    if (!registration) {
-      return res.status(404).json({ success: false, message: 'Registration not found' });
-    }
-
-    if (String(registration.userId) !== String(req.user._id)) return res.status(403).json({ success: false, message: 'You can only upload evidence for your own registration.' });
-    const screenshotUrl = `/uploads/evidence/${req.file.filename}`;
-    registration.captainEvidence.push({
-      screenshotUrl,
-      notes: notes || '',
-      uploadedAt: new Date(),
-    });
-    await registration.save();
-    await cache.delPattern('tournaments:*');
-
-    res.json({
-      success: true,
-      message: 'Evidence screenshot submitted successfully for admin review.',
-      screenshotUrl,
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
 // Admin Endpoints
 export const getAdminRegistrations = async (req, res, next) => {
   try {

@@ -8,7 +8,6 @@ import {
   registerSolo,
   checkRegistrationStatus,
   getMyRegistrations,
-  submitCaptainEvidence,
 } from '../controllers/registrationController.js';
 import { getLeaderboards, getWinners, getPlayerProfile } from '../controllers/leaderboardController.js';
 import { getPublishedResults } from '../controllers/resultController.js';
@@ -19,7 +18,6 @@ import {
   createWithdrawalRequest,
   joinTournamentWithCoins,
 } from '../controllers/walletController.js';
-import { upload } from '../middleware/upload.js';
 import { registrationLimiter } from '../middleware/rateLimiter.js';
 import { authenticate } from '../middleware/auth.js';
 
@@ -43,7 +41,6 @@ router.get('/registrations/my', authenticate, getMyRegistrations);
 router.get('/registrations/mine', authenticate, getMyRegistrations);
 router.get('/my-registrations', authenticate, getMyRegistrations);
 router.get('/registrations/check/:ref', checkRegistrationStatus);
-router.post('/registrations/evidence', authenticate, upload.single('screenshot'), submitCaptainEvidence);
 
 // Competitive Info
 router.get('/leaderboards', publicCache(getLeaderboards, 'leaderboard'));

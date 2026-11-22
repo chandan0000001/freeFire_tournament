@@ -14,10 +14,6 @@ RUN npm ci --omit=dev
 
 # Copy application source code
 COPY src/ ./src/
-COPY uploads/ ./uploads/
-
-# Ensure runtime evidence upload directory exists
-RUN mkdir -p uploads/evidence
 
 ENV NODE_ENV=production
 ENV PORT=5000

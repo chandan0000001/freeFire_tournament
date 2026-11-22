@@ -12,9 +12,6 @@ RUN npm ci --omit=dev
 
 # Copy server codebase
 COPY server/src/ ./src/
-COPY server/uploads/ ./uploads/
-
-RUN mkdir -p uploads/evidence
 
 ENV NODE_ENV=production
 ENV PORT=5000
