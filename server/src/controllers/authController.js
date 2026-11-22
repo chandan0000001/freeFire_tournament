@@ -1,7 +1,6 @@
 import crypto from 'crypto';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/User.js';
-import { Wallet } from '../models/Wallet.js';
 import { ROLES } from '../constants/roles.js';
 import { redisAuth } from '../config/redis.js';
 import { sendPasswordResetEmail } from '../services/emailService.js';
@@ -60,7 +59,6 @@ export const register = async (req, res, next) => {
       });
     }
 
-    if (await Wallet.exists({ userEmail: email, userId: null })) return res.status(409).json({ success: false, message: 'A legacy wallet exists for this email. Contact the organizer to verify ownership before account setup.' });
     // Create Player User
     const user = await User.create({
       name: fullName,
@@ -71,24 +69,6 @@ export const register = async (req, res, next) => {
       lastLogin: new Date(),
     });
 
-    // Automatically create or link Wallet for this player
-    let wallet = await Wallet.findOne({ userEmail: email });
-    if (wallet) {
-      wallet.userId = user._id;
-      wallet.playerName = user.name;
-      wallet.phone = user.mobileNumber;
-      await wallet.save();
-    } else {
-      wallet = await Wallet.create({
-        userId: user._id,
-        userEmail: email,
-        playerName: user.name,
-        phone: user.mobileNumber,
-      });
-    }
-
-    // Invalidate and refresh Redis caches
-    await redisAuth.invalidateWallet([user._id.toString(), email]);
     await redisAuth.cacheUser(user.toObject());
 
     const token = generateToken(user);
@@ -103,12 +83,6 @@ export const register = async (req, res, next) => {
         email: user.email,
         mobileNumber: user.mobileNumber,
         role: user.role,
-      },
-      wallet: {
-        totalCoins: wallet.totalCoins,
-        depositCoins: wallet.depositCoins,
-        winningCoins: wallet.winningCoins,
-        lockedCoins: wallet.lockedCoins,
       },
     });
   } catch (err) {
@@ -156,23 +130,7 @@ export const login = async (req, res, next) => {
     user.lastLogin = new Date();
     await user.save();
 
-    // Link wallet if missing userId
-    let wallet = await Wallet.findOne({ userEmail: email });
-    if (wallet && !wallet.userId) {
-      wallet.userId = user._id;
-      await wallet.save();
-    } else if (!wallet) {
-      wallet = await Wallet.create({
-        userId: user._id,
-        userEmail: email,
-        playerName: user.name,
-        phone: user.mobileNumber || '',
-      });
-    }
-
-    // Cache user & wallet in Redis
     await redisAuth.cacheUser(user.toObject());
-    await redisAuth.cacheWallet(user._id.toString(), wallet.toObject());
 
     const token = generateToken(user);
 
@@ -189,12 +147,6 @@ export const login = async (req, res, next) => {
         freeFireUid: user.freeFireUid,
         inGameName: user.inGameName,
         location: user.location,
-      },
-      wallet: {
-        totalCoins: wallet.totalCoins,
-        depositCoins: wallet.depositCoins,
-        winningCoins: wallet.winningCoins,
-        lockedCoins: wallet.lockedCoins,
       },
     });
   } catch (err) {
@@ -407,23 +359,6 @@ export const resetPassword = async (req, res, next) => {
  */
 export const getMe = async (req, res, next) => {
   try {
-    const userId = req.user._id.toString();
-
-    // Check Redis for cached wallet
-    let wallet = await redisAuth.getCachedWallet(userId);
-    if (!wallet) {
-      wallet = await Wallet.findOne({
-        $or: [{ userId: req.user._id }, { userEmail: req.user.email }],
-      });
-      if (wallet) {
-        if (!wallet.userId) {
-          wallet.userId = req.user._id;
-          await wallet.save();
-        }
-        await redisAuth.cacheWallet(userId, wallet.toObject());
-      }
-    }
-
     res.json({
       success: true,
       user: {
@@ -436,14 +371,6 @@ export const getMe = async (req, res, next) => {
         inGameName: req.user.inGameName || '',
         location: req.user.location || '',
       },
-      wallet: wallet
-        ? {
-            totalCoins: wallet.totalCoins,
-            depositCoins: wallet.depositCoins,
-            winningCoins: wallet.winningCoins,
-            lockedCoins: wallet.lockedCoins,
-          }
-        : null,
     });
   } catch (error) {
     next(error);

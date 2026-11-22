@@ -40,15 +40,6 @@ import {
   getDashboardStats,
   sendTestBrevoEmail,
 } from '../controllers/settingController.js';
-import {
-  getAdminWithdrawals,
-  approveWithdrawal,
-  rejectWithdrawal,
-  getAdminDeposits,
-  approveDeposit,
-  rejectDeposit,
-  manualAdjustCoins,
-} from '../controllers/walletController.js';
 
 const router = express.Router();
 
@@ -99,15 +90,6 @@ router.get('/prizes', getAdminPrizes);
 router.post('/prizes', transactional(createAdminPrize));
 router.patch('/prizes/:id/payout', transactional(updatePayoutStatus));
 router.delete('/prizes/:id', transactional(deleteAdminPrize));
-
-// Coin Withdrawals & Wallet Management
-router.get('/withdrawals', getAdminWithdrawals);
-router.post('/withdrawals/:id/approve', transactional(approveWithdrawal));
-router.post('/withdrawals/:id/reject', transactional(rejectWithdrawal));
-router.get('/deposits', getAdminDeposits);
-router.post('/deposits/:id/approve', transactional(approveDeposit));
-router.post('/deposits/:id/reject', transactional(rejectDeposit));
-router.post('/wallets/manual-adjust', transactional(manualAdjustCoins));
 
 // Settings & Audit Logs
 router.get('/settings', getAdminSettings);

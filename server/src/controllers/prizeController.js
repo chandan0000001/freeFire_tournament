@@ -1,6 +1,5 @@
 import { Tournament } from '../models/Tournament.js';
 import { Registration } from '../models/Registration.js';
-import { WalletTransaction } from '../models/WalletTransaction.js';
 import { Prize } from '../models/Prize.js';
 import { logAudit } from '../services/auditService.js';
 import { PRIZE_PAYOUT_STATUS } from '../constants/statuses.js';
@@ -87,7 +86,7 @@ export const deleteAdminPrize = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Prize record not found' });
     }
 
-    if (prize.payoutStatus === 'paid' || await WalletTransaction.exists({ referenceId: `PRIZE-${prize.tournamentId}-${prize.rank}` })) return res.status(409).json({ success: false, message: 'Paid or credited prize records must be retained.' });
+    if (prize.payoutStatus === 'paid') return res.status(409).json({ success: false, message: 'Paid prize records must be retained.' });
     await prize.deleteOne();
     await cache.del('winners:halloffame');
 
@@ -120,7 +119,6 @@ export const updatePayoutStatus = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Prize record not found' });
     }
 
-    if (await WalletTransaction.exists({ referenceId: `PRIZE-${prize.tournamentId._id}-${prize.rank}` })) return res.status(409).json({ success: false, message: 'This award is already credited to the winner wallet. Use the withdrawal queue for its payout.' });
     if (prize.payoutStatus === 'paid' && payoutStatus !== 'paid') return res.status(409).json({ success: false, message: 'Completed payouts cannot be reopened.' });
     if (payoutStatus === 'paid' && !/^\d{12}$/.test((offlineTransactionRef || '').trim())) return res.status(400).json({ success: false, message: 'A 12-digit payout UTR is required.' });
     prize.payoutStatus = payoutStatus;

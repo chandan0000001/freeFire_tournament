@@ -1,4 +1,3 @@
-import { getWalletConfig } from '../config/wallet.js';
 import { SiteSetting } from '../models/SiteSetting.js';
 import { AuditLog } from '../models/AuditLog.js';
 import { Tournament } from '../models/Tournament.js';
@@ -12,7 +11,7 @@ export const getPublicSettings = async (req, res, next) => {
   try {
     const cached = await cache.get('settings:public');
     if (cached) {
-      return res.json({ success: true, settings: { ...cached, walletConfig: getWalletConfig() }, cached: true });
+      return res.json({ success: true, settings: cached, cached: true });
     }
 
     let setting = await SiteSetting.findOne().lean();
@@ -38,7 +37,6 @@ export const getPublicSettings = async (req, res, next) => {
       setting.upiUriTemplate = setting.upiUriTemplate || process.env.ADMIN_UPI_URI || '';
     }
 
-    setting.walletConfig = getWalletConfig();
     await cache.set('settings:public', setting, 300);
     res.json({ success: true, settings: setting });
   } catch (error) {

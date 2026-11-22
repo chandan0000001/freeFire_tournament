@@ -59,7 +59,8 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="admin-login">
+    <div className="auth-page-container">
+      <div className="admin-login">
       <div className="admin-login-art">
         <ResponsiveImage priority sizes="(max-width: 600px) 100vw, 510px" src={site.accountImage} alt="Odisha gaming desk with Sambalpuri textile accents" />
         <div>
@@ -139,5 +140,6 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  </div>
   );
 }

@@ -68,7 +68,6 @@ app.get('/', (req, res) => {
       health: '/api/health',
       tournaments: '/api/tournaments',
       leaderboard: '/api/leaderboards',
-      wallet: '/api/wallet/:email',
       settings: '/api/settings/public',
     },
     clientOrigin: (process.env.CLIENT_URL || '').split(',')[0].trim() || 'http://localhost:5173',

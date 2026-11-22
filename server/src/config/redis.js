@@ -35,7 +35,7 @@ const putMemory = (key, value, expires) => {
   if (memory.size >= maxEntries && !memory.has(key)) memory.delete(memory.keys().next().value);
   memory.set(key, { value: clone(value), expires });
 };
-const dataKey = key => /^(tournaments?:|leaderboard:|winners:|results:|settings:|wallet:|dashboard:)/.test(key);
+const dataKey = key => /^(tournaments?:|leaderboard:|winners:|results:|settings:|dashboard:)/.test(key);
 const physicalKey = key => `${prefix}${dataKey(key) ? `data:${requestContext.getStore()?.revision || fallbackRevision}:` : ''}${key}`;
 const fixedWindowScript = `local count = redis.call('INCR', KEYS[1]); if count == 1 then redis.call('PEXPIRE', KEYS[1], ARGV[1]) end; return {count, redis.call('PTTL', KEYS[1])}`;
 
@@ -133,9 +133,6 @@ export const redisAuth = {
   storeResetToken: (token, data, ttl = 900) => cache.set(`pwd_reset:${token}`, data, ttl),
   getResetToken: token => cache.get(`pwd_reset:${token}`),
   clearResetToken: token => cache.del(`pwd_reset:${token}`),
-  cacheWallet: (key, wallet, ttl = 60) => cache.set(`wallet:${key}`, wallet, ttl),
-  getCachedWallet: key => cache.get(`wallet:${key}`),
-  async invalidateWallet(keys = []) { for (const key of keys.filter(Boolean)) await cache.del(`wallet:${key}`); },
   async rateLimit(key, maxAttempts = 5, windowSeconds = 900) {
     const current = await cache.incr(`ratelimit:${key}`, windowSeconds);
     return { allowed: current <= maxAttempts, current, max: maxAttempts };

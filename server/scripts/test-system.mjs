@@ -20,7 +20,7 @@ function start(command, args) {
   return child;
 }
 const password = `Test!${randomBytes(12).toString('hex')}`;
-Object.assign(process.env, { NODE_ENV: 'test', JWT_SECRET: randomBytes(32).toString('hex'), CLIENT_URL: 'http://localhost:5173,http://127.0.0.1:5178', BREVO_API_KEY: '', REDIS_URL: `redis://127.0.0.1:${redisPort}`, REDIS_KEY_PREFIX: 'arena-test:', WALLET_DEPOSIT_PACKAGES: '50,100,200,500', WALLET_MIN_WITHDRAWAL: '100', WITHDRAWAL_FEE_PERCENT: '10', ADMIN_UPI_ID: 'test@upi', ADMIN_UPI_NAME: 'Test Arena', ADMIN_WHATSAPP_NUMBER: '919999999999' });
+Object.assign(process.env, { NODE_ENV: 'test', JWT_SECRET: randomBytes(32).toString('hex'), CLIENT_URL: 'http://localhost:5173,http://127.0.0.1:5178', BREVO_API_KEY: '', REDIS_URL: `redis://127.0.0.1:${redisPort}`, REDIS_KEY_PREFIX: 'arena-test:', ADMIN_UPI_ID: 'test@upi', ADMIN_UPI_NAME: 'Test Arena', ADMIN_WHATSAPP_NUMBER: '919999999999' });
 let passed = 0;
 async function check(name, run) { await run(); passed++; console.log(`PASS ${name}`); }
 try {
@@ -37,9 +37,6 @@ try {
   const { User } = await import('../src/models/User.js');
   const { Tournament } = await import('../src/models/Tournament.js');
   const { Registration } = await import('../src/models/Registration.js');
-  const { Wallet } = await import('../src/models/Wallet.js');
-  const { WalletTransaction } = await import('../src/models/WalletTransaction.js');
-  const { DepositRequest } = await import('../src/models/DepositRequest.js');
   await Promise.all(Object.values(mongoose.models).map(model => model.init()));
   const users = [];
   for (const [name, role] of [['Admin', 'admin'], ['Player One', 'player'], ['Player Two', 'player'], ['Player Three', 'player']]) users.push(await User.create({ name, role, email: `${name.replaceAll(' ', '').toLowerCase()}@example.test`, password, mobileNumber: '9999999999' }));
@@ -55,12 +52,9 @@ try {
   for (const user of users) { const login = await request('/auth/login', 'POST', { email: user.email, password }); assert.equal(login.status, 200, JSON.stringify(login)); tokens.push(login.token); }
   const admin = (path, method = 'GET', body) => request('/admin' + path, method, body, tokens[0]);
   const player = (index, path, method = 'GET', body) => request(path, method, body, tokens[index]);
-  await check('role and wallet ownership boundaries', async () => {
+  await check('role ownership boundaries', async () => {
     assert.equal((await request('/admin/tournaments')).status, 401);
     assert.equal((await player(1, '/admin/tournaments')).status, 403);
-    assert.equal((await request(`/wallet/${users[1].email}`)).status, 401);
-    assert.equal((await player(2, `/wallet/${users[1].email}`)).status, 403);
-    assert.equal((await player(1, `/wallet/${users[1].email}`)).status, 200);
   });
   let tournament;
   const tournamentBody = { title: 'Odisha Test Championship', slug: 'odisha-test', format: 'solo', entryFee: 50, maxSlots: 2, status: 'draft', registrationStart: new Date(Date.now() - 60000), registrationEnd: new Date(Date.now() + 3600000), matchDate: new Date(Date.now() + 7200000), prizeConfig: { firstPlace: 200, totalPool: 200 } };
@@ -108,38 +102,12 @@ try {
     assert.equal((await admin(`/results/${id}/review`, 'PATCH', { adminReviewNotes: 'Verified against observer' })).status, 200);
     const published = await Promise.all([admin(`/results/${id}/publish`, 'POST', {}), admin(`/results/${id}/publish`, 'POST', {})]);
     assert.ok(published.every(x => x.status === 200), JSON.stringify(published));
-    assert.equal(await WalletTransaction.countDocuments({ referenceId: `PRIZE-${tournament._id}-1` }), 1);
-    assert.equal((await Wallet.findOne({ userEmail: winner.captain.email })).winningCoins, 200);
     assert.equal((await request('/results')).count, 1);
     assert.equal((await admin(`/results/${id}/review`, 'PATCH', { adminReviewNotes: 'Change published' })).status, 409);
   });
   await check('admin lists and public standings/settings', async () => {
-    for (const path of ['/dashboard/stats', '/registrations', '/matches', '/results', '/prizes', '/withdrawals', '/deposits', '/settings', '/audit-logs']) assert.equal((await admin(path)).status, 200, path);
+    for (const path of ['/dashboard/stats', '/registrations', '/matches', '/results', '/prizes', '/settings', '/audit-logs']) assert.equal((await admin(path)).status, 200, path);
     for (const path of ['/leaderboards', '/winners', '/settings/public']) assert.equal((await request(path)).status, 200, path);
-  });
-  await check('deposit approval is atomic and credited once', async () => {
-    const deposit = await player(1, '/wallet/deposit', 'POST', { coinsRequested: 100, utrNumber: '987654321012', playerName: 'Player One', phone: '9999999999' }); assert.equal(deposit.status, 201, JSON.stringify(deposit));
-    const doc = await DepositRequest.findOne({ userEmail: users[1].email });
-    const approvals = await Promise.all([admin(`/deposits/${doc._id}/approve`, 'POST', {}), admin(`/deposits/${doc._id}/approve`, 'POST', {})]);
-    assert.equal(approvals.filter(x => x.status === 200).length, 1, JSON.stringify(approvals));
-    assert.equal((await Wallet.findOne({ userEmail: users[1].email })).depositCoins, 100);
-  });
-  await check('wallet withdrawal locking, rejection, approval and adjustments', async () => {
-    const adjust = await admin('/wallets/manual-adjust', 'POST', { userEmail: users[1].email, amount: 300, coinType: 'WINNING', reason: 'Integration fixture' }); assert.equal(adjust.status, 200, JSON.stringify(adjust));
-    const balance = (await Wallet.findOne({ userEmail: users[1].email })).winningCoins;
-    const body = { coinsRequested: balance, upiId: 'player@test', playerName: 'Player One' };
-    const concurrent = await Promise.all([player(1, '/wallet/withdraw', 'POST', body), player(1, '/wallet/withdraw', 'POST', body)]);
-    assert.equal(concurrent.filter(x => x.status === 201).length, 1, JSON.stringify(concurrent));
-    const withdrawal = concurrent.find(x => x.status === 201).withdrawal;
-    assert.equal((await admin('/wallets/manual-adjust', 'POST', { userEmail: users[1].email, amount: -1, coinType: 'WINNING' })).status, 400);
-    assert.equal((await admin(`/withdrawals/${withdrawal._id}/reject`, 'POST', { rejectionReason: 'Fixture cancellation' })).status, 200);
-    assert.equal((await Wallet.findOne({ userEmail: users[1].email })).lockedCoins, 0);
-    const next = await player(1, '/wallet/withdraw', 'POST', { ...body, coinsRequested: 100 }); assert.equal(next.status, 201);
-    assert.equal((await admin(`/withdrawals/${next.withdrawal._id}/approve`, 'POST', { payoutUtr: 'invalid' })).status, 400);
-    assert.equal((await admin(`/withdrawals/${next.withdrawal._id}/approve`, 'POST', { payoutUtr: '111122223333' })).status, 200);
-    assert.equal((await Wallet.findOne({ userEmail: users[1].email })).winningCoins, balance - 100);
-    const deposit = await player(1, '/wallet/deposit', 'POST', { coinsRequested: 50, utrNumber: '111122223334' }); assert.equal(deposit.status, 201);
-    assert.equal((await admin(`/deposits/${deposit.deposit._id}/reject`, 'POST', { adminNote: 'No payment' })).status, 200);
   });
   await check('settings immediately refresh public data; prize and empty-tournament controls', async () => {
     await request('/settings/public');

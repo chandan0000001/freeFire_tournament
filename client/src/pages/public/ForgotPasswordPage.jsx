@@ -43,7 +43,8 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="admin-login">
+    <div className="auth-page-container">
+      <div className="admin-login">
       <div className="admin-login-art">
         <ResponsiveImage priority sizes="(max-width: 600px) 100vw, 510px" src={site.accountImage} alt="Odisha community gaming artwork" />
         <div>
@@ -99,5 +100,6 @@ export default function ForgotPasswordPage() {
         </div>
       </div>
     </div>
+  </div>
   );
 }
