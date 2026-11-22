@@ -7,7 +7,7 @@ const getSender = async () => {
     if (setting?.brevoSenderEmail) {
       return {
         email: setting.brevoSenderEmail.trim(),
-        name: setting.collegeName || process.env.EMAIL_FROM_NAME || 'RIT Esports Arena',
+        name: setting.collegeName || process.env.EMAIL_FROM_NAME || 'Rahul Esports',
       };
     }
   } catch (e) {
@@ -15,7 +15,7 @@ const getSender = async () => {
   }
   return {
     email: process.env.EMAIL_FROM || 'kumardalaichandan803@gmail.com',
-    name: process.env.EMAIL_FROM_NAME || 'RIT Esports Arena',
+    name: process.env.EMAIL_FROM_NAME || 'Rahul Esports',
   };
 };
 

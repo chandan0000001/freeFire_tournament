@@ -14,7 +14,7 @@ import {
 } from 'lucide-react';
 
 export default function RegistrationStatusPage() {
-  usePageMeta('Track Registration Status | RIT Esports Arena', 'Track your Free Fire tournament registration and payment verification status using your unique Reference ID.');
+  usePageMeta('Track Registration Status | Rahul Esports', 'Track your Free Fire tournament registration and payment verification status using your unique Reference ID.');
   const [refInput, setRefInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');

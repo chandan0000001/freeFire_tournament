@@ -4,7 +4,7 @@ import usePageMeta from '../../hooks/usePageMeta.js';
 import { Award, Trophy, Flame, Users, User, Shield } from 'lucide-react';
 
 export default function LeaderboardPage() {
-  usePageMeta('Community Leaderboard & Standings | RIT Esports Arena', 'Official Roland Institute of Technology Free Fire competitive standings. Squad and individual player kill and placement rankings.');
+  usePageMeta('Community Leaderboard & Standings | Rahul Esports', 'Official Rahul Esports Free Fire competitive standings. Squad and individual player kill and placement rankings.');
   const [format, setFormat] = useState('squad'); // 'squad' or 'individual'
   const [leaderboard, setLeaderboard] = useState([]);
   const [loading, setLoading] = useState(true);

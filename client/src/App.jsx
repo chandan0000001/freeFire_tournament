@@ -7,9 +7,11 @@ import { Analytics } from '@vercel/analytics/react';
 import Navbar from './components/layout/Navbar.jsx';
 import Footer from './components/layout/Footer.jsx';
 import PageLoadingFallback from './components/common/PageLoadingFallback.jsx';
+import ErrorBoundary from './components/common/ErrorBoundary.jsx';
 
-// Direct synchronous import for Homepage (Zero initial loading spinner delay)
+// Direct synchronous import for Homepage & NotFoundPage (Zero delay, instant render)
 import HomePage from './pages/public/HomePage.jsx';
+import NotFoundPage from './pages/public/NotFoundPage.jsx';
 
 // Lazy-loaded Public Pages
 const TournamentsPage = lazy(() => import('./pages/public/TournamentsPage.jsx'));
@@ -28,10 +30,8 @@ const LoginPage = lazy(() => import('./pages/public/LoginPage.jsx'));
 const RegisterPage = lazy(() => import('./pages/public/RegisterPage.jsx'));
 const ForgotPasswordPage = lazy(() => import('./pages/public/ForgotPasswordPage.jsx'));
 const ResetPasswordPage = lazy(() => import('./pages/public/ResetPasswordPage.jsx'));
-const NotFoundPage = lazy(() => import('./pages/public/NotFoundPage.jsx'));
 
 // Lazy-loaded Admin Pages
-const AdminLoginPage = lazy(() => import('./pages/admin/AdminLoginPage.jsx'));
 const AdminLayout = lazy(() => import('./pages/admin/AdminLayout.jsx'));
 const AdminDashboardOverview = lazy(() => import('./pages/admin/AdminDashboardOverview.jsx'));
 const AdminTournaments = lazy(() => import('./pages/admin/AdminTournaments.jsx'));
@@ -43,11 +43,22 @@ const AdminWithdrawals = lazy(() => import('./pages/admin/AdminWithdrawals.jsx')
 const AdminSettings = lazy(() => import('./pages/admin/AdminSettings.jsx'));
 const AdminAuditLogs = lazy(() => import('./pages/admin/AdminAuditLogs.jsx'));
 
-// Protected Admin Guard
+// Protected Admin Guard (Unified single login path)
 function ProtectedAdminRoute({ children }) {
   const { user, loading, isAdmin } = useAuth();
   if (loading) return <PageLoadingFallback />;
-  if (!user || !isAdmin) return <Navigate to="/admin/login" replace />;
+  if (!user || !isAdmin) return <Navigate to="/login?redirect=/admin/dashboard" replace />;
+  return children;
+}
+
+// Protected Player Route (Wallet Access Requires Sign In)
+function ProtectedPlayerRoute({ children }) {
+  const { user, loading } = useAuth();
+  const location = useLocation();
+  if (loading) return <PageLoadingFallback />;
+  if (!user) {
+    return <Navigate to={`/login?redirect=${encodeURIComponent(location.pathname + location.search)}`} replace />;
+  }
   return children;
 }
 
@@ -64,68 +75,74 @@ function PublicShell({ children }) {
 
 export default function App() {
   return (
-    <AuthProvider>
-      <Router>
-        <ScrollToTop />
-        <Routes>
-          {/* Immediate HomePage - NO full-page loading spinner */}
-          <Route path="/" element={<PublicShell><HomePage /></PublicShell>} />
+    <ErrorBoundary>
+      <AuthProvider>
+        <Router>
+          <ScrollToTop />
+          <Suspense fallback={<PageLoadingFallback />}>
+            <Routes>
+              {/* Immediate HomePage */}
+              <Route path="/" element={<PublicShell><HomePage /></PublicShell>} />
 
-          {/* Lazy-loaded routes wrapped in suspense */}
-          <Route
-            path="/*"
-            element={
-              <Suspense fallback={<PageLoadingFallback />}>
-                <Routes>
-                  <Route path="/tournaments" element={<PublicShell><TournamentsPage /></PublicShell>} />
-                  <Route path="/tournaments/:slug" element={<PublicShell><TournamentDetailPage /></PublicShell>} />
-                  <Route path="/join/squad/:tournamentId" element={<PublicShell><SquadRegisterPage /></PublicShell>} />
-                  <Route path="/join/solo/:tournamentId" element={<PublicShell><SoloRegisterPage /></PublicShell>} />
-                  <Route path="/status" element={<PublicShell><RegistrationStatusPage /></PublicShell>} />
-                  <Route path="/leaderboard" element={<PublicShell><LeaderboardPage /></PublicShell>} />
-                  <Route path="/results" element={<PublicShell><ResultsPage /></PublicShell>} />
-                  <Route path="/winners" element={<PublicShell><WinnersPage /></PublicShell>} />
-                  <Route path="/rules" element={<PublicShell><RulesPage /></PublicShell>} />
-                  <Route path="/contact" element={<PublicShell><ContactPage /></PublicShell>} />
-                  <Route path="/privacy" element={<PublicShell><PrivacyPolicyPage /></PublicShell>} />
-                  <Route path="/wallet" element={<PublicShell><WalletPage /></PublicShell>} />
-                  <Route path="/login" element={<PublicShell><LoginPage /></PublicShell>} />
-                  <Route path="/register" element={<PublicShell><RegisterPage /></PublicShell>} />
-                  <Route path="/forgot-password" element={<PublicShell><ForgotPasswordPage /></PublicShell>} />
-                  <Route path="/reset-password" element={<PublicShell><ResetPasswordPage /></PublicShell>} />
+              {/* Public Tournaments & Competitive Info */}
+              <Route path="/tournaments" element={<PublicShell><TournamentsPage /></PublicShell>} />
+              <Route path="/tournaments/:slug" element={<PublicShell><TournamentDetailPage /></PublicShell>} />
+              <Route path="/join/squad/:tournamentId" element={<PublicShell><SquadRegisterPage /></PublicShell>} />
+              <Route path="/join/solo/:tournamentId" element={<PublicShell><SoloRegisterPage /></PublicShell>} />
+              <Route path="/status" element={<PublicShell><RegistrationStatusPage /></PublicShell>} />
+              <Route path="/leaderboard" element={<PublicShell><LeaderboardPage /></PublicShell>} />
+              <Route path="/results" element={<PublicShell><ResultsPage /></PublicShell>} />
+              <Route path="/winners" element={<PublicShell><WinnersPage /></PublicShell>} />
+              <Route path="/rules" element={<PublicShell><RulesPage /></PublicShell>} />
+              <Route path="/contact" element={<PublicShell><ContactPage /></PublicShell>} />
+              <Route path="/privacy" element={<PublicShell><PrivacyPolicyPage /></PublicShell>} />
 
-                  {/* Unified Auth & Admin Dashboard */}
-                  <Route path="/admin/login" element={<Navigate to="/login?redirect=/admin/dashboard" replace />} />
-                  <Route
-                    path="/admin"
-                    element={
-                      <ProtectedAdminRoute>
-                        <AdminLayout />
-                      </ProtectedAdminRoute>
-                    }
-                  >
-                    <Route index element={<Navigate to="/admin/dashboard" replace />} />
-                    <Route path="dashboard" element={<AdminDashboardOverview />} />
-                    <Route path="tournaments" element={<AdminTournaments />} />
-                    <Route path="registrations" element={<AdminRegistrations />} />
-                    <Route path="rooms" element={<AdminRooms />} />
-                    <Route path="results" element={<AdminResultsReview />} />
-                    <Route path="prizes" element={<AdminPrizes />} />
-                    <Route path="withdrawals" element={<AdminWithdrawals />} />
-                    <Route path="settings" element={<AdminSettings />} />
-                    <Route path="audit-logs" element={<AdminAuditLogs />} />
-                  </Route>
+              {/* Protected Player Wallet (Login Required) */}
+              <Route
+                path="/wallet"
+                element={
+                  <ProtectedPlayerRoute>
+                    <PublicShell><WalletPage /></PublicShell>
+                  </ProtectedPlayerRoute>
+                }
+              />
 
-                  {/* Custom 404 Catch-All */}
-                  <Route path="*" element={<PublicShell><NotFoundPage /></PublicShell>} />
-                </Routes>
-              </Suspense>
-            }
-          />
-        </Routes>
-        <Analytics />
-      </Router>
-    </AuthProvider>
+              {/* Unified Auth Pages */}
+              <Route path="/login" element={<PublicShell><LoginPage /></PublicShell>} />
+              <Route path="/register" element={<PublicShell><RegisterPage /></PublicShell>} />
+              <Route path="/forgot-password" element={<PublicShell><ForgotPasswordPage /></PublicShell>} />
+              <Route path="/reset-password" element={<PublicShell><ResetPasswordPage /></PublicShell>} />
+
+              {/* Unified Admin Redirect & Dashboard */}
+              <Route path="/admin/login" element={<Navigate to="/login?redirect=/admin/dashboard" replace />} />
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedAdminRoute>
+                    <AdminLayout />
+                  </ProtectedAdminRoute>
+                }
+              >
+                <Route index element={<Navigate to="/admin/dashboard" replace />} />
+                <Route path="dashboard" element={<AdminDashboardOverview />} />
+                <Route path="tournaments" element={<AdminTournaments />} />
+                <Route path="registrations" element={<AdminRegistrations />} />
+                <Route path="rooms" element={<AdminRooms />} />
+                <Route path="results" element={<AdminResultsReview />} />
+                <Route path="prizes" element={<AdminPrizes />} />
+                <Route path="withdrawals" element={<AdminWithdrawals />} />
+                <Route path="settings" element={<AdminSettings />} />
+                <Route path="audit-logs" element={<AdminAuditLogs />} />
+              </Route>
+
+              {/* Custom 404 Catch-All (cleanly catches /browse and any unmapped URL) */}
+              <Route path="*" element={<PublicShell><NotFoundPage /></PublicShell>} />
+            </Routes>
+          </Suspense>
+          <Analytics />
+        </Router>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

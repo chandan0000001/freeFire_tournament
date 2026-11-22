@@ -87,7 +87,7 @@ const seedDatabase = async () => {
           totalPool: 1100,
           terms: 'Cash prizes transferred via UPI directly by admin within 24 hours of verified results.',
         },
-        rules: '1. Mobile devices only (No PC/Emulators allowed).\n2. Custom Room ID & Password sent via email 20 mins prior.\n3. Toxic behaviour or hacking results in permanent ban.',
+        rules: '1. Mobile devices only (No PC/Emulators allowed).\n2. Custom Room ID & Password sent via WhatsApp 20 mins prior.\n3. Toxic behaviour or hacking results in permanent ban.',
         bannerUrl: '/images/ff-banner.webp',
         isPublic: true,
       },

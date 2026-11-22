@@ -4,7 +4,7 @@ import usePageMeta from '../../hooks/usePageMeta.js';
 import { Trophy, Award, Calendar, Users, ShieldCheck } from 'lucide-react';
 
 export default function WinnersPage() {
-  usePageMeta('Hall of Fame — Champions | RIT Esports Arena', 'Celebrating Roland Institute of Technology Free Fire champions, MVP gunslingers, and verified cash prize winners.');
+  usePageMeta('Hall of Fame — Champions | Rahul Esports', 'Celebrating Rahul Esports Free Fire champions, MVP gunslingers, and verified cash prize winners.');
   const [winnerTournaments, setWinnerTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -144,7 +144,7 @@ export default function WinnersPage() {
             </p>
           </div>
 
-          {/* RIT Champions Spotlight Showcase */}
+          {/* Rahul Esports Champions Spotlight Showcase */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="rounded-2xl bg-[#24171e] border border-amber-500/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-amber-400 transition-all">
               <div className="w-28 h-32 rounded-xl mx-auto overflow-hidden border border-white/10 shadow-lg">

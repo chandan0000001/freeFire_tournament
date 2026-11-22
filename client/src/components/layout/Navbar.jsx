@@ -79,7 +79,7 @@ export default function Navbar() {
               >
                 Sign In
               </Link>
-              <Link to="/wallet" className="wallet-link">
+              <Link to="/login?redirect=/wallet" className="wallet-link">
                 <Wallet size={17} />
                 <span>Wallet</span>
               </Link>
@@ -111,7 +111,7 @@ export default function Navbar() {
               {label}
             </NavLink>
           ))}
-          <Link to="/wallet">Player Wallet</Link>
+          <Link to={user ? "/wallet" : "/login?redirect=/wallet"}>Player Wallet</Link>
           {!user ? (
             <>
               <Link to="/login" className="text-brand-orange font-bold">Sign In</Link>

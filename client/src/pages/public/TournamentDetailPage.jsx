@@ -25,8 +25,8 @@ export default function TournamentDetailPage() {
   const [activeTab, setActiveTab] = useState('overview');
 
   usePageMeta(
-    tournament ? `${tournament.title} | Free Fire Tournament | {site.name}` : 'Tournament Details | {site.name}',
-    tournament ? `Join ${tournament.title} with prize pool of ₹${tournament.prizeConfig?.totalPool ?? 0}. Format: ${tournament.gameMode || 'Battle Royale'}, Entry: ₹${tournament.entryFee || 0}. Open to all competitive players.` : 'View Free Fire tournament details, schedules, scoring system, and prize breakdown.'
+    tournament ? `${tournament.title} | Free Fire Tournament | ${site.name}` : `Tournament Details | ${site.name}`,
+    tournament ? `Join ${tournament.title} with prize pool of ₹${tournament.prizeConfig?.totalPool ?? 0}. Format: ${tournament.gameMode || 'Battle Royale'}, Entry: ${tournament.entryFee || 0} Coins. Open to all competitive players.` : 'View Free Fire tournament details, schedules, scoring system, and prize breakdown.'
   );
 
   useEffect(() => {
@@ -122,6 +122,12 @@ export default function TournamentDetailPage() {
                 <MapPin className="w-4 h-4 text-brand-cyan" />
                 Map: {tournament.map || 'Bermuda'}
               </span>
+            </div>
+
+            {/* Room ID & Pass WhatsApp Dispatch Banner */}
+            <div className="mt-4 flex items-center gap-2 py-2 px-3 rounded-xl bg-emerald-950/70 border border-emerald-500/40 text-xs text-emerald-300 w-fit">
+              <MessageCircle className="w-4 h-4 text-emerald-400 shrink-0" />
+              <span>Room ID & Password will be sent to your {tournament.format === 'squad' ? 'Team Leader' : 'Player'} WhatsApp 15-20 minutes before match start</span>
             </div>
           </div>
         </div>

@@ -1,5 +1,5 @@
 /**
- * Scoring calculation engine for RIT Esports Arena
+ * Scoring calculation engine for Rahul Esports
  */
 
 export const calculateEntryScore = (entry, scoringConfig) => {
