@@ -95,7 +95,7 @@ const seedDatabase = async () => {
           terms: 'Cash prizes transferred via UPI directly by admin within 24 hours of verified results.',
         },
         rules: '1. Mobile devices only (No PC/Emulators allowed).\n2. Custom Room ID & Password sent via WhatsApp 20 mins prior.\n3. Toxic behaviour or hacking results in permanent ban.',
-        bannerUrl: '/images/ff-odisha-cliff-squad.webp',
+        bannerUrl: '/images/odisha-squad.webp',
         isPublic: true,
       },
       {
@@ -125,7 +125,7 @@ const seedDatabase = async () => {
           terms: 'Cash prize paid manually via UPI to verified winner.',
         },
         rules: '1. Solo mode only. Teaming up with other players will result in immediate disqualification.\n2. Mobile devices only.\n3. Screenshots must be submitted in case of dispute.',
-        bannerUrl: '/images/ff-odisha-chilika-solo.webp',
+        bannerUrl: '/images/chilika-solo.webp',
         isPublic: true,
       },
       {
@@ -155,7 +155,7 @@ const seedDatabase = async () => {
           terms: 'Standard cash prize terms apply.',
         },
         rules: 'Standard Free Fire esports rules.',
-        bannerUrl: '/images/ff-odisha-temple-squad.webp',
+        bannerUrl: '/images/konark-squad.webp',
         isPublic: true,
       },
     ];

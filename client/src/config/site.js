@@ -12,11 +12,11 @@ export const site = Object.freeze({
   organizerName: env.VITE_ORGANIZER_NAME || 'Rahul',
   organizerImage: env.VITE_ORGANIZER_IMAGE || '/images/rahul.webp',
   organizerRole: env.VITE_ORGANIZER_ROLE || 'Tournament organizer',
-  heroImage: env.VITE_HERO_IMAGE || '/images/ff-odisha-cliff-squad.webp',
-  soloImage: env.VITE_SOLO_IMAGE || '/images/ff-odisha-chilika-solo.webp',
+  heroImage: env.VITE_HERO_IMAGE || '/images/odisha-squad.webp',
+  soloImage: env.VITE_SOLO_IMAGE || '/images/chilika-solo.webp',
   accountImage: env.VITE_ACCOUNT_IMAGE || '/images/arena-account.webp',
-  tournamentImage: env.VITE_TOURNAMENT_IMAGE || '/images/ff-odisha-cliff-squad.webp',
-  championImage: env.VITE_CHAMPION_IMAGE || '/images/ff-odisha-top-fragger.webp',
+  tournamentImage: env.VITE_TOURNAMENT_IMAGE || '/images/konark-squad.webp',
+  championImage: env.VITE_CHAMPION_IMAGE || '/images/odisha-champion.webp',
   adminUpiId: env.VITE_ADMIN_UPI_ID || '',
   adminUpiName: env.VITE_ADMIN_UPI_NAME || env.VITE_SITE_NAME || 'Rahul Esports',
   adminWhatsAppNumber: env.VITE_ADMIN_WHATSAPP_NUMBER || '',
@@ -25,38 +25,10 @@ export const site = Object.freeze({
   timeZone: env.VITE_TIME_ZONE || 'Asia/Kolkata',
 });
 
-const SQUAD_BANNERS = [
-  '/images/ff-odisha-cliff-squad.webp',
-  '/images/ff-odisha-temple-squad.webp',
-  '/images/ff-odisha-captain-sunset.webp',
-  '/images/ff-odisha-coastal-vista.webp',
-  '/images/ff-odisha-heavy-flanker.webp',
-  '/images/ff-odisha-airdrop-crate.webp',
-  '/images/ff-odisha-konark-wheel.webp',
-  '/images/ff-odisha-coastal-arena.webp',
-];
-
-const SOLO_BANNERS = [
-  '/images/ff-odisha-chilika-solo.webp',
-  '/images/ff-odisha-scout-sunset.webp',
-  '/images/ff-odisha-temple-sniper.webp',
-  '/images/ff-odisha-top-fragger.webp',
-];
-
 export function tournamentArtwork(tournament) {
   const banner = tournament?.bannerUrl;
   if (banner && !/^\/images\/(?:og-image|ff-(?:banner|character)(?:-[\w-]+)?)\.webp$/.test(banner)) {
     return banner;
   }
-  const isSolo = tournament?.format === 'solo';
-  const pool = isSolo ? SOLO_BANNERS : SQUAD_BANNERS;
-  const identifier = String(tournament?._id || tournament?.slug || tournament?.title || '');
-  if (!identifier) {
-    return isSolo ? site.soloImage : site.tournamentImage;
-  }
-  let hash = 0;
-  for (let i = 0; i < identifier.length; i++) {
-    hash = (hash * 31 + identifier.charCodeAt(i)) >>> 0;
-  }
-  return pool[hash % pool.length];
+  return tournament?.format === 'solo' ? site.soloImage : site.tournamentImage;
 }

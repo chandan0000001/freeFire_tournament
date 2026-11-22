@@ -44,31 +44,25 @@ Public asset configuration:
 
 | Variable | Bundled asset |
 | --- | --- |
-| `VITE_HERO_IMAGE` | `/images/ff-odisha-cliff-squad.webp` |
-| `VITE_TOURNAMENT_IMAGE` | `/images/ff-odisha-cliff-squad.webp` |
-| `VITE_SOLO_IMAGE` | `/images/ff-odisha-chilika-solo.webp` |
+| `VITE_HERO_IMAGE` | `/images/odisha-squad.webp` |
+| `VITE_TOURNAMENT_IMAGE` | `/images/konark-squad.webp` |
+| `VITE_SOLO_IMAGE` | `/images/chilika-solo.webp` |
 | `VITE_ACCOUNT_IMAGE` | `/images/arena-account.webp` |
-| `VITE_CHAMPION_IMAGE` | `/images/ff-odisha-top-fragger.webp` |
+| `VITE_CHAMPION_IMAGE` | `/images/odisha-champion.webp` |
 | `VITE_ORGANIZER_IMAGE` | `/images/rahul.webp` |
 
 ### Free Fire + Odisha Photorealistic Collection
 
-Twelve 16:9 photorealistic widescreen compositions matching authentic Odisha esports vibes with zero text overlays:
+Photorealistic widescreen compositions matching authentic Odisha Free Fire esports vibes with zero text overlays:
 
 | Artwork | Visual Theme & Location | Default Placement |
 | --- | --- | --- |
-| `/images/ff-odisha-cliff-squad.webp` | Cliffside Squad Sunset overlooking Konark coast | Hero banner / Squad cards |
-| `/images/ff-odisha-temple-squad.webp` | Temple steps squad with glowing airdrop crate | Squad tournament cards |
-| `/images/ff-odisha-captain-sunset.webp` | Squad captain in Sambalpuri scarf with sunset rays | Squad tournament cards |
-| `/images/ff-odisha-scout-sunset.webp` | Female scout operative watching coastal horizon | Rules & fair play pledge |
-| `/images/ff-odisha-coastal-vista.webp` | Konark wheel on coastal shoreline with airdrops | Squad tournament cards |
-| `/images/ff-odisha-heavy-flanker.webp` | Tactical flank operators in combat gear | Squad tournament cards |
-| `/images/ff-odisha-airdrop-crate.webp` | Golden Booyah supply crate in Sambalpuri fabric | Tournament card banners |
-| `/images/ff-odisha-temple-sniper.webp` | Sharpshooter operative on ancient stone stairs | Solo tournament cards |
-| `/images/ff-odisha-konark-wheel.webp` | Konark Sun Temple chariot wheel & fortress wall | Tournament card banners |
-| `/images/ff-odisha-chilika-solo.webp` | Solo operative at Chilika lake lagoon at dawn | Solo cards / Winners |
-| `/images/ff-odisha-coastal-arena.webp` | Ancient Kalinga stone fortress citadel ramparts | Tournament card banners |
-| `/images/ff-odisha-top-fragger.webp` | Top fragger champion in Sambalpuri headband | MVP spotlight / Leaderboard |
+| `/images/odisha-squad.webp` | Cliffside Squad Sunset overlooking Konark coast | Hero banner / Squad cards |
+| `/images/konark-squad.webp` | Temple steps squad with glowing airdrop crate | Squad tournament cards |
+| `/images/chilika-solo.webp` | Solo operative at Chilika lake lagoon at dawn | Solo cards / Winners |
+| `/images/odisha-champion.webp` | Odisha esports champion operative | MVP spotlight / Leaderboard |
+| `/images/arena-account.webp` | Operative overlooking coastal arena at sunset | Account registration banner |
+| `/images/rahul.webp` | Rahul organizer portrait | Organizer badge / Community |
 
 The website logo and favicons feature the custom Free Fire Odisha cyber-warrior emblem with the glowing Konark Chakra wheel.
 
