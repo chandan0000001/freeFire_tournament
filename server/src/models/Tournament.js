@@ -74,6 +74,7 @@ const tournamentSchema = new mongoose.Schema(
       required: [true, 'Maximum slots count is required'],
       min: [2, 'Slots must be at least 2'],
     },
+    registrationRevision: { type: Number, default: 0, select: false },
     registeredSlots: {
       type: Number,
       default: 0,

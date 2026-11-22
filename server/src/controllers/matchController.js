@@ -1,3 +1,4 @@
+import { validateResultEntries } from '../services/resultValidation.js';
 import { Match } from '../models/Match.js';
 import { Tournament } from '../models/Tournament.js';
 import { Registration } from '../models/Registration.js';
@@ -14,7 +15,6 @@ export const getMatches = async (req, res, next) => {
 
     const matches = await Match.find(query)
       .populate('tournamentId', 'title format matchDate map status')
-      .populate('assignedSpectator', 'name email')
       .sort({ scheduledAt: 1 });
 
     res.json({ success: true, count: matches.length, matches });
@@ -56,6 +56,7 @@ export const submitMatchResult = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Match not found' });
     }
 
+    await validateResultEntries(entries, match.tournamentId._id);
     const scoringConfig = match.tournamentId?.scoringConfig;
 
     // Calculate points for each entry using tournament scoring configuration
@@ -73,6 +74,7 @@ export const submitMatchResult = async (req, res, next) => {
     });
 
     let resultDoc = await MatchResult.findOne({ matchId });
+    if (resultDoc?.status === RESULT_STATUS.PUBLISHED) return res.status(409).json({ success: false, message: 'Published results cannot be replaced.' });
     if (resultDoc) {
       resultDoc.entries = computedEntries;
       resultDoc.notes = notes || resultDoc.notes;

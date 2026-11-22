@@ -1,3 +1,4 @@
+import useLiveRefresh from '../../hooks/useLiveRefresh.js';
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api.js';
 import usePageMeta from '../../hooks/usePageMeta.js';
@@ -19,6 +20,8 @@ export default function LeaderboardPage() {
     setCopiedUid(id);
     setTimeout(() => setCopiedUid(null), 2000);
   };
+
+  useLiveRefresh(() => setRetry(value => value + 1));
 
   useEffect(() => {
     let active = true;
@@ -86,7 +89,7 @@ export default function LeaderboardPage() {
         </div>
 
         {/* Squad vs Individual Switcher */}
-        <div className="flex items-center gap-2 p-1 rounded-xl bg-[#24171e] border border-[#49303a] self-start sm:self-auto">
+        <div className="flex items-center gap-2 p-1 rounded-xl bg-[#1c1b1e] border border-[#393236] self-start sm:self-auto">
           <button
             onClick={() => setFormat('squad')}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-display font-bold uppercase tracking-wider transition-all ${
@@ -111,7 +114,7 @@ export default function LeaderboardPage() {
       </div>
 
       {/* MVP Highlight Card */}
-      <div className="p-5 rounded-2xl bg-gradient-to-r from-[#24171e] via-[#301e27] to-[#160e13] border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
+      <div className="p-5 rounded-2xl bg-gradient-to-r from-[#1c1b1e] via-[#292428] to-[#111214] border border-amber-500/30 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xl">
         <div className="flex items-center gap-4">
           <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border border-amber-500/50 shadow-glow-orange shrink-0">
             <img src="/images/ff-character-5.webp" alt="Top Fragger" className="w-full h-full object-cover" />
@@ -130,10 +133,10 @@ export default function LeaderboardPage() {
       </div>
 
       {/* Leaderboard Table Card */}
-      <div className="rounded-2xl bg-[#24171e] border border-[#49303a] overflow-hidden shadow-xl">
+      <div className="rounded-2xl bg-[#1c1b1e] border border-[#393236] overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-[#160e13] text-[10px] uppercase font-bold text-slate-400 tracking-wider border-b border-[#49303a]">
+            <thead className="bg-[#111214] text-[10px] uppercase font-bold text-slate-400 tracking-wider border-b border-[#393236]">
               <tr>
                 <th className="py-4 px-5">Rank</th>
                 {format === 'squad' ? (
@@ -152,7 +155,7 @@ export default function LeaderboardPage() {
                 <th className="py-4 px-5 text-right">Total Points</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#49303a]">
+            <tbody className="divide-y divide-[#393236]">
               {loading ? (
                 <tr>
                   <td colSpan={format === 'squad' ? 6 : 9} className="py-12 text-center text-slate-500 text-xs">
@@ -163,7 +166,7 @@ export default function LeaderboardPage() {
                 leaderboard.map((item, idx) => (
                   <tr
                     key={item.freeFireUid ? `${item.freeFireUid}-${idx}` : `${item.rank}-${idx}`}
-                    className="hover:bg-[#301e27] transition-colors"
+                    className="hover:bg-[#292428] transition-colors"
                   >
                     <td className="py-4 px-5">{getRankBadge(item.rank)}</td>
                     
@@ -184,7 +187,7 @@ export default function LeaderboardPage() {
                             <button
                               type="button"
                               onClick={() => copyToClipboard(item.freeFireUid, `uid-${idx}`)}
-                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#160e13] hover:bg-[#301e27] border border-[#49303a] font-mono text-xs text-slate-300 transition-colors"
+                              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-[#111214] hover:bg-[#292428] border border-[#393236] font-mono text-xs text-slate-300 transition-colors"
                               title="Click to copy UID"
                             >
                               <span>{item.freeFireUid}</span>

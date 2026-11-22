@@ -1,3 +1,4 @@
+import useLiveRefresh from '../../hooks/useLiveRefresh.js';
 import { site } from '../../config/site.js';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../../services/api.js';
@@ -41,6 +42,8 @@ export default function TournamentsPage() {
     }
   }, [formatFilter, statusFilter, search]);
 
+  useLiveRefresh(fetchTournaments);
+
   useEffect(() => {
     const timer = setTimeout(fetchTournaments, 250);
     return () => { clearTimeout(timer); requestId.current += 1; };
@@ -69,14 +72,14 @@ export default function TournamentsPage() {
         </div>
 
         <div className="flex items-center gap-2 text-xs text-slate-400">
-          <span className="px-3 py-1.5 rounded-lg bg-[#24171e] border border-[#412a34] font-semibold">
+          <span className="px-3 py-1.5 rounded-lg bg-[#1c1b1e] border border-[#412a34] font-semibold">
             {tournaments.length} {tournaments.length === 1 ? 'Tournament' : 'Tournaments'} Available
           </span>
         </div>
       </div>
 
       {/* Daily Match Sessions & WhatsApp Notice Strip */}
-      <div className="p-4 rounded-2xl bg-[#24171e] border border-brand-orange/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-lg">
+      <div className="p-4 rounded-2xl bg-[#1c1b1e] border border-brand-orange/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-lg">
         <div className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-xl bg-brand-orange/20 text-brand-orange flex items-center justify-center shrink-0">
             <Flame className="w-4 h-4" />
@@ -98,7 +101,7 @@ export default function TournamentsPage() {
       </div>
 
       {/* GBArena Inspired Filter & Control Bar */}
-      <div className="p-3 sm:p-4 rounded-2xl bg-[#24171e]/95 border border-[#49303a] flex flex-col lg:flex-row items-center justify-between gap-4 top-20 z-30 shadow-2xl backdrop-blur-md">
+      <div className="p-3 sm:p-4 rounded-2xl bg-[#1c1b1e]/95 border border-[#393236] flex flex-col lg:flex-row items-center justify-between gap-4 top-20 z-30 shadow-2xl backdrop-blur-md">
         {/* Status Filter Tabs (GBArena Style) */}
         <div className="flex items-center gap-1.5 overflow-x-auto w-full lg:w-auto scrollbar-none pb-1 lg:pb-0">
           {[
@@ -169,7 +172,7 @@ export default function TournamentsPage() {
       {error ? <div className="arena-empty" role="alert"><h3>Unable to load tournaments</h3><p>{error}</p><button className="arena-button" onClick={fetchTournaments}>Try again</button></div> : loading ? (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-2">
           {[1, 2, 3, 4, 5, 6].map((n) => (
-            <div key={n} className="h-96 rounded-2xl bg-[#24171e] border border-[#412a34] animate-pulse"></div>
+            <div key={n} className="h-96 rounded-2xl bg-[#1c1b1e] border border-[#412a34] animate-pulse"></div>
           ))}
         </div>
       ) : tournaments.length > 0 ? (
@@ -179,7 +182,7 @@ export default function TournamentsPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 bg-[#24171e] rounded-2xl border border-[#412a34] p-8 max-w-xl mx-auto space-y-4">
+        <div className="text-center py-20 bg-[#1c1b1e] rounded-2xl border border-[#412a34] p-8 max-w-xl mx-auto space-y-4">
           <Trophy className="w-12 h-12 text-slate-600 mx-auto" />
           <h3 className="text-lg font-bold text-white">No Tournaments Found</h3>
           <p className="text-xs text-slate-400 leading-relaxed">

@@ -55,9 +55,10 @@ export default function Navbar() {
         </nav>
 
         <div className="header-actions">
+          {isAdmin && <Link to="/admin/dashboard" className="text-link admin-dashboard-link">Dashboard</Link>}
           {user ? (
             <div className="flex items-center gap-2">
-              <span className="text-xs font-bold text-slate-300 hidden sm:inline-block px-2.5 py-1 rounded-lg bg-[#24171e] border border-[#412a34]">
+              <span className="text-xs font-bold text-slate-300 hidden sm:inline-block px-2.5 py-1 rounded-lg bg-[#1c1b1e] border border-[#412a34]">
                 {user.name}
               </span>
               <button
@@ -80,7 +81,7 @@ export default function Navbar() {
               </Link>
               <Link
                 to="/register"
-                className="hidden sm:inline-block text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-[#49303a] bg-[#1b1017] transition-colors"
+                className="hidden sm:inline-block text-xs font-bold uppercase tracking-wider text-slate-300 hover:text-white px-3 py-1.5 rounded-lg border border-[#393236] bg-[#1b1017] transition-colors"
               >
                 Register
               </Link>
@@ -125,12 +126,7 @@ export default function Navbar() {
         </nav>
       )}
 
-      {isAdmin && (
-        <div className="admin-strip arena-container">
-          <Link to="/admin/dashboard">Manage tournaments</Link>
-          <button onClick={logout}>Sign out</button>
-        </div>
-      )}
+
     </header>
   );
 }

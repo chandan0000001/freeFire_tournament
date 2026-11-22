@@ -27,7 +27,7 @@ export default class ErrorBoundary extends React.Component {
     if (this.state.hasError) {
       return (
         <div className="min-h-screen bg-brand-dark flex items-center justify-center px-4 py-16 text-slate-100">
-          <div className="max-w-md w-full bg-[#24171e] border border-[#49303a] rounded-2xl p-8 text-center space-y-6 shadow-2xl relative overflow-hidden">
+          <div className="max-w-md w-full bg-[#1c1b1e] border border-[#393236] rounded-2xl p-8 text-center space-y-6 shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-48 bg-rose-500/10 blur-[80px] pointer-events-none rounded-full" />
             
             <div className="w-16 h-16 rounded-2xl bg-rose-950/60 border border-rose-500/40 text-rose-400 mx-auto flex items-center justify-center shadow-lg">
@@ -54,7 +54,7 @@ export default class ErrorBoundary extends React.Component {
               <button
                 type="button"
                 onClick={this.handleHome}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#1b1017] hover:bg-[#301e27] text-slate-200 border border-[#49303a] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#1b1017] hover:bg-[#292428] text-slate-200 border border-[#393236] text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" /> Return to Lobby
               </button>

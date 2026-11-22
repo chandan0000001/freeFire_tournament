@@ -1,3 +1,4 @@
+import useLiveRefresh from '../../hooks/useLiveRefresh.js';
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api.js';
 import { 
@@ -58,6 +59,8 @@ export default function AdminResultsReview() {
     }
   };
 
+  useLiveRefresh(fetchResultsQueue);
+
   useEffect(() => {
     fetchResultsQueue();
   }, []);
@@ -74,8 +77,8 @@ export default function AdminResultsReview() {
     updated[idx][field] = value;
     
     // Recalculate points on the fly in UI
-    const killVal = activeResult.tournamentId?.scoringConfig?.killPointValue || 1;
-    const booyahBonus = activeResult.tournamentId?.scoringConfig?.booyahBonus || 12;
+    const killVal = activeResult.tournamentId?.scoringConfig?.killPointValue ?? 1;
+    const booyahBonus = activeResult.tournamentId?.scoringConfig?.booyahBonus ?? 12;
     const kills = parseInt(updated[idx].kills, 10) || 0;
     const isBooyah = Boolean(updated[idx].isBooyah || updated[idx].placement === 1);
     
@@ -84,7 +87,7 @@ export default function AdminResultsReview() {
   };
 
   const handleSaveEdits = async () => {
-    if (!activeResult) return;
+    if (!activeResult || saving || publishing || activeResult.status === 'published') return;
     setSaving(true);
     setMessage({ type: '', text: '' });
 
@@ -106,7 +109,7 @@ export default function AdminResultsReview() {
   };
 
   const handlePublish = async () => {
-    if (!activeResult) return;
+    if (!activeResult || saving || publishing || activeResult.status === 'published') return;
     if (!window.confirm('Are you sure you want to officially publish these results? This will mark the tournament completed, update the public leaderboard, and allocate cash prize records.')) {
       return;
     }
@@ -123,6 +126,7 @@ export default function AdminResultsReview() {
 
       // Now publish
       const res = await api.post(`/admin/results/${activeResult._id}/publish`);
+      if (res.result) setActiveResult(current => ({ ...current, ...res.result }));
       if (res.success) {
         setMessage({ type: 'success', text: 'Match results PUBLISHED officially! Public leaderboards and prize records updated.' });
         fetchResultsQueue();
@@ -139,7 +143,7 @@ export default function AdminResultsReview() {
     setIsRecordModalOpen(true);
     setMessage({ type: '', text: '' });
     try {
-      const res = await api.get('/tournaments');
+      const res = await api.get('/admin/tournaments');
       if (res.success && Array.isArray(res.tournaments)) {
         setTournamentsList(res.tournaments);
         if (res.tournaments.length > 0) {
@@ -175,7 +179,7 @@ export default function AdminResultsReview() {
             placement: i + 1,
             kills: 0,
             isBooyah: i === 0,
-            calculatedPoints: i === 0 ? (tObj?.scoringConfig?.booyahBonus || 12) : 0,
+            calculatedPoints: i === 0 ? (tObj?.scoringConfig?.booyahBonus ?? 12) : 0,
             playerKills: (r.players || []).map((p) => ({
               playerName: p.name || '',
               inGameName: p.inGameName || '',
@@ -186,12 +190,8 @@ export default function AdminResultsReview() {
         });
         setModalEntries(initialEntries);
       } else {
-        // Fallback default rows
-        setModalEntries([
-          { registrationId: null, participantName: 'Winning Team (Champion)', playerName: 'Rahul Sharma', inGameName: 'Apex_Sniper', playerUid: '1401364963', placement: 1, kills: 8, isBooyah: true, calculatedPoints: 20 },
-          { registrationId: null, participantName: 'Runner Up (2nd Place)', playerName: 'Manish Das', inGameName: 'Thunder_Op', playerUid: '1592837482', placement: 2, kills: 5, isBooyah: false, calculatedPoints: 5 },
-          { registrationId: null, participantName: '3rd Place Team', playerName: 'Sunil Kumar', inGameName: 'Silent_Kill', playerUid: '1839284719', placement: 3, kills: 3, isBooyah: false, calculatedPoints: 3 },
-        ]);
+        setModalEntries([]);
+        setMessage({ type: 'error', text: 'No verified players yet. Verify registrations before recording the result.' });
       }
     } catch (err) {
       console.error('Failed to fetch verified registrations', err);
@@ -206,8 +206,8 @@ export default function AdminResultsReview() {
     updated[index][field] = value;
 
     // Auto-update points
-    const killVal = selectedTournament?.scoringConfig?.killPointValue || 1;
-    const booyahBonus = selectedTournament?.scoringConfig?.booyahBonus || 12;
+    const killVal = selectedTournament?.scoringConfig?.killPointValue ?? 1;
+    const booyahBonus = selectedTournament?.scoringConfig?.booyahBonus ?? 12;
     const kills = parseInt(updated[index].kills, 10) || 0;
     const isBooyah = Boolean(updated[index].isBooyah || updated[index].placement === 1);
 
@@ -219,8 +219,8 @@ export default function AdminResultsReview() {
   const handleSetChampion = (index) => {
     const updated = modalEntries.map((e, idx) => {
       const isWinner = idx === index;
-      const killVal = selectedTournament?.scoringConfig?.killPointValue || 1;
-      const booyahBonus = selectedTournament?.scoringConfig?.booyahBonus || 12;
+      const killVal = selectedTournament?.scoringConfig?.killPointValue ?? 1;
+      const booyahBonus = selectedTournament?.scoringConfig?.booyahBonus ?? 12;
       const kills = parseInt(e.kills, 10) || 0;
       return {
         ...e,
@@ -362,8 +362,8 @@ export default function AdminResultsReview() {
                   onClick={() => selectResult(r)}
                   className={`p-4 rounded-xl border cursor-pointer transition-all ${
                     activeResult?._id === r._id
-                      ? 'bg-[#301e27] border-brand-orange shadow-md'
-                      : 'bg-[#24171e] border-[#49303a] hover:border-slate-600'
+                      ? 'bg-[#292428] border-brand-orange shadow-md'
+                      : 'bg-[#1c1b1e] border-[#393236] hover:border-slate-600'
                   }`}
                 >
                   <div className="flex items-center justify-between text-[11px] mb-1">
@@ -383,13 +383,13 @@ export default function AdminResultsReview() {
                 </div>
               ))
             ) : (
-              <div className="p-8 rounded-xl bg-[#24171e] border border-[#49303a] text-center text-xs text-slate-500 space-y-3">
+              <div className="p-8 rounded-xl bg-[#1c1b1e] border border-[#393236] text-center text-xs text-slate-500 space-y-3">
                 <Trophy className="w-8 h-8 text-slate-600 mx-auto" />
                 <p>No match results submitted yet.</p>
                 <button
                   type="button"
                   onClick={openRecordModal}
-                  className="px-3 py-1.5 rounded-lg bg-[#301e27] hover:bg-[#49303a] text-brand-orange text-xs font-bold border border-brand-orange/30 transition-all"
+                  className="px-3 py-1.5 rounded-lg bg-[#292428] hover:bg-[#393236] text-brand-orange text-xs font-bold border border-brand-orange/30 transition-all"
                 >
                   Record First Result
                 </button>
@@ -403,7 +403,7 @@ export default function AdminResultsReview() {
           <div className="lg:col-span-2 space-y-6">
             
             {/* Tournament Details Banner */}
-            <div className="p-5 rounded-2xl bg-[#24171e] border border-[#49303a] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-5 rounded-2xl bg-[#1c1b1e] border border-[#393236] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div>
                 <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest">
                   Match #{activeResult.matchId?.matchNumber || 1} • {activeResult.tournamentId?.format?.toUpperCase()}
@@ -416,9 +416,9 @@ export default function AdminResultsReview() {
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  disabled={saving}
+                  disabled={saving || publishing || activeResult.status === 'published'}
                   onClick={handleSaveEdits}
-                  className="px-4 py-2 rounded-lg bg-[#301e27] hover:bg-[#49303a] text-slate-300 border border-[#49303a] text-xs font-bold uppercase flex items-center gap-1.5 transition-colors"
+                  className="px-4 py-2 rounded-lg bg-[#292428] hover:bg-[#393236] text-slate-300 border border-[#393236] text-xs font-bold uppercase flex items-center gap-1.5 transition-colors"
                 >
                   <Save className="w-4 h-4 text-brand-orange" /> {saving ? 'Saving...' : 'Save Edits'}
                 </button>
@@ -426,7 +426,7 @@ export default function AdminResultsReview() {
                 {activeResult.status !== 'published' && (
                   <button
                     type="button"
-                    disabled={publishing}
+                    disabled={publishing || saving}
                     onClick={handlePublish}
                     className="px-5 py-2 rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:brightness-110 text-white text-xs font-bold uppercase flex items-center gap-1.5 shadow-md transition-all"
                   >
@@ -437,10 +437,10 @@ export default function AdminResultsReview() {
             </div>
 
             {/* Scorecard Editable Table */}
-            <div className="rounded-2xl bg-[#24171e] border border-[#49303a] overflow-hidden shadow-xl">
+            <div className="rounded-2xl bg-[#1c1b1e] border border-[#393236] overflow-hidden shadow-xl">
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-[#160e13] text-[10px] uppercase font-bold text-slate-400 border-b border-[#49303a]">
+                  <thead className="bg-[#111214] text-[10px] uppercase font-bold text-slate-400 border-b border-[#393236]">
                     <tr>
                       <th className="py-3 px-4">Placement</th>
                       <th className="py-3 px-4">Participant / Squad</th>
@@ -451,16 +451,16 @@ export default function AdminResultsReview() {
                       <th className="py-3 px-4 text-right">Points</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#49303a]">
+                  <tbody className="divide-y divide-[#393236]">
                     {editedEntries.map((entry, idx) => (
-                      <tr key={idx} className="hover:bg-[#301e27]/60">
+                      <tr key={idx} className="hover:bg-[#292428]/60">
                         <td className="py-2.5 px-4">
                           <input
                             type="number"
                             min="1"
                             value={entry.placement}
-                            onChange={(e) => handleEntryChange(idx, 'placement', parseInt(e.target.value, 10))}
-                            className="w-16 px-2 py-1 rounded bg-[#160e13] border border-[#49303a] text-white font-mono text-center"
+                            disabled={saving || publishing || activeResult.status === 'published'} onChange={(e) => handleEntryChange(idx, 'placement', parseInt(e.target.value, 10))}
+                            className="w-16 px-2 py-1 rounded bg-[#111214] border border-[#393236] text-white font-mono text-center"
                           />
                         </td>
                         <td className="py-2.5 px-4 font-bold text-white flex items-center gap-2">
@@ -472,8 +472,8 @@ export default function AdminResultsReview() {
                             type="text"
                             placeholder="IGN"
                             value={entry.inGameName || ''}
-                            onChange={(e) => handleEntryChange(idx, 'inGameName', e.target.value)}
-                            className="w-28 px-2 py-1 rounded bg-[#160e13] border border-[#49303a] text-brand-orange font-mono text-xs"
+                            disabled={saving || publishing || activeResult.status === 'published'} onChange={(e) => handleEntryChange(idx, 'inGameName', e.target.value)}
+                            className="w-28 px-2 py-1 rounded bg-[#111214] border border-[#393236] text-brand-orange font-mono text-xs"
                           />
                         </td>
                         <td className="py-2.5 px-4">
@@ -481,8 +481,8 @@ export default function AdminResultsReview() {
                             type="text"
                             placeholder="UID"
                             value={entry.playerUid || ''}
-                            onChange={(e) => handleEntryChange(idx, 'playerUid', e.target.value)}
-                            className="w-32 px-2 py-1 rounded bg-[#160e13] border border-[#49303a] text-amber-300 font-mono text-xs"
+                            disabled={saving || publishing || activeResult.status === 'published'} onChange={(e) => handleEntryChange(idx, 'playerUid', e.target.value)}
+                            className="w-32 px-2 py-1 rounded bg-[#111214] border border-[#393236] text-amber-300 font-mono text-xs"
                           />
                         </td>
                         <td className="py-2.5 px-4 text-center">
@@ -490,15 +490,15 @@ export default function AdminResultsReview() {
                             type="number"
                             min="0"
                             value={entry.kills}
-                            onChange={(e) => handleEntryChange(idx, 'kills', parseInt(e.target.value, 10))}
-                            className="w-16 px-2 py-1 rounded bg-[#160e13] border border-[#49303a] text-white font-mono text-center"
+                            disabled={saving || publishing || activeResult.status === 'published'} onChange={(e) => handleEntryChange(idx, 'kills', parseInt(e.target.value, 10))}
+                            className="w-16 px-2 py-1 rounded bg-[#111214] border border-[#393236] text-white font-mono text-center"
                           />
                         </td>
                         <td className="py-2.5 px-4 text-center">
                           <input
                             type="checkbox"
                             checked={Boolean(entry.isBooyah || entry.placement === 1)}
-                            onChange={(e) => handleEntryChange(idx, 'isBooyah', e.target.checked)}
+                            disabled={saving || publishing || activeResult.status === 'published'} onChange={(e) => handleEntryChange(idx, 'isBooyah', e.target.checked)}
                             className="rounded text-brand-orange"
                           />
                         </td>
@@ -514,7 +514,7 @@ export default function AdminResultsReview() {
 
             {/* Supporting Captain Screenshots Section */}
             {activeResult.captainEvidence && activeResult.captainEvidence.length > 0 && (
-              <div className="p-5 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-3">
+              <div className="p-5 rounded-2xl bg-[#1c1b1e] border border-[#393236] space-y-3">
                 <h4 className="font-display text-sm font-bold uppercase text-white flex items-center gap-2">
                   <Eye className="w-4 h-4 text-cyan-400" /> Captain-Submitted Supporting Screenshots ({activeResult.captainEvidence.length})
                 </h4>
@@ -527,14 +527,14 @@ export default function AdminResultsReview() {
                           href={img.screenshotUrl}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="block rounded-lg overflow-hidden border border-[#49303a] hover:border-cyan-400 transition-colors"
+                          className="block rounded-lg overflow-hidden border border-[#393236] hover:border-cyan-400 transition-colors"
                         >
                           <img
                             src={img.screenshotUrl}
                             alt="Evidence screenshot"
                             className="h-28 w-full object-cover"
                           />
-                          <span className="block p-1 text-[10px] text-slate-300 truncate bg-[#160e13]">
+                          <span className="block p-1 text-[10px] text-slate-300 truncate bg-[#111214]">
                             {ev.teamName || 'Solo'}: {img.notes || 'Evidence'}
                           </span>
                         </a>
@@ -546,7 +546,7 @@ export default function AdminResultsReview() {
             )}
 
             {/* Admin Review Notes */}
-            <div className="p-5 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-2">
+            <div className="p-5 rounded-2xl bg-[#1c1b1e] border border-[#393236] space-y-2">
               <label className="block text-xs font-semibold text-slate-300 uppercase">
                 Admin Review Notes / Audit Justification
               </label>
@@ -555,13 +555,13 @@ export default function AdminResultsReview() {
                 placeholder="e.g. Cross-checked with scoreboard screenshot; kill counts matched."
                 value={adminNotes}
                 onChange={(e) => setAdminNotes(e.target.value)}
-                className="w-full px-3.5 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
+                className="w-full px-3.5 py-2 rounded-lg bg-[#111214] border border-[#393236] text-xs text-white focus:outline-none focus:border-brand-orange"
               />
             </div>
 
           </div>
         ) : (
-          <div className="lg:col-span-2 p-12 text-center rounded-2xl bg-[#24171e] border border-[#49303a] space-y-4 flex flex-col items-center justify-center">
+          <div className="lg:col-span-2 p-12 text-center rounded-2xl bg-[#1c1b1e] border border-[#393236] space-y-4 flex flex-col items-center justify-center">
             <div className="w-16 h-16 rounded-full bg-brand-orange/10 border border-brand-orange/30 flex items-center justify-center text-brand-orange">
               <Trophy className="w-8 h-8" />
             </div>
@@ -589,10 +589,10 @@ export default function AdminResultsReview() {
       {/* Record Match & Declare Winner Modal */}
       {isRecordModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="bg-[#24171e] border border-[#49303a] rounded-2xl max-w-3xl w-full p-6 space-y-6 shadow-2xl my-8">
+          <div className="bg-[#1c1b1e] border border-[#393236] rounded-2xl max-w-3xl w-full p-6 space-y-6 shadow-2xl my-8">
             
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-[#49303a] pb-4">
+            <div className="flex items-center justify-between border-b border-[#393236] pb-4">
               <div className="flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-brand-orange" />
                 <h3 className="font-display text-lg font-bold uppercase text-white">
@@ -602,7 +602,7 @@ export default function AdminResultsReview() {
               <button
                 type="button"
                 onClick={() => setIsRecordModalOpen(false)}
-                className="p-1 rounded-lg hover:bg-[#301e27] text-slate-400 hover:text-white"
+                className="p-1 rounded-lg hover:bg-[#292428] text-slate-400 hover:text-white"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -618,7 +618,7 @@ export default function AdminResultsReview() {
                   <select
                     value={selectedTournamentId}
                     onChange={(e) => handleTournamentSelect(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#111214] border border-[#393236] text-sm text-white focus:outline-none focus:border-brand-orange"
                   >
                     {tournamentsList.map((t) => (
                       <option key={t._id} value={t._id}>
@@ -635,7 +635,7 @@ export default function AdminResultsReview() {
                   <select
                     value={modalMap}
                     onChange={(e) => setModalMap(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
+                    className="w-full px-3.5 py-2.5 rounded-xl bg-[#111214] border border-[#393236] text-sm text-white focus:outline-none focus:border-brand-orange"
                   >
                     <option value="Bermuda">Bermuda</option>
                     <option value="Purgatory">Purgatory</option>
@@ -646,7 +646,7 @@ export default function AdminResultsReview() {
               </div>
 
               {selectedTournament && (
-                <div className="p-3 rounded-xl bg-[#160e13] border border-[#49303a] flex flex-wrap items-center justify-between gap-3 text-xs">
+                <div className="p-3 rounded-xl bg-[#111214] border border-[#393236] flex flex-wrap items-center justify-between gap-3 text-xs">
                   <span className="text-slate-400">
                     Format: <strong className="text-white uppercase">{selectedTournament.format}</strong>
                   </span>
@@ -654,7 +654,7 @@ export default function AdminResultsReview() {
                     1st Prize Pool: <strong className="text-brand-amber">₹{selectedTournament.prizeConfig?.firstPlace || 0}</strong>
                   </span>
                   <span className="text-slate-400">
-                    Scoring: <strong className="text-white">{selectedTournament.scoringConfig?.killPointValue || 1} pt/kill + {selectedTournament.scoringConfig?.booyahBonus || 12} Booyah</strong>
+                    Scoring: <strong className="text-white">{selectedTournament.scoringConfig?.killPointValue ?? 1} pt/kill + {selectedTournament.scoringConfig?.booyahBonus ?? 12} Booyah</strong>
                   </span>
                 </div>
               )}
@@ -680,9 +680,9 @@ export default function AdminResultsReview() {
                   Loading verified tournament participants...
                 </div>
               ) : (
-                <div className="rounded-xl border border-[#49303a] overflow-hidden bg-[#160e13]">
+                <div className="rounded-xl border border-[#393236] overflow-hidden bg-[#111214]">
                   <table className="w-full text-left text-xs">
-                    <thead className="bg-[#24171e] text-[10px] uppercase font-bold text-slate-400 border-b border-[#49303a]">
+                    <thead className="bg-[#1c1b1e] text-[10px] uppercase font-bold text-slate-400 border-b border-[#393236]">
                       <tr>
                         <th className="py-2.5 px-3">Rank</th>
                         <th className="py-2.5 px-3">Team / Participant</th>
@@ -695,12 +695,12 @@ export default function AdminResultsReview() {
                         <th className="py-2.5 px-3 text-center">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-[#49303a]">
+                    <tbody className="divide-y divide-[#393236]">
                       {modalEntries.map((entry, idx) => (
                         <tr
                           key={idx}
                           className={`${
-                            entry.placement === 1 ? 'bg-amber-950/20' : 'hover:bg-[#301e27]/40'
+                            entry.placement === 1 ? 'bg-amber-950/20' : 'hover:bg-[#292428]/40'
                           }`}
                         >
                           <td className="py-2 px-3">
@@ -711,7 +711,7 @@ export default function AdminResultsReview() {
                               onChange={(e) =>
                                 handleModalEntryChange(idx, 'placement', parseInt(e.target.value, 10))
                               }
-                              className="w-14 px-2 py-1 rounded bg-[#24171e] border border-[#49303a] text-white font-mono text-center font-bold"
+                              className="w-14 px-2 py-1 rounded bg-[#1c1b1e] border border-[#393236] text-white font-mono text-center font-bold"
                             />
                           </td>
                           <td className="py-2 px-3 min-w-[130px]">
@@ -722,7 +722,7 @@ export default function AdminResultsReview() {
                                 handleModalEntryChange(idx, 'participantName', e.target.value)
                               }
                               placeholder="e.g. Phoenix Fire"
-                              className="w-full px-2.5 py-1 rounded bg-[#24171e] border border-[#49303a] text-white font-semibold"
+                              className="w-full px-2.5 py-1 rounded bg-[#1c1b1e] border border-[#393236] text-white font-semibold"
                             />
                           </td>
                           <td className="py-2 px-3 min-w-[110px]">
@@ -733,7 +733,7 @@ export default function AdminResultsReview() {
                                 handleModalEntryChange(idx, 'playerName', e.target.value)
                               }
                               placeholder="Player Name"
-                              className="w-full px-2 py-1 rounded bg-[#24171e] border border-[#49303a] text-white"
+                              className="w-full px-2 py-1 rounded bg-[#1c1b1e] border border-[#393236] text-white"
                             />
                           </td>
                           <td className="py-2 px-3 min-w-[110px]">
@@ -744,7 +744,7 @@ export default function AdminResultsReview() {
                                 handleModalEntryChange(idx, 'inGameName', e.target.value)
                               }
                               placeholder="IGN"
-                              className="w-full px-2 py-1 rounded bg-[#24171e] border border-[#49303a] text-white font-mono text-brand-orange"
+                              className="w-full px-2 py-1 rounded bg-[#1c1b1e] border border-[#393236] text-white font-mono text-brand-orange"
                             />
                           </td>
                           <td className="py-2 px-3 min-w-[120px]">
@@ -755,7 +755,7 @@ export default function AdminResultsReview() {
                                 handleModalEntryChange(idx, 'playerUid', e.target.value)
                               }
                               placeholder="e.g. 1401364963"
-                              className="w-full px-2 py-1 rounded bg-[#24171e] border border-[#49303a] text-white font-mono text-amber-300"
+                              className="w-full px-2 py-1 rounded bg-[#1c1b1e] border border-[#393236] text-white font-mono text-amber-300"
                             />
                           </td>
                           <td className="py-2 px-3 text-center">
@@ -766,7 +766,7 @@ export default function AdminResultsReview() {
                               onChange={(e) =>
                                 handleModalEntryChange(idx, 'kills', parseInt(e.target.value, 10))
                               }
-                              className="w-16 px-2 py-1 rounded bg-[#24171e] border border-[#49303a] text-white font-mono text-center"
+                              className="w-16 px-2 py-1 rounded bg-[#1c1b1e] border border-[#393236] text-white font-mono text-center"
                             />
                           </td>
                           <td className="py-2 px-3 text-center">
@@ -823,7 +823,7 @@ export default function AdminResultsReview() {
                   placeholder="https://... image link"
                   value={modalScreenshot}
                   onChange={(e) => setModalScreenshot(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#111214] border border-[#393236] text-xs text-white focus:outline-none focus:border-brand-orange"
                 />
               </div>
               <div>
@@ -835,17 +835,17 @@ export default function AdminResultsReview() {
                   placeholder="e.g. Final custom room Booyah match."
                   value={modalNotes}
                   onChange={(e) => setModalNotes(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-xl bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
+                  className="w-full px-3.5 py-2 rounded-xl bg-[#111214] border border-[#393236] text-xs text-white focus:outline-none focus:border-brand-orange"
                 />
               </div>
             </div>
 
             {/* Modal Actions */}
-            <div className="pt-4 border-t border-[#49303a] flex flex-col sm:flex-row items-center justify-between gap-3">
+            <div className="pt-4 border-t border-[#393236] flex flex-col sm:flex-row items-center justify-between gap-3">
               <button
                 type="button"
                 onClick={() => setIsRecordModalOpen(false)}
-                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#301e27] hover:bg-[#49303a] text-slate-300 text-xs font-bold uppercase transition-colors"
+                className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#292428] hover:bg-[#393236] text-slate-300 text-xs font-bold uppercase transition-colors"
               >
                 Cancel
               </button>
@@ -855,7 +855,7 @@ export default function AdminResultsReview() {
                   type="button"
                   disabled={isSubmittingRecord}
                   onClick={() => handleSubmitRecord(false)}
-                  className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-[#301e27] hover:bg-[#49303a] text-slate-200 border border-[#49303a] text-xs font-bold uppercase transition-colors"
+                  className="flex-1 sm:flex-none px-4 py-2.5 rounded-xl bg-[#292428] hover:bg-[#393236] text-slate-200 border border-[#393236] text-xs font-bold uppercase transition-colors"
                 >
                   Save as Draft to Queue
                 </button>

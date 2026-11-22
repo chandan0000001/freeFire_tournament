@@ -1,7 +1,8 @@
+import ResponsiveImage from '../common/ResponsiveImage.jsx';
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { CalendarDays, Users, MapPin, Coins, MessageCircle } from 'lucide-react';
-import { site } from '../../config/site.js';
+import { site, tournamentArtwork } from '../../config/site.js';
 import { tournamentAvailability } from '../../utils/tournament.js';
 
 export default function TournamentCard({ tournament: t }) {
@@ -21,7 +22,7 @@ export default function TournamentCard({ tournament: t }) {
   return (
     <article className="tournament-card">
       <Link to={`/tournaments/${t.slug}`} className="card-art" aria-label={`View ${t.title}`}>
-        <img src={t.bannerUrl || site.tournamentImage} alt="" loading="lazy" />
+        <ResponsiveImage src={tournamentArtwork(t)} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 420px" />
         <span className={`match-status ${slots.canRegister ? 'open' : ''}`}>
           {(t.status || 'unavailable').replaceAll('_', ' ')}
         </span>
@@ -32,7 +33,7 @@ export default function TournamentCard({ tournament: t }) {
       </Link>
 
       <div className="card-content">
-        <p className="card-organizer">{site.name || 'Rahul Esports'}</p>
+        <p className="card-organizer">{site.name}</p>
         <h3>
           <Link to={`/tournaments/${t.slug}`}>{t.title}</Link>
         </h3>
@@ -51,7 +52,7 @@ export default function TournamentCard({ tournament: t }) {
         {/* Room ID and Password WhatsApp Notice */}
         <div className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-lg bg-emerald-950/50 border border-emerald-500/30 text-[11px] text-emerald-300">
           <MessageCircle size={14} className="text-emerald-400 shrink-0" />
-          <span>Room ID & Pass sent to {t.format === 'squad' ? 'Team Leader' : 'Player'} WhatsApp</span>
+          <span>Room details shared with {t.format === 'squad' ? 'Team Leader' : 'Player'} after verification</span>
         </div>
 
         <div className="card-metrics">
@@ -78,7 +79,7 @@ export default function TournamentCard({ tournament: t }) {
           className={`arena-button ${slots.canRegister ? '' : 'secondary'}`}
           to={slots.canRegister ? `/join/${t.format}/${t._id}` : `/tournaments/${t.slug}`}
         >
-          {slots.canRegister ? `Register (₹${t.entryFee})` : 'View match details'}
+          {slots.canRegister ? (t.entryFee === 0 ? 'Register free' : `Register · ₹${t.entryFee}`) : 'View match details'}
         </Link>
       </div>
     </article>

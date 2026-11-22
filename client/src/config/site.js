@@ -13,7 +13,15 @@ export const site = Object.freeze({
   organizerImage: env.VITE_ORGANIZER_IMAGE || '',
   organizerRole: env.VITE_ORGANIZER_ROLE || '',
   heroImage: env.VITE_HERO_IMAGE || '',
+  soloImage: env.VITE_SOLO_IMAGE || '',
+  accountImage: env.VITE_ACCOUNT_IMAGE || '',
   tournamentImage: env.VITE_TOURNAMENT_IMAGE || '',
   locale: env.VITE_LOCALE || 'en-IN',
   timeZone: env.VITE_TIME_ZONE || 'Asia/Kolkata',
 });
+
+export function tournamentArtwork(tournament) {
+  const banner = tournament?.bannerUrl;
+  if (banner && !/\/(odisha-arena|ff-banner-squad)\.webp$/.test(banner)) return banner;
+  return tournament?.format === 'solo' ? site.soloImage : site.tournamentImage;
+}

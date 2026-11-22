@@ -11,9 +11,9 @@ import { calculateEntryScore, rankParticipants } from '../src/services/scoringSe
 import { generateRegistrationRef } from '../src/utils/refGenerator.js';
 import { TOURNAMENT_STATUS } from '../src/constants/statuses.js';
 
-test('Integration Test Suite', async (t) => {
+test('Integration Test Suite', { skip: !process.env.TEST_MONGODB_URI }, async (t) => {
   // Connect to DB for testing
-  await mongoose.connect(process.env.MONGODB_URI);
+  await mongoose.connect(process.env.TEST_MONGODB_URI);
 
   await t.test('Slot Concurrency & Atomicity: prevents overbooking', async () => {
     // Create a temporary test tournament with maxSlots = 2

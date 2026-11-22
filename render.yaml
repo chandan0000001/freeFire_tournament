@@ -22,32 +22,36 @@ services:
       - key: BREVO_API_KEY
         sync: false
       - key: EMAIL_FROM
-        value: rittournament01@gmail.com
+        sync: false
       - key: EMAIL_FROM_NAME
-        value: TH FREEFIRE
+        sync: false
       - key: ADMIN_WHATSAPP_NUMBER
-        value: 918114603994
+        sync: false
       - key: WHATSAPP_COMMUNITY_URL
-        value: https://chat.whatsapp.com/BmpfCWcVIeB0vlE5TgHxkt?s=cl&p=a&iam=2
+        sync: false
       - key: ADMIN_UPI_ID
-        value: srikantap571-1@okaxis
+        sync: false
       - key: ADMIN_UPI_NAME
-        value: Srikant Panda
+        sync: false
       - key: ADMIN_UPI_AID
-        value: uGICAgIDP-4HlSw
+        sync: false
       - key: ADMIN_UPI_URI
-        value: upi://pay?pa=srikantap571-1@okaxis&pn=Srikant%20Panda&aid=uGICAgIDP-4HlSw
+        sync: false
       - key: ADMIN_BOOTSTRAP_EMAIL
-        value: admin@ritesports.in
+        sync: false
       - key: ADMIN_BOOTSTRAP_PASSWORD
         sync: false
       - key: SITE_NAME
-        value: TH FREEFIRE
+        sync: false
       - key: SITE_REGION
-        value: Odisha
+        sync: false
       - key: WALLET_DEPOSIT_PACKAGES
-        value: "50,100,200,500"
+        sync: false
       - key: WALLET_MIN_WITHDRAWAL
-        value: "10"
+        sync: false
       - key: CONTACT_EMAIL
         sync: false
+      - key: REDIS_KEY_PREFIX
+        value: "rahul-arena:"
+      - key: TRUST_PROXY_HOPS
+        value: "1"

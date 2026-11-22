@@ -16,6 +16,7 @@ const generateToken = (user) => {
   return jwt.sign(
     {
       id: user._id,
+      tokenVersion: user.tokenVersion || 0,
       role: user.role,
       name: user.name,
       email: user.email,
@@ -59,6 +60,7 @@ export const register = async (req, res, next) => {
       });
     }
 
+    if (await Wallet.exists({ userEmail: email, userId: null })) return res.status(409).json({ success: false, message: 'A legacy wallet exists for this email. Contact the organizer to verify ownership before account setup.' });
     // Create Player User
     const user = await User.create({
       name: fullName,
@@ -249,36 +251,23 @@ export const adminLogin = async (req, res, next) => {
  * Prevents issues with comma-separated CLIENT_URL or missing origin headers.
  */
 export const resolveClientBase = (req) => {
-  // 1. If Origin or Referer header is present and valid, trust the client caller
-  const rawOrigin = req.headers?.origin || (req.headers?.referer ? (() => {
-    try { return new URL(req.headers.referer).origin; } catch (e) { return null; }
-  })() : null);
-
-  if (rawOrigin && typeof rawOrigin === 'string' && /^https?:\/\//i.test(rawOrigin)) {
-    return rawOrigin.replace(/\/+$/, '');
-  }
-
-  // 2. Parse CLIENT_URL from environment (safely handles comma-separated lists)
-  if (process.env.CLIENT_URL) {
-    const candidateUrls = process.env.CLIENT_URL
-      .split(',')
-      .map((s) => s.trim().replace(/\/+$/, ''))
-      .filter((s) => /^https?:\/\//i.test(s));
-
-    if (candidateUrls.length > 0) {
-      if (process.env.NODE_ENV === 'production') {
-        const prodUrl = candidateUrls.find((u) => u.startsWith('https://'));
-        return prodUrl || candidateUrls[0];
-      }
-      const localUrl = candidateUrls.find((u) => u.includes('localhost') || u.includes('127.0.0.1'));
-      return localUrl || candidateUrls[0];
+  const allowed = (process.env.CLIENT_URL || '')
+    .split(',')
+    .map(value => value.trim().replace(/\/+$/, ''))
+    .filter(value => /^https?:\/\//.test(value));
+  let origin = req?.headers?.origin;
+  if (!origin && req?.headers?.referer) {
+    try {
+      origin = new URL(req.headers.referer).origin;
+    } catch {
+      origin = null;
     }
   }
-
-  // 3. Fallback default
-  return process.env.NODE_ENV === 'production'
-    ? 'https://rittournament.vercel.app'
-    : 'http://localhost:5173';
+  if (origin && allowed.includes(origin)) return origin;
+  const trusted = allowed.find(value => process.env.NODE_ENV !== 'production' || value.startsWith('https://'));
+  if (trusted) return trusted;
+  if (allowed.length > 0) return allowed[0];
+  return process.env.NODE_ENV === 'production' ? 'https://rittournament.vercel.app' : 'http://localhost:5173';
 };
 
 /**
@@ -348,7 +337,7 @@ export const forgotPassword = async (req, res, next) => {
 
     return res.json({
       success: true,
-      message: 'Password reset link sent! Please check your email inbox (and spam folder).',
+      message: 'If an account is associated with this email, a password reset link has been dispatched.',
     });
   } catch (err) {
     next(err);
@@ -393,6 +382,7 @@ export const resetPassword = async (req, res, next) => {
       });
     }
 
+    user.tokenVersion = (user.tokenVersion || 0) + 1;
     // Update password (pre-save hook hashes with bcrypt)
     user.password = password;
     user.resetPasswordToken = null;

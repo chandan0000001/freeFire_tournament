@@ -12,7 +12,7 @@ export const authenticate = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     const user = await User.findById(decoded.id).select('+role +isActive');
-    if (!user || !user.isActive) {
+    if (!user || !user.isActive || (decoded.tokenVersion || 0) !== (user.tokenVersion || 0)) {
       return res.status(401).json({ success: false, message: 'Invalid token or inactive user account.' });
     }
 

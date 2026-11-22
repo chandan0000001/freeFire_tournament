@@ -25,7 +25,7 @@ export default function WalletPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12 space-y-8">
       {/* Hero Coming Soon Card */}
-      <div className="p-8 sm:p-12 rounded-3xl bg-[#24171e] border border-brand-orange/40 text-center space-y-6 shadow-2xl relative overflow-hidden">
+      <div className="p-8 sm:p-12 rounded-3xl bg-[#1c1b1e] border border-brand-orange/40 text-center space-y-6 shadow-2xl relative overflow-hidden">
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 bg-brand-orange/15 blur-[100px] pointer-events-none rounded-full" />
 
         <div className="relative">
@@ -48,23 +48,23 @@ export default function WalletPage() {
 
         {/* Active Cash & WhatsApp Flow Box */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-xl mx-auto pt-4 text-left">
-          <div className="p-5 rounded-2xl bg-[#1b1017] border border-[#49303a] space-y-2">
+          <div className="p-5 rounded-2xl bg-[#1b1017] border border-[#393236] space-y-2">
             <div className="flex items-center gap-2 text-brand-amber font-display font-bold text-sm uppercase">
               <Trophy className="w-4 h-4 text-brand-amber" />
               <span>Direct UPI Entry</span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Register your squad (₹29) or solo entry (₹14) directly with zero wallet balance required.
+              Register directly using the entry fee published on your selected tournament.
             </p>
           </div>
 
-          <div className="p-5 rounded-2xl bg-[#1b1017] border border-[#49303a] space-y-2">
+          <div className="p-5 rounded-2xl bg-[#1b1017] border border-[#393236] space-y-2">
             <div className="flex items-center gap-2 text-emerald-400 font-display font-bold text-sm uppercase">
               <MessageCircle className="w-4 h-4 text-emerald-400" />
               <span>WhatsApp Prize Payouts</span>
             </div>
             <p className="text-xs text-slate-400 leading-relaxed">
-              Match winners receive 100% of their cash prize directly via UPI transfer coordinated on Admin WhatsApp within 24 hours.
+              Published prizes are processed by the organizer according to the tournament payout terms.
             </p>
           </div>
         </div>
@@ -80,10 +80,10 @@ export default function WalletPage() {
           </Link>
 
           <a
-            href="https://wa.me/918114603994"
+            href={site.communityUrl || '/contact'}
             target="_blank"
             rel="noreferrer"
-            className="px-8 py-3.5 rounded-xl bg-[#1b1017] hover:bg-[#301e27] border border-[#49303a] font-display font-bold uppercase tracking-wider text-slate-200 text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors"
+            className="px-8 py-3.5 rounded-xl bg-[#1b1017] hover:bg-[#292428] border border-[#393236] font-display font-bold uppercase tracking-wider text-slate-200 text-xs sm:text-sm flex items-center justify-center gap-2 transition-colors"
           >
             <MessageCircle className="w-4 h-4 text-emerald-400" />
             <span>Contact Admin WhatsApp</span>
@@ -93,7 +93,7 @@ export default function WalletPage() {
 
       {/* Account Info (if signed in) */}
       {user && (
-        <div className="p-5 rounded-2xl bg-[#24171e] border border-[#49303a] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
+        <div className="p-5 rounded-2xl bg-[#1c1b1e] border border-[#393236] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-2.5">
             <ShieldCheck className="w-5 h-5 text-emerald-400 shrink-0" />
             <div>

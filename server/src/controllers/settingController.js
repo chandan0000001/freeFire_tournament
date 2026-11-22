@@ -73,7 +73,7 @@ export const updateAdminSettings = async (req, res, next) => {
       setting = new SiteSetting();
     }
 
-    Object.assign(setting, req.body);
+    for (const key of Object.keys(SiteSetting.schema.paths)) if (!['_id', '__v', 'createdAt', 'updatedAt'].includes(key) && Object.hasOwn(req.body, key)) setting[key] = req.body[key];
     await setting.save();
 
     // Invalidate cached public settings in Redis

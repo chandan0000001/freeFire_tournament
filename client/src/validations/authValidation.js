@@ -17,7 +17,7 @@ export const registerSchema = z.object({
     .toLowerCase(),
   password: z
     .string()
-    .min(6, 'Password must be at least 6 characters'),
+    .min(8, 'Password must be at least 8 characters'),
 });
 
 export const loginSchema = z.object({
@@ -44,7 +44,7 @@ export const resetPasswordSchema = z
     token: z.string().min(1, 'Reset token is required'),
     password: z
       .string()
-      .min(6, 'Password must be at least 6 characters'),
+      .min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string().min(1, 'Confirm password is required'),
   })
   .refine((data) => data.password === data.confirmPassword, {

@@ -1,3 +1,7 @@
+import { claimPaymentReference } from '../services/paymentReferenceService.js';
+import { MatchResult } from '../models/MatchResult.js';
+import { Prize } from '../models/Prize.js';
+import { afterCommit } from '../middleware/transactional.js';
 import { Registration } from '../models/Registration.js';
 import { Tournament } from '../models/Tournament.js';
 import { SiteSetting } from '../models/SiteSetting.js';
@@ -18,7 +22,7 @@ export const registerSquad = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Missing tournament or team name.' });
     }
 
-    if (!Array.isArray(players) || players.length < 3) {
+    if (!Array.isArray(players) || (players.length < 3 || players.length > 4)) {
       return res.status(400).json({ success: false, message: 'Squad registration requires at least 3 players.' });
     }
 
@@ -59,8 +63,12 @@ export const registerSquad = async (req, res, next) => {
       }
     }
 
+    // Serialize concurrent submissions for the same tournament.
+    await Tournament.updateOne({ _id: tournamentId }, { $inc: { registrationRevision: 1 } });
     // 1. Verify capacity
     reservedTournament = await checkAvailableCapacity(tournamentId);
+    if (reservedTournament.format !== 'squad') return res.status(400).json({ success: false, message: 'Tournament format does not match this registration.' });
+    if (await Registration.exists({ tournamentId, userId: req.user._id })) return res.status(409).json({ success: false, message: 'You have already registered for this tournament.' });
 
     // 2. Generate unique reference ID
     const referenceId = generateRegistrationRef('squad');
@@ -84,7 +92,7 @@ export const registerSquad = async (req, res, next) => {
       teamName: teamName.trim(),
       captain: {
         name: leaderName,
-        email: captain?.email?.toLowerCase()?.trim() || req.user?.email || '',
+        email: req.user.email,
         phone: leaderPhone || req.user?.mobileNumber || '',
         collegeRollNo: '',
       },
@@ -97,9 +105,9 @@ export const registerSquad = async (req, res, next) => {
 
     // 4. Fetch site settings for UPI & WhatsApp numbers
     const settings = (await SiteSetting.findOne()) || {};
-    const adminWhatsApp = settings.adminWhatsAppNumber || process.env.ADMIN_WHATSAPP_NUMBER || '918114603994';
-    const upiId = settings.upiId || process.env.ADMIN_UPI_ID || 'srikantap571-1@okaxis';
-    const payeeName = settings.upiPayeeName || process.env.ADMIN_UPI_NAME || 'Rahul Esports';
+    const adminWhatsApp = settings.adminWhatsAppNumber || process.env.ADMIN_WHATSAPP_NUMBER || '';
+    const upiId = settings.upiId || process.env.ADMIN_UPI_ID || '';
+    const payeeName = settings.upiPayeeName || process.env.ADMIN_UPI_NAME || process.env.SITE_NAME || '';
     const amount = reservedTournament.entryFee;
 
     // UPI Deep Link & Dynamic QR Code
@@ -155,9 +163,7 @@ export const registerSquad = async (req, res, next) => {
       },
     });
   } catch (error) {
-    if (reservedTournament) {
-      await releaseSlot(reservedTournament._id);
-    }
+
     next(error);
   }
 };
@@ -171,8 +177,12 @@ export const registerSolo = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Player name and WhatsApp phone number are required.' });
     }
 
+    // Serialize concurrent submissions for the same tournament.
+    await Tournament.updateOne({ _id: tournamentId }, { $inc: { registrationRevision: 1 } });
     // 1. Verify capacity
     reservedTournament = await checkAvailableCapacity(tournamentId);
+    if (reservedTournament.format !== 'solo') return res.status(400).json({ success: false, message: 'Tournament format does not match this registration.' });
+    if (await Registration.exists({ tournamentId, userId: req.user._id })) return res.status(409).json({ success: false, message: 'You have already registered for this tournament.' });
 
     // 2. Generate unique reference ID
     const referenceId = generateRegistrationRef('solo');
@@ -195,7 +205,7 @@ export const registerSolo = async (req, res, next) => {
       slotTime: slotTime || slotLabel,
       captain: {
         name: captain.name.trim(),
-        email: captain.email?.toLowerCase()?.trim() || req.user?.email || '',
+        email: req.user.email,
         phone: captain.phone.trim() || req.user?.mobileNumber || '',
         collegeRollNo: '',
       },
@@ -217,9 +227,9 @@ export const registerSolo = async (req, res, next) => {
 
     // 4. Fetch site settings
     const settings = (await SiteSetting.findOne()) || {};
-    const adminWhatsApp = settings.adminWhatsAppNumber || process.env.ADMIN_WHATSAPP_NUMBER || '918114603994';
-    const upiId = settings.upiId || process.env.ADMIN_UPI_ID || 'srikantap571-1@okaxis';
-    const payeeName = settings.upiPayeeName || process.env.ADMIN_UPI_NAME || 'Rahul Esports';
+    const adminWhatsApp = settings.adminWhatsAppNumber || process.env.ADMIN_WHATSAPP_NUMBER || '';
+    const upiId = settings.upiId || process.env.ADMIN_UPI_ID || '';
+    const payeeName = settings.upiPayeeName || process.env.ADMIN_UPI_NAME || process.env.SITE_NAME || '';
     const amount = reservedTournament.entryFee;
 
     // UPI Deep Link & Dynamic QR Code
@@ -266,9 +276,7 @@ export const registerSolo = async (req, res, next) => {
       },
     });
   } catch (error) {
-    if (reservedTournament) {
-      await releaseSlot(reservedTournament._id);
-    }
+
     next(error);
   }
 };
@@ -311,15 +319,7 @@ export const getMyRegistrations = async (req, res, next) => {
       return res.status(401).json({ success: false, message: 'Authentication required' });
     }
 
-    const orConditions = [{ userId: user._id }];
-    if (user.email && user.email.trim()) {
-      orConditions.push({ 'captain.email': user.email.toLowerCase().trim() });
-    }
-    if (user.mobileNumber && user.mobileNumber.trim()) {
-      orConditions.push({ 'captain.phone': user.mobileNumber.trim() });
-    }
-
-    const registrations = await Registration.find({ $or: orConditions })
+    const registrations = await Registration.find({ userId: user._id })
       .populate('tournamentId', 'title format entryFee prizePool matchDate status bannerUrl map')
       .sort({ createdAt: -1 });
 
@@ -348,6 +348,7 @@ export const submitCaptainEvidence = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Registration not found' });
     }
 
+    if (String(registration.userId) !== String(req.user._id)) return res.status(403).json({ success: false, message: 'You can only upload evidence for your own registration.' });
     const screenshotUrl = `/uploads/evidence/${req.file.filename}`;
     registration.captainEvidence.push({
       screenshotUrl,
@@ -370,13 +371,6 @@ export const submitCaptainEvidence = async (req, res, next) => {
 // Admin Endpoints
 export const getAdminRegistrations = async (req, res, next) => {
   try {
-    // Auto-cleanup: remove rejected registrations older than 5 hours (as well as unacted pending older than 5 hours)
-    const fiveHoursAgo = new Date(Date.now() - 5 * 60 * 60 * 1000);
-    await Registration.deleteMany({
-      paymentStatus: PAYMENT_STATUS.REJECTED,
-      updatedAt: { $lt: fiveHoursAgo },
-    });
-
     const { tournamentId, paymentStatus, search, page = 1, limit = 50 } = req.query;
     const query = {};
 
@@ -428,8 +422,11 @@ export const updatePaymentStatus = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Registration not found' });
     }
 
+    if (status === PAYMENT_STATUS.VERIFIED && registration.tournamentId.entryFee > 0) await claimPaymentReference(utr || registration.paymentDetails.utr, 'registration', registration._id);
     const previousStatus = registration.paymentStatus;
+    if (status === PAYMENT_STATUS.VERIFIED && previousStatus !== PAYMENT_STATUS.VERIFIED) await reserveSlot(registration.tournamentId._id);
     registration.paymentStatus = status;
+    registration.isApproved = status === PAYMENT_STATUS.VERIFIED;
     registration.paymentDetails.verifiedBy = req.user._id;
     registration.paymentDetails.verifiedAt = new Date();
 
@@ -441,7 +438,7 @@ export const updatePaymentStatus = async (req, res, next) => {
       registration.paymentDetails.rejectionReason = '';
 
       // Send payment verified confirmation email
-      sendPaymentVerifiedEmail(registration, registration.tournamentId).catch((err) =>
+      afterCommit(() => sendPaymentVerifiedEmail(registration, registration.tournamentId)).catch((err) =>
         console.error('[Email Notice]', err.message)
       );
     } else if (status === PAYMENT_STATUS.REJECTED) {
@@ -490,6 +487,7 @@ export const deleteRegistration = async (req, res, next) => {
     const refId = registration.referenceId;
     const displayName = registration.teamName || registration.players?.[0]?.inGameName || 'Participant';
 
+    if (registration.paymentStatus === PAYMENT_STATUS.VERIFIED || await Prize.exists({ winnerRegistrationId: id }) || await MatchResult.exists({ 'entries.registrationId': id })) return res.status(409).json({ success: false, message: 'Confirmed or scored registrations must be retained. Reject an unconfirmed entry before removing it.' });
     await Registration.findByIdAndDelete(id);
 
     // Resynchronize slots for the tournament

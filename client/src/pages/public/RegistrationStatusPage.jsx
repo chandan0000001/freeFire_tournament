@@ -1,3 +1,4 @@
+import useLiveRefresh from '../../hooks/useLiveRefresh.js';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api.js';
@@ -39,6 +40,8 @@ export default function RegistrationStatusPage() {
   const [manualError, setManualError] = useState('');
   const [manualResult, setManualResult] = useState(null);
 
+  const [refreshVersion, setRefreshVersion] = useState(0);
+  useLiveRefresh(() => setRefreshVersion(value => value + 1));
   useEffect(() => {
     // 1. Fetch admin whatsapp from site settings
     api.get('/settings/public')
@@ -66,7 +69,7 @@ export default function RegistrationStatusPage() {
     };
 
     fetchRegistrations();
-  }, []);
+  }, [refreshVersion]);
 
   const copyToClipboard = (text, id) => {
     if (!text) return;
@@ -135,7 +138,7 @@ export default function RegistrationStatusPage() {
 
       {/* Main Content Area */}
       {loading ? (
-        <div className="p-12 text-center rounded-2xl bg-[#24171e] border border-[#49303a] text-slate-400 text-xs">
+        <div className="p-12 text-center rounded-2xl bg-[#1c1b1e] border border-[#393236] text-slate-400 text-xs">
           Loading your registrations...
         </div>
       ) : error ? (
@@ -146,7 +149,7 @@ export default function RegistrationStatusPage() {
           </div>
           <button
             onClick={() => window.location.reload()}
-            className="px-3 py-1 rounded bg-[#24171e] text-white hover:bg-brand-orange text-[11px] font-bold"
+            className="px-3 py-1 rounded bg-[#1c1b1e] text-white hover:bg-brand-orange text-[11px] font-bold"
           >
             Retry
           </button>
@@ -162,7 +165,7 @@ export default function RegistrationStatusPage() {
             return (
               <div
                 key={reg._id}
-                className="rounded-2xl bg-[#24171e] border border-[#49303a] overflow-hidden shadow-xl space-y-5 p-6 sm:p-7"
+                className="rounded-2xl bg-[#1c1b1e] border border-[#393236] overflow-hidden shadow-xl space-y-5 p-6 sm:p-7"
               >
                 {/* Card Top: Reference ID & Status Badge */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#36212c] pb-4">
@@ -210,7 +213,7 @@ export default function RegistrationStatusPage() {
 
                 {/* Tournament & Match Session Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
-                  <div className="p-3 rounded-xl bg-[#160e13] border border-[#49303a] space-y-1">
+                  <div className="p-3 rounded-xl bg-[#111214] border border-[#393236] space-y-1">
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">Tournament</span>
                     <span className="text-white font-bold text-sm block">
                       {reg.tournamentId?.title || 'Free Fire Tournament'}
@@ -220,7 +223,7 @@ export default function RegistrationStatusPage() {
                     </span>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-[#160e13] border border-[#49303a] space-y-1">
+                  <div className="p-3 rounded-xl bg-[#111214] border border-[#393236] space-y-1">
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">Preferred Session Slot</span>
                     <span className="text-amber-300 font-bold text-sm block uppercase">
                       {reg.preferredSlot || 'Morning'}
@@ -230,7 +233,7 @@ export default function RegistrationStatusPage() {
                     </span>
                   </div>
 
-                  <div className="p-3 rounded-xl bg-[#160e13] border border-[#49303a] space-y-1">
+                  <div className="p-3 rounded-xl bg-[#111214] border border-[#393236] space-y-1">
                     <span className="text-[10px] uppercase font-bold text-slate-400 block">Submitted UPI UTR</span>
                     <div className="flex items-center justify-between">
                       <span className="text-white font-mono font-bold text-sm truncate">
@@ -276,7 +279,7 @@ export default function RegistrationStatusPage() {
                             className={`flex items-center justify-between p-2.5 rounded-xl border transition-colors ${
                               isLeader
                                 ? 'bg-amber-950/30 border-amber-500/40 text-white'
-                                : 'bg-[#160e13] border-[#49303a] text-slate-300'
+                                : 'bg-[#111214] border-[#393236] text-slate-300'
                             }`}
                           >
                             <div className="flex items-center gap-2">
@@ -299,7 +302,7 @@ export default function RegistrationStatusPage() {
                         );
                       })
                     ) : (
-                      <div className="p-2.5 rounded-xl bg-[#160e13] border border-[#49303a] text-xs text-white">
+                      <div className="p-2.5 rounded-xl bg-[#111214] border border-[#393236] text-xs text-white">
                         {reg.captain?.name} ({reg.captain?.phone})
                       </div>
                     )}
@@ -403,7 +406,7 @@ export default function RegistrationStatusPage() {
         </div>
       ) : (
         /* Empty State */
-        <div className="p-12 text-center rounded-2xl bg-[#24171e] border border-[#49303a] space-y-4">
+        <div className="p-12 text-center rounded-2xl bg-[#1c1b1e] border border-[#393236] space-y-4">
           <div className="w-14 h-14 rounded-full bg-brand-orange/10 border border-brand-orange/30 flex items-center justify-center text-brand-orange mx-auto">
             <Clock className="w-7 h-7" />
           </div>
@@ -430,14 +433,14 @@ export default function RegistrationStatusPage() {
         <button
           type="button"
           onClick={() => setShowManualLookup(!showManualLookup)}
-          className="w-full flex items-center justify-between p-4 rounded-xl bg-[#1b1017] hover:bg-[#24171e] border border-[#49303a] text-xs font-bold uppercase tracking-wider text-slate-300 transition-colors"
+          className="w-full flex items-center justify-between p-4 rounded-xl bg-[#1b1017] hover:bg-[#1c1b1e] border border-[#393236] text-xs font-bold uppercase tracking-wider text-slate-300 transition-colors"
         >
           <span>Need to track another Reference ID manually?</span>
           {showManualLookup ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
 
         {showManualLookup && (
-          <div className="mt-4 p-5 rounded-xl bg-[#24171e] border border-[#49303a] space-y-4">
+          <div className="mt-4 p-5 rounded-xl bg-[#1c1b1e] border border-[#393236] space-y-4">
             <p className="text-xs text-slate-400">
               Enter any unique Reference ID (e.g., <span className="font-mono text-brand-orange">RE-FF-SQ-…</span>) to view its public verification status.
             </p>
@@ -449,7 +452,7 @@ export default function RegistrationStatusPage() {
                 placeholder="Enter Reference ID (e.g. RE-FF-SQ-…)"
                 value={refInput}
                 onChange={(e) => setRefInput(e.target.value.toUpperCase())}
-                className="flex-1 px-4 py-2.5 rounded-xl bg-[#160e13] border border-[#49303a] text-white font-mono text-xs placeholder-slate-500 focus:outline-none focus:border-brand-orange uppercase"
+                className="flex-1 px-4 py-2.5 rounded-xl bg-[#111214] border border-[#393236] text-white font-mono text-xs placeholder-slate-500 focus:outline-none focus:border-brand-orange uppercase"
               />
               <button
                 type="submit"
@@ -467,7 +470,7 @@ export default function RegistrationStatusPage() {
             )}
 
             {manualResult && (
-              <div className="p-4 rounded-xl bg-[#160e13] border border-[#49303a] space-y-2 text-xs">
+              <div className="p-4 rounded-xl bg-[#111214] border border-[#393236] space-y-2 text-xs">
                 <div className="flex items-center justify-between">
                   <span className="font-mono font-bold text-brand-orange">{manualResult.referenceId}</span>
                   <span className="uppercase font-bold text-amber-300">{manualResult.paymentStatus}</span>

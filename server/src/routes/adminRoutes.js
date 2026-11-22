@@ -1,3 +1,5 @@
+import { transactional } from '../middleware/transactional.js';
+import { getAdminTournaments } from '../controllers/tournamentController.js';
 import express from 'express';
 import { authenticate, requireRole } from '../middleware/auth.js';
 import { ROLES } from '../constants/roles.js';
@@ -52,20 +54,28 @@ const router = express.Router();
 
 // Apply auth & admin role requirement to all admin routes
 router.use(authenticate, requireRole(ROLES.ADMIN, ROLES.SUPERADMIN));
+router.use((req, res, next) => {
+  for (const key of ['limit', 'page']) if (req.query[key] !== undefined) {
+    const value = Number(req.query[key]);
+    if (!Number.isSafeInteger(value) || value < 1 || (key === 'limit' && value > 200)) return res.status(400).json({ success: false, message: 'Invalid pagination.' });
+  }
+  next();
+});
 
 // Dashboard KPI Stats
 router.get('/dashboard/stats', getDashboardStats);
 
 // Tournaments
-router.post('/tournaments', createTournament);
-router.patch('/tournaments/:id', updateTournament);
-router.patch('/tournaments/:id/status', updateTournamentStatus);
-router.delete('/tournaments/:id', deleteTournament);
+router.get('/tournaments', getAdminTournaments);
+router.post('/tournaments', transactional(createTournament));
+router.patch('/tournaments/:id', transactional(updateTournament));
+router.patch('/tournaments/:id/status', transactional(updateTournamentStatus));
+router.delete('/tournaments/:id', transactional(deleteTournament));
 
 // Registrations & Manual Payments
 router.get('/registrations', getAdminRegistrations);
-router.patch('/registrations/:id/payment', updatePaymentStatus);
-router.delete('/registrations/:id', deleteRegistration);
+router.patch('/registrations/:id/payment', transactional(updatePaymentStatus));
+router.delete('/registrations/:id', transactional(deleteRegistration));
 
 // Room Credentials Distribution
 router.post('/rooms/:tournamentId', setRoomCredentials);
@@ -75,29 +85,29 @@ router.post('/rooms/retry/:logId', retryRoomDelivery);
 
 // Matches & Results Recording
 router.get('/matches', getMatches);
-router.post('/matches', createMatch);
-router.post('/matches/:id/results', submitMatchResult);
+router.post('/matches', transactional(createMatch));
+router.post('/matches/:id/results', transactional(submitMatchResult));
 
 // Match Results Review & Publishing
 router.get('/results', getAdminResults);
-router.post('/results/direct-record', directRecordMatchResult);
-router.patch('/results/:id/review', reviewMatchResult);
-router.post('/results/:id/publish', publishMatchResult);
+router.post('/results/direct-record', transactional(directRecordMatchResult));
+router.patch('/results/:id/review', transactional(reviewMatchResult));
+router.post('/results/:id/publish', transactional(publishMatchResult));
 
 // Cash Prizes & Payouts
 router.get('/prizes', getAdminPrizes);
-router.post('/prizes', createAdminPrize);
-router.patch('/prizes/:id/payout', updatePayoutStatus);
-router.delete('/prizes/:id', deleteAdminPrize);
+router.post('/prizes', transactional(createAdminPrize));
+router.patch('/prizes/:id/payout', transactional(updatePayoutStatus));
+router.delete('/prizes/:id', transactional(deleteAdminPrize));
 
 // Coin Withdrawals & Wallet Management
 router.get('/withdrawals', getAdminWithdrawals);
-router.post('/withdrawals/:id/approve', approveWithdrawal);
-router.post('/withdrawals/:id/reject', rejectWithdrawal);
+router.post('/withdrawals/:id/approve', transactional(approveWithdrawal));
+router.post('/withdrawals/:id/reject', transactional(rejectWithdrawal));
 router.get('/deposits', getAdminDeposits);
-router.post('/deposits/:id/approve', approveDeposit);
-router.post('/deposits/:id/reject', rejectDeposit);
-router.post('/wallets/manual-adjust', manualAdjustCoins);
+router.post('/deposits/:id/approve', transactional(approveDeposit));
+router.post('/deposits/:id/reject', transactional(rejectDeposit));
+router.post('/wallets/manual-adjust', transactional(manualAdjustCoins));
 
 // Settings & Audit Logs
 router.get('/settings', getAdminSettings);

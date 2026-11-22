@@ -1,6 +1,10 @@
 import { AuditLog } from '../models/AuditLog.js';
 
-export const logAudit = async ({ action, performedBy, targetEntity, targetId, details, changes, ipAddress }) => {
+export const logAudit = async ({ action, performedBy, targetEntity, targetId, details, changes, ipAddress, req, targetModel, adminId }) => {
+  performedBy = performedBy || req?.user || adminId;
+  targetEntity = targetEntity || targetModel;
+  ipAddress = ipAddress || req?.ip;
+  if (typeof details !== 'string') details = JSON.stringify(details || {});
   try {
     await AuditLog.create({
       action,

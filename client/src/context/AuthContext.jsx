@@ -1,3 +1,4 @@
+import useLiveRefresh from '../hooks/useLiveRefresh.js';
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react';
 import api from '../services/api.js';
 
@@ -19,7 +20,7 @@ export const AuthProvider = ({ children }) => {
       const res = await api.get('/auth/me');
       if (res.success && res.user) {
         setUser(res.user);
-        if (res.wallet) setWallet(res.wallet);
+        setWallet(res.wallet || null);
         return res;
       } else {
         localStorage.removeItem('re_token');
@@ -52,7 +53,7 @@ export const AuthProvider = ({ children }) => {
         if (isMounted) {
           if (res.success && res.user) {
             setUser(res.user);
-            if (res.wallet) setWallet(res.wallet);
+            setWallet(res.wallet || null);
           } else {
             localStorage.removeItem('re_token');
             localStorage.removeItem('rit_token');
@@ -89,7 +90,7 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('re_token', res.token);
       localStorage.setItem('rit_token', res.token);
       setUser(res.user);
-      if (res.wallet) setWallet(res.wallet);
+      setWallet(res.wallet || null);
       return res;
     }
     throw new Error(res.message || 'Login failed');
@@ -101,11 +102,13 @@ export const AuthProvider = ({ children }) => {
       localStorage.setItem('re_token', res.token);
       localStorage.setItem('rit_token', res.token);
       setUser(res.user);
-      if (res.wallet) setWallet(res.wallet);
+      setWallet(res.wallet || null);
       return res;
     }
     throw new Error(res.message || 'Registration failed');
   }, []);
+
+  useLiveRefresh(refreshUser);
 
   const logout = useCallback(() => {
     localStorage.removeItem('re_token');

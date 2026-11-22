@@ -1,3 +1,4 @@
+import LiveDataSync from './components/common/LiveDataSync.jsx';
 import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext.jsx';
@@ -79,6 +80,7 @@ export default function App() {
       <AuthProvider>
         <Router>
           <ScrollToTop />
+          <LiveDataSync />
           <Suspense fallback={<PageLoadingFallback />}>
             <Routes>
               {/* Immediate HomePage */}
@@ -141,6 +143,7 @@ export default function App() {
               />
 
               {/* Unified Auth Pages */}
+              <Route path="/admin/login" element={<Navigate to="/login" replace />} />
               <Route path="/login" element={<PublicShell><LoginPage /></PublicShell>} />
               <Route path="/register" element={<PublicShell><RegisterPage /></PublicShell>} />
               <Route path="/forgot-password" element={<PublicShell><ForgotPasswordPage /></PublicShell>} />

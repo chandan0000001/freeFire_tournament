@@ -14,7 +14,7 @@ export default function PageLoadingFallback() {
       </div>
 
       <div className="flex flex-col items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-[#24171e] border border-brand-orange/40 flex items-center justify-center shadow-glow-orange">
+        <div className="w-12 h-12 rounded-xl bg-[#1c1b1e] border border-brand-orange/40 flex items-center justify-center shadow-glow-orange">
           <Loader2 className="w-6 h-6 text-brand-orange animate-spin" />
         </div>
         <p className="font-display text-xs uppercase tracking-widest text-slate-400 font-bold">

@@ -177,7 +177,7 @@ export default function SoloRegisterPage() {
       </div>
 
       {/* Tournament Header Summary */}
-      <div className="p-5 sm:p-6 rounded-2xl bg-[#24171e] border border-[#49303a] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
+      <div className="p-5 sm:p-6 rounded-2xl bg-[#1c1b1e] border border-[#393236] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xl">
         <div>
           <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">Official Registration</span>
           <h1 className="font-display text-2xl sm:text-3xl font-extrabold uppercase text-white mt-0.5">
@@ -212,7 +212,7 @@ export default function SoloRegisterPage() {
         <form onSubmit={handleGoToPayment} className="space-y-8">
           
           {/* Section A: Preferred Match Time Slot */}
-          <div className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-4">
+          <div className="p-6 rounded-2xl bg-[#1c1b1e] border border-[#393236] space-y-4">
             <div>
               <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest block">Step 1 of 2</span>
               <h2 className="font-display text-xl font-bold uppercase text-white mt-1 flex items-center gap-2">
@@ -235,7 +235,7 @@ export default function SoloRegisterPage() {
                     className={`p-4 rounded-xl border text-left transition-all ${
                       isSelected
                         ? 'border-brand-orange bg-brand-orange/20 shadow-glow-orange scale-[1.02]'
-                        : 'border-[#49303a] bg-[#1b1017] hover:border-slate-500'
+                        : 'border-[#393236] bg-[#1b1017] hover:border-slate-500'
                     }`}
                   >
                     <div className="flex items-center justify-between">
@@ -257,7 +257,7 @@ export default function SoloRegisterPage() {
           </div>
 
           {/* Section B: Player Details */}
-          <div className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-4">
+          <div className="p-6 rounded-2xl bg-[#1c1b1e] border border-[#393236] space-y-4">
             <div>
               <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest block">Step 2 of 2</span>
               <h2 className="font-display text-xl font-bold uppercase text-white mt-1 flex items-center gap-2">
@@ -280,7 +280,7 @@ export default function SoloRegisterPage() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Your legal or display name"
-                  className="w-full px-4 py-3 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-sm focus:outline-none focus:border-brand-orange"
+                  className="w-full px-4 py-3 rounded-xl bg-[#1b1017] border border-[#393236] text-white text-sm focus:outline-none focus:border-brand-orange"
                 />
               </div>
 
@@ -295,7 +295,7 @@ export default function SoloRegisterPage() {
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="10-digit mobile number"
-                  className="w-full px-4 py-3 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-sm focus:outline-none focus:border-brand-orange"
+                  className="w-full px-4 py-3 rounded-xl bg-[#1b1017] border border-[#393236] text-white text-sm focus:outline-none focus:border-brand-orange"
                 />
               </div>
 
@@ -308,7 +308,7 @@ export default function SoloRegisterPage() {
                   value={inGameName}
                   onChange={(e) => setInGameName(e.target.value)}
                   placeholder="e.g. Rahul_Headshot"
-                  className="w-full px-4 py-3 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-sm focus:outline-none focus:border-brand-orange"
+                  className="w-full px-4 py-3 rounded-xl bg-[#1b1017] border border-[#393236] text-white text-sm focus:outline-none focus:border-brand-orange"
                 />
               </div>
 
@@ -321,14 +321,14 @@ export default function SoloRegisterPage() {
                   value={freeFireUid}
                   onChange={(e) => setFreeFireUid(e.target.value)}
                   placeholder="Numbers only (e.g. 123456789)"
-                  className="w-full px-4 py-3 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-sm focus:outline-none focus:border-brand-orange"
+                  className="w-full px-4 py-3 rounded-xl bg-[#1b1017] border border-[#393236] text-white text-sm focus:outline-none focus:border-brand-orange"
                 />
               </div>
             </div>
           </div>
 
           {/* Action CTA */}
-          <div className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="p-6 rounded-2xl bg-[#1c1b1e] border border-[#393236] flex flex-col sm:flex-row items-center justify-between gap-4">
             <div>
               <p className="text-xs text-slate-300">
                 Preferred: <strong className="text-white">{activeSlot.label} ({activeSlot.time})</strong>
@@ -352,7 +352,7 @@ export default function SoloRegisterPage() {
       {/* STEP 2: PAYMENT SCREEN */}
       {step === 'payment' && (
         <form onSubmit={handleFinalSubmit} className="space-y-6">
-          <div className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-6 shadow-xl">
+          <div className="p-6 rounded-2xl bg-[#1c1b1e] border border-[#393236] space-y-6 shadow-xl">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 border-b border-[#412a34] pb-4">
               <div>
                 <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest block">Checkout & UPI Payment</span>
@@ -395,7 +395,7 @@ export default function SoloRegisterPage() {
                 </p>
 
                 <div className="flex items-center justify-center md:justify-start gap-2 pt-1">
-                  <span className="font-mono text-sm font-bold text-brand-amber bg-[#24171e] px-3.5 py-1.5 rounded-xl border border-[#49303a]">
+                  <span className="font-mono text-sm font-bold text-brand-amber bg-[#1c1b1e] px-3.5 py-1.5 rounded-xl border border-[#393236]">
                     srikantap571-1@okaxis
                   </span>
                   <button
@@ -405,7 +405,7 @@ export default function SoloRegisterPage() {
                       setCopied(true);
                       setTimeout(() => setCopied(false), 2000);
                     }}
-                    className="p-2 rounded-xl bg-[#24171e] hover:bg-[#301e27] text-slate-300 hover:text-white border border-[#49303a] transition-colors"
+                    className="p-2 rounded-xl bg-[#1c1b1e] hover:bg-[#292428] text-slate-300 hover:text-white border border-[#393236] transition-colors"
                     title="Copy UPI ID"
                   >
                     {copied ? <CheckCircle className="w-4 h-4 text-emerald-400" /> : <Copy className="w-4 h-4" />}
@@ -426,7 +426,7 @@ export default function SoloRegisterPage() {
                 value={utrNumber}
                 onChange={(e) => setUtrNumber(e.target.value.replace(/\D/g, ''))}
                 placeholder="e.g. 432198765432"
-                className="w-full px-4 py-3 rounded-xl bg-[#1b1017] border border-[#49303a] text-white text-base font-mono tracking-wider focus:outline-none focus:border-brand-orange"
+                className="w-full px-4 py-3 rounded-xl bg-[#1b1017] border border-[#393236] text-white text-base font-mono tracking-wider focus:outline-none focus:border-brand-orange"
               />
               <p className="text-[11px] text-slate-400">
                 Found in your UPI payment receipt details (12 digits numbers only).
@@ -447,7 +447,7 @@ export default function SoloRegisterPage() {
 
       {/* STEP 3: SUCCESS & WHATSAPP DISPATCH */}
       {step === 'success' && registrationResult && (
-        <div className="p-6 sm:p-8 rounded-2xl bg-[#24171e] border border-emerald-500/40 text-center space-y-6 shadow-2xl">
+        <div className="p-6 sm:p-8 rounded-2xl bg-[#1c1b1e] border border-emerald-500/40 text-center space-y-6 shadow-2xl">
           <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 flex items-center justify-center mx-auto shadow-glow-emerald">
             <CheckCircle className="w-8 h-8" />
           </div>
@@ -465,7 +465,7 @@ export default function SoloRegisterPage() {
           </div>
 
           {/* Reference Card */}
-          <div className="p-5 rounded-2xl bg-[#1b1017] border border-[#49303a] max-w-md mx-auto text-left space-y-2.5">
+          <div className="p-5 rounded-2xl bg-[#1b1017] border border-[#393236] max-w-md mx-auto text-left space-y-2.5">
             <div className="flex items-center justify-between pb-2 border-b border-[#412a34]">
               <span className="text-xs text-slate-400 font-semibold">Reference ID:</span>
               <strong className="text-base font-mono font-bold text-brand-orange">

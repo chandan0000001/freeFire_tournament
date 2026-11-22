@@ -1,3 +1,4 @@
+import useLiveRefresh from '../../hooks/useLiveRefresh.js';
 import { site } from '../../config/site.js';
 import { toLocalDateTimeInput } from '../../utils/dateTime.js';
 import React, { useState, useEffect } from 'react';
@@ -30,7 +31,8 @@ export default function AdminTournaments() {
   // Curated high-res 16:9 widescreen Free Fire tournament banners
   const BANNER_OPTIONS = [
     { label: 'Odisha arena (site default)', value: '' },
-    { label: 'Odisha · Konark & coast', value: site.tournamentImage },
+    { label: 'Odisha · Squad champions', value: site.tournamentImage },
+    { label: 'Odisha · Chilika solo champion', value: site.soloImage },
     { label: 'Official Squad Battle (16:9)', value: '/images/ff-banner-squad.webp' },
     { label: 'Solo Firestorm Champion (16:9)', value: '/images/ff-banner-solo.webp' },
     { label: 'Rampage Battleground (16:9)', value: '/images/ff-banner-rampage.webp' },
@@ -117,7 +119,7 @@ export default function AdminTournaments() {
   const fetchTournaments = async () => {
     setLoading(true);
     try {
-      const res = await api.get('/tournaments');
+      const res = await api.get('/admin/tournaments');
       if (res.success) {
         setTournaments(res.tournaments || []);
       }
@@ -150,6 +152,8 @@ export default function AdminTournaments() {
     document.addEventListener('keydown', handleKey);
     return () => { document.body.style.overflow = overflow; document.removeEventListener('keydown', handleKey); prior?.focus(); };
   }, [isModalOpen, submitting]);
+
+  useLiveRefresh(() => { if (!isModalOpen && !busyId) fetchTournaments(); });
 
   const openCreateModal = () => {
     setEditingTournamentId(null);
@@ -222,7 +226,7 @@ export default function AdminTournaments() {
       // Auto-assign random banner if empty or random
       const selectedBanner = formData.bannerUrl && formData.bannerUrl.trim() !== ''
         ? formData.bannerUrl
-        : site.tournamentImage;
+        : '';
 
       const payload = {
         title: formData.title,
@@ -337,17 +341,17 @@ export default function AdminTournaments() {
       {/* Tournaments Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 2xl:grid-cols-3 gap-6">
         {tournaments.map((t) => (
-          <div key={t._id} className="p-5 rounded-2xl bg-[#24171e] border border-[#49303a] flex flex-col justify-between space-y-4 relative group hover:border-slate-600 transition-colors">
+          <div key={t._id} className="p-5 rounded-2xl bg-[#1c1b1e] border border-[#393236] flex flex-col justify-between space-y-4 relative group hover:border-slate-600 transition-colors">
             
             <div className="space-y-3">
               {/* Mini Banner Preview */}
-              <div className="relative h-28 w-full rounded-xl overflow-hidden bg-slate-900 border border-[#49303a]">
+              <div className="relative h-28 w-full rounded-xl overflow-hidden bg-slate-900 border border-[#393236]">
                 <img
                   src={t.bannerUrl || '/images/ff-banner.webp'}
                   alt={t.title}
                   className="w-full h-full object-cover opacity-80 group-hover:scale-105 transition-transform duration-300"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#24171e] via-transparent to-transparent"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-[#1c1b1e] via-transparent to-transparent"></div>
                 <div className="absolute top-2 left-2 flex items-center gap-1.5">
                   <span className="px-2 py-0.5 rounded bg-black/75 backdrop-blur-md text-[10px] uppercase font-bold text-brand-orange border border-white/10">
                     {t.format}
@@ -366,7 +370,7 @@ export default function AdminTournaments() {
                   disabled={busyId === t._id}
                   value={t.status}
                   onChange={(e) => handleStatusChange(t._id, e.target.value)}
-                  className="px-2.5 py-1 rounded bg-[#160e13] border border-[#49303a] text-[11px] font-bold text-white uppercase focus:outline-none focus:border-brand-orange"
+                  className="px-2.5 py-1 rounded bg-[#111214] border border-[#393236] text-[11px] font-bold text-white uppercase focus:outline-none focus:border-brand-orange"
                 >
                   <option value="draft">Draft</option>
                   <option value="upcoming">Upcoming</option>
@@ -387,7 +391,7 @@ export default function AdminTournaments() {
               </div>
 
               {/* Quick Metrics */}
-              <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-center text-xs">
+              <div className="grid grid-cols-3 gap-2 p-2.5 rounded-lg bg-[#111214] border border-[#393236] text-center text-xs">
                 <div>
                   <span className="text-[9px] uppercase text-slate-400 font-bold block">Fee</span>
                   <span className="font-bold text-white">₹{t.entryFee}</span>
@@ -406,10 +410,10 @@ export default function AdminTournaments() {
             </div>
 
             {/* Action Buttons: Edit & Delete */}
-            <div className="pt-3 border-t border-[#49303a] flex items-center justify-between gap-2">
+            <div className="pt-3 border-t border-[#393236] flex items-center justify-between gap-2">
               <button
                 onClick={() => openEditModal(t)}
-                className="flex-1 py-1.5 px-3 rounded-lg bg-[#301e27] hover:bg-[#49303a] text-slate-300 hover:text-white border border-[#49303a] text-xs font-bold uppercase flex items-center justify-center gap-1.5 transition-colors"
+                className="flex-1 py-1.5 px-3 rounded-lg bg-[#292428] hover:bg-[#393236] text-slate-300 hover:text-white border border-[#393236] text-xs font-bold uppercase flex items-center justify-center gap-1.5 transition-colors"
               >
                 <Edit className="w-3.5 h-3.5 text-cyan-400" /> Edit
               </button>
@@ -425,7 +429,7 @@ export default function AdminTournaments() {
 
             {/* In-Card Delete Confirmation Overlay */}
             {deletingId === t._id && (
-              <div className="absolute inset-0 z-10 p-5 rounded-2xl bg-[#160e13]/95 backdrop-blur-sm border border-rose-500/60 flex flex-col justify-center items-center text-center space-y-3">
+              <div className="absolute inset-0 z-10 p-5 rounded-2xl bg-[#111214]/95 backdrop-blur-sm border border-rose-500/60 flex flex-col justify-center items-center text-center space-y-3">
                 <AlertTriangle className="w-8 h-8 text-rose-500" />
                 <p className="text-xs text-white font-bold">
                   Delete "{t.title}"?
@@ -436,7 +440,7 @@ export default function AdminTournaments() {
                 <div className="flex gap-2 pt-1 w-full">
                   <button
                     onClick={() => setDeletingId(null)}
-                    className="flex-1 py-1.5 rounded-lg bg-[#301e27] text-slate-300 text-xs font-bold"
+                    className="flex-1 py-1.5 rounded-lg bg-[#292428] text-slate-300 text-xs font-bold"
                   >
                     Cancel
                   </button>
@@ -458,9 +462,9 @@ export default function AdminTournaments() {
       {/* Create / Edit Tournament Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-          <div role="dialog" aria-modal="true" aria-label="Tournament editor" className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-[#24171e] border border-[#49303a] p-6 space-y-6 shadow-2xl">
+          <div role="dialog" aria-modal="true" aria-label="Tournament editor" className="w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl bg-[#1c1b1e] border border-[#393236] p-6 space-y-6 shadow-2xl">
             
-            <div className="flex items-center justify-between border-b border-[#49303a] pb-3">
+            <div className="flex items-center justify-between border-b border-[#393236] pb-3">
               <h3 className="font-display text-xl font-bold uppercase text-white">
                 {editingTournamentId ? 'Edit Tournament Details' : 'Create New Free Fire Tournament'}
               </h3>
@@ -485,7 +489,7 @@ export default function AdminTournaments() {
                   placeholder="Tournament name"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white focus:outline-none focus:border-brand-orange"
+                  className="w-full px-3.5 py-2.5 rounded-lg bg-[#111214] border border-[#393236] text-sm text-white focus:outline-none focus:border-brand-orange"
                 />
               </div>
 
@@ -495,7 +499,7 @@ export default function AdminTournaments() {
                   <select
                     id="tournament-format" value={formData.format}
                     onChange={(e) => handleFormatChange(e.target.value)}
-                    className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white"
+                    className="w-full px-3 py-2 rounded-lg bg-[#111214] border border-[#393236] text-white"
                   >
                     <option value="squad">Squad</option>
                     <option value="solo">Solo</option>
@@ -511,7 +515,7 @@ export default function AdminTournaments() {
                     required
                     value={formData.entryFee}
                     onChange={(e) => setFormData({ ...formData, entryFee: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white"
+                    className="w-full px-3 py-2 rounded-lg bg-[#111214] border border-[#393236] text-white"
                   />
                 </div>
 
@@ -524,7 +528,7 @@ export default function AdminTournaments() {
                     required
                     value={formData.maxSlots}
                     onChange={(e) => setFormData({ ...formData, maxSlots: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white"
+                    className="w-full px-3 py-2 rounded-lg bg-[#111214] border border-[#393236] text-white"
                   />
                 </div>
               </div>
@@ -537,7 +541,7 @@ export default function AdminTournaments() {
                     required
                     value={formData.matchDate}
                     onChange={(e) => setFormData({ ...formData, matchDate: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white"
+                    className="w-full px-3 py-2 rounded-lg bg-[#111214] border border-[#393236] text-white"
                   />
                 </div>
 
@@ -546,7 +550,7 @@ export default function AdminTournaments() {
                   <select
                     id="tournament-map" value={formData.map}
                     onChange={(e) => setFormData({ ...formData, map: e.target.value })}
-                    className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white"
+                    className="w-full px-3 py-2 rounded-lg bg-[#111214] border border-[#393236] text-white"
                   >
                     <option value="Bermuda">Bermuda</option>
                     <option value="Purgatory">Purgatory</option>
@@ -557,10 +561,10 @@ export default function AdminTournaments() {
 
               <div>
                 <label htmlFor="tournament-registration-end" className="block font-semibold text-slate-300 mb-1">Registration closes (your local time) *</label>
-                <input id="tournament-registration-end" type="datetime-local" required value={formData.registrationEnd} max={formData.matchDate || undefined} onChange={e => setFormData({ ...formData, registrationEnd: e.target.value })} className="w-full px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-white" />
+                <input id="tournament-registration-end" type="datetime-local" required value={formData.registrationEnd} max={formData.matchDate || undefined} onChange={e => setFormData({ ...formData, registrationEnd: e.target.value })} className="w-full px-3 py-2 rounded-lg bg-[#111214] border border-[#393236] text-white" />
               </div>
               {/* Banner image selection */}
-              <div className="p-4 rounded-xl bg-[#160e13] border border-[#49303a] space-y-3">
+              <div className="p-4 rounded-xl bg-[#111214] border border-[#393236] space-y-3">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-white uppercase text-[10px] tracking-wider text-brand-orange">
                     Card Banner Image
@@ -580,7 +584,7 @@ export default function AdminTournaments() {
                     <select
                       id="tournament-bannerUrl" value={formData.bannerUrl}
                       onChange={(e) => setFormData({ ...formData, bannerUrl: e.target.value })}
-                      className="w-full px-3 py-2 rounded bg-[#301e27] border border-[#49303a] text-white text-xs"
+                      className="w-full px-3 py-2 rounded bg-[#292428] border border-[#393236] text-white text-xs"
                     >
                       {BANNER_OPTIONS.map((opt) => (
                         <option key={opt.value} value={opt.value}>
@@ -596,7 +600,7 @@ export default function AdminTournaments() {
                   </div>
 
                   {/* Live Preview - 16:9 widescreen preview with no vertical distortion */}
-                  <div className="relative w-full aspect-[16/9] max-h-44 rounded-xl overflow-hidden border border-[#49303a] bg-slate-900 flex items-center justify-center shadow-inner">
+                  <div className="relative w-full aspect-[16/9] max-h-44 rounded-xl overflow-hidden border border-[#393236] bg-slate-900 flex items-center justify-center shadow-inner">
                     {(formData.bannerUrl || site.tournamentImage) ? (
                       <img
                         src={formData.bannerUrl || site.tournamentImage}
@@ -614,7 +618,7 @@ export default function AdminTournaments() {
               </div>
 
               {/* Scoring Config */}
-              <div className="p-4 rounded-xl bg-[#160e13] border border-[#49303a] space-y-3">
+              <div className="p-4 rounded-xl bg-[#111214] border border-[#393236] space-y-3">
                 <span className="font-bold text-white uppercase text-[10px] tracking-wider text-brand-orange">
                   Configurable Scoring Formula
                 </span>
@@ -627,7 +631,7 @@ export default function AdminTournaments() {
                       step="1"
                       value={formData.killPointValue}
                       onChange={(e) => setFormData({ ...formData, killPointValue: e.target.value })}
-                      className="w-full px-3 py-1.5 rounded bg-[#301e27] border border-[#49303a] text-white"
+                      className="w-full px-3 py-1.5 rounded bg-[#292428] border border-[#393236] text-white"
                     />
                   </div>
                   <div>
@@ -638,14 +642,14 @@ export default function AdminTournaments() {
                       step="1"
                       value={formData.booyahBonus}
                       onChange={(e) => setFormData({ ...formData, booyahBonus: e.target.value })}
-                      className="w-full px-3 py-1.5 rounded bg-[#301e27] border border-[#49303a] text-white"
+                      className="w-full px-3 py-1.5 rounded bg-[#292428] border border-[#393236] text-white"
                     />
                   </div>
                 </div>
               </div>
 
               {/* Prize Config */}
-              <div className="p-4 rounded-xl bg-[#160e13] border border-[#49303a] space-y-3">
+              <div className="p-4 rounded-xl bg-[#111214] border border-[#393236] space-y-3">
                 <span className="font-bold text-white uppercase text-[10px] tracking-wider text-brand-amber">
                   Cash Prize Breakdown (₹)
                 </span>
@@ -658,7 +662,7 @@ export default function AdminTournaments() {
                       step="1"
                       value={formData.firstPlace}
                       onChange={(e) => setFormData({ ...formData, firstPlace: e.target.value })}
-                      className="w-full px-3 py-1.5 rounded bg-[#301e27] border border-[#49303a] text-white"
+                      className="w-full px-3 py-1.5 rounded bg-[#292428] border border-[#393236] text-white"
                     />
                   </div>
                   <div>
@@ -669,7 +673,7 @@ export default function AdminTournaments() {
                       step="1"
                       value={formData.secondPlace}
                       onChange={(e) => setFormData({ ...formData, secondPlace: e.target.value })}
-                      className="w-full px-3 py-1.5 rounded bg-[#301e27] border border-[#49303a] text-white"
+                      className="w-full px-3 py-1.5 rounded bg-[#292428] border border-[#393236] text-white"
                     />
                   </div>
                   <div>
@@ -680,17 +684,17 @@ export default function AdminTournaments() {
                       step="1"
                       value={formData.thirdPlace}
                       onChange={(e) => setFormData({ ...formData, thirdPlace: e.target.value })}
-                      className="w-full px-3 py-1.5 rounded bg-[#301e27] border border-[#49303a] text-white"
+                      className="w-full px-3 py-1.5 rounded bg-[#292428] border border-[#393236] text-white"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="pt-3 border-t border-[#49303a] flex justify-end gap-3">
+              <div className="pt-3 border-t border-[#393236] flex justify-end gap-3">
                 <button
                   type="button"
                   disabled={submitting} onClick={() => setIsModalOpen(false)}
-                  className="px-4 py-2 rounded-lg bg-[#301e27] text-slate-400 hover:text-white"
+                  className="px-4 py-2 rounded-lg bg-[#292428] text-slate-400 hover:text-white"
                 >
                   Cancel
                 </button>

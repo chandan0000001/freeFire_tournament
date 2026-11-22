@@ -1,3 +1,5 @@
+import { claimPaymentReference } from '../services/paymentReferenceService.js';
+import { afterCommit } from '../middleware/transactional.js';
 import { getWalletConfig } from '../config/wallet.js';
 import { Wallet } from '../models/Wallet.js';
 import { WalletTransaction, TRANSACTION_TYPES } from '../models/WalletTransaction.js';
@@ -250,7 +252,8 @@ export const joinTournamentWithCoins = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Tournament ID and Captain info are required.' });
     }
 
-    const email = captain.email.toLowerCase().trim();
+    if (String(tournamentId) !== String(req.params.id)) return res.status(400).json({ success: false, message: 'Tournament identifiers do not match.' });
+    const email = req.user.email.toLowerCase().trim();
     const tournament = await Tournament.findById(tournamentId);
 
     if (!tournament) {
@@ -261,6 +264,7 @@ export const joinTournamentWithCoins = async (req, res, next) => {
       return res.status(400).json({ success: false, message: `Registration is currently ${tournament.status.replace('_', ' ')}` });
     }
 
+    if (format !== tournament.format || !Array.isArray(players) || (format === 'solo' ? players.length !== 1 : players.length < 3 || players.length > 4)) return res.status(400).json({ success: false, message: 'Provide a valid roster for the tournament format.' });
     const entryFee = tournament.entryFee || 0;
 
     // Check wallet balance
@@ -273,7 +277,7 @@ export const joinTournamentWithCoins = async (req, res, next) => {
       });
     }
 
-    const totalAvailable = (wallet.depositCoins || 0) + (wallet.winningCoins || 0);
+    const totalAvailable = (wallet.depositCoins || 0) + Math.max(0, (wallet.winningCoins || 0) - (wallet.lockedCoins || 0));
     if (totalAvailable < entryFee) {
       return res.status(400).json({
         success: false,
@@ -315,6 +319,7 @@ export const joinTournamentWithCoins = async (req, res, next) => {
     // Create verified registration
     const registration = await Registration.create({
       referenceId: refCode,
+      userId: req.user._id,
       tournamentId,
       format: regFormat,
       teamName: regFormat === TOURNAMENT_FORMAT.SQUAD ? (teamName || `${captain.name}'s Squad`) : undefined,
@@ -361,7 +366,7 @@ export const joinTournamentWithCoins = async (req, res, next) => {
 
     // Send confirmation email
     try {
-      await sendRegistrationEmail(registration, tournament);
+      await afterCommit(() => sendRegistrationEmail(registration, tournament));
     } catch (mailErr) {
       console.warn('Registration email deferred:', mailErr.message);
     }
@@ -437,6 +442,7 @@ export const approveWithdrawal = async (req, res, next) => {
   try {
     const { id } = req.params;
     const { payoutUtr, adminNote } = req.body;
+    if (typeof payoutUtr !== 'string' || !/^\d{12}$/.test(payoutUtr.trim())) return res.status(400).json({ success: false, message: 'A valid 12-digit payout UTR is required.' });
 
     const withdrawal = await WithdrawalRequest.findById(id);
     if (!withdrawal) {
@@ -618,6 +624,7 @@ export const approveDeposit = async (req, res, next) => {
       });
     }
 
+    await claimPaymentReference(deposit.utrNumber, 'deposit', deposit._id);
     const wallet = await Wallet.findById(deposit.walletId);
     if (!wallet) {
       return res.status(404).json({ success: false, message: 'Wallet not found.' });
@@ -720,8 +727,8 @@ export const manualAdjustCoins = async (req, res, next) => {
     }
 
     const email = userEmail.toLowerCase().trim();
-    const adjustAmount = parseInt(amount, 10);
-    if (isNaN(adjustAmount) || adjustAmount === 0) {
+    const adjustAmount = Number(amount);
+    if (!Number.isSafeInteger(adjustAmount) || adjustAmount === 0 || !['DEPOSIT', 'WINNING'].includes(coinType)) {
       return res.status(400).json({ success: false, message: 'Amount must be non-zero.' });
     }
 
@@ -733,7 +740,7 @@ export const manualAdjustCoins = async (req, res, next) => {
     const balanceBefore = wallet.totalCoins;
     const targetField = coinType === 'WINNING' ? 'winningCoins' : 'depositCoins';
 
-    if (adjustAmount < 0 && wallet[targetField] < Math.abs(adjustAmount)) {
+    if (adjustAmount < 0 && wallet[targetField] - (coinType === 'WINNING' ? wallet.lockedCoins : 0) < Math.abs(adjustAmount)) {
       return res.status(400).json({
         success: false,
         message: `Cannot deduct ${Math.abs(adjustAmount)} coins. Current ${targetField} is ${wallet[targetField]}.`,

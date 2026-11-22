@@ -1,3 +1,6 @@
+import { Tournament } from '../models/Tournament.js';
+import { Registration } from '../models/Registration.js';
+import { WalletTransaction } from '../models/WalletTransaction.js';
 import { Prize } from '../models/Prize.js';
 import { logAudit } from '../services/auditService.js';
 import { PRIZE_PAYOUT_STATUS } from '../constants/statuses.js';
@@ -40,6 +43,12 @@ export const createAdminPrize = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Tournament and Prize Amount are required' });
     }
 
+    const tournament = await Tournament.findOneAndUpdate({ _id: tournamentId }, { $inc: { registrationRevision: 1 } });
+    if (!tournament) return res.status(404).json({ success: false, message: 'Tournament not found.' });
+    if (!Number.isSafeInteger(Number(amount)) || Number(amount) < 0 || !Number.isSafeInteger(Number(rank)) || Number(rank) < 1) return res.status(400).json({ success: false, message: 'Prize amount and rank must be valid whole numbers.' });
+    if (await Prize.exists({ tournamentId, rank: Number(rank) })) return res.status(409).json({ success: false, message: 'A prize already exists for this tournament rank.' });
+    if (winnerRegistrationId && !await Registration.exists({ _id: winnerRegistrationId, tournamentId, paymentStatus: 'verified' })) return res.status(400).json({ success: false, message: 'Winner must be a verified participant in this tournament.' });
+    if (payoutStatus === 'paid' && !/^\d{12}$/.test(offlineTransactionRef.trim())) return res.status(400).json({ success: false, message: 'A 12-digit payout UTR is required.' });
     const prize = await Prize.create({
       tournamentId,
       rank: parseInt(rank, 10) || 1,
@@ -73,11 +82,13 @@ export const createAdminPrize = async (req, res, next) => {
 export const deleteAdminPrize = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const prize = await Prize.findByIdAndDelete(id);
+    const prize = await Prize.findById(id);
     if (!prize) {
       return res.status(404).json({ success: false, message: 'Prize record not found' });
     }
 
+    if (prize.payoutStatus === 'paid' || await WalletTransaction.exists({ referenceId: `PRIZE-${prize.tournamentId}-${prize.rank}` })) return res.status(409).json({ success: false, message: 'Paid or credited prize records must be retained.' });
+    await prize.deleteOne();
     await cache.del('winners:halloffame');
 
     await logAudit({
@@ -109,6 +120,9 @@ export const updatePayoutStatus = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Prize record not found' });
     }
 
+    if (await WalletTransaction.exists({ referenceId: `PRIZE-${prize.tournamentId._id}-${prize.rank}` })) return res.status(409).json({ success: false, message: 'This award is already credited to the winner wallet. Use the withdrawal queue for its payout.' });
+    if (prize.payoutStatus === 'paid' && payoutStatus !== 'paid') return res.status(409).json({ success: false, message: 'Completed payouts cannot be reopened.' });
+    if (payoutStatus === 'paid' && !/^\d{12}$/.test((offlineTransactionRef || '').trim())) return res.status(400).json({ success: false, message: 'A 12-digit payout UTR is required.' });
     prize.payoutStatus = payoutStatus;
     if (offlineTransactionRef !== undefined) prize.offlineTransactionRef = offlineTransactionRef.trim();
     if (notes !== undefined) prize.notes = notes.trim();

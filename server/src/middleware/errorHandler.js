@@ -6,10 +6,10 @@ export const errorHandler = (err, req, res, next) => {
 
   // Mongoose duplicate key error (E11000)
   if (err.code === 11000) {
-    const field = Object.keys(err.keyValue)[0];
+    const field = Object.keys(err.keyValue || {})[0] || 'record';
     return res.status(409).json({
       success: false,
-      message: `Duplicate entry error: ${field} '${err.keyValue[field]}' already exists.`,
+      message: `Duplicate ${field}. This action was already submitted.`,
     });
   }
 
@@ -31,9 +31,10 @@ export const errorHandler = (err, req, res, next) => {
     });
   }
 
-  const statusCode = res.statusCode !== 200 ? res.statusCode : 500;
+  if (err.name === 'CastError') return res.status(400).json({ success: false, message: 'Invalid record identifier.' });
+  const statusCode = err.status || (res.statusCode !== 200 ? res.statusCode : 500);
   return res.status(statusCode).json({
     success: false,
-    message: err.message || 'Internal Server Error',
+    message: statusCode >= 500 && process.env.NODE_ENV === 'production' ? 'Unable to complete the request. Please try again.' : err.message || 'Internal Server Error',
   });
 };

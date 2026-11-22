@@ -3,7 +3,7 @@ import { SiteSetting } from '../models/SiteSetting.js';
 
 const getSender = async () => {
   let senderName = process.env.SITE_NAME || process.env.EMAIL_FROM_NAME || 'Rahul Esports';
-  let senderEmail = process.env.EMAIL_FROM || 'rittournament01@gmail.com';
+  let senderEmail = process.env.EMAIL_FROM || '';
 
   try {
     const setting = await SiteSetting.findOne().lean();
@@ -32,11 +32,7 @@ export const sendEmail = async ({ to, subject, htmlContent, textContent }) => {
 
   // If no Brevo API instance exists, log to console for development
   if (!apiInstance) {
-    console.log(`\n================= [MOCK EMAIL DISPATCH] =================`);
-    console.log(`To: ${to}`);
-    console.log(`Subject: ${subject}`);
-    console.log(`Content:\n${textContent || htmlContent.substring(0, 200)}...`);
-    console.log(`=========================================================\n`);
+    if (process.env.NODE_ENV === 'production') return { success: false, error: 'Email service is not configured.', mode: 'unconfigured' };
     return {
       success: true,
       messageId: `mock-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,

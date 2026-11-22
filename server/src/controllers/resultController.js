@@ -1,3 +1,4 @@
+import { validateResultEntries } from '../services/resultValidation.js';
 import { MatchResult } from '../models/MatchResult.js';
 import { Match } from '../models/Match.js';
 import { Tournament } from '../models/Tournament.js';
@@ -91,9 +92,11 @@ export const reviewMatchResult = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Result record not found' });
     }
 
+    if (resultDoc.status === RESULT_STATUS.PUBLISHED) return res.status(409).json({ success: false, message: 'Published results cannot be edited after prize allocation.' });
     const scoringConfig = resultDoc.tournamentId?.scoringConfig;
 
     if (Array.isArray(entries)) {
+      await validateResultEntries(entries, resultDoc.tournamentId._id);
       resultDoc.entries = entries.map((e) => {
         const calculated = calculateEntryScore(e, scoringConfig);
         return {
@@ -112,7 +115,7 @@ export const reviewMatchResult = async (req, res, next) => {
     }
 
     if (adminReviewNotes) resultDoc.adminReviewNotes = adminReviewNotes;
-    if (status && Object.values(RESULT_STATUS).includes(status)) {
+    if (status && status !== RESULT_STATUS.PUBLISHED && Object.values(RESULT_STATUS).includes(status)) {
       resultDoc.status = status;
     }
 
@@ -149,6 +152,8 @@ export const publishMatchResult = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Result record not found' });
     }
 
+    if (resultDoc.status === RESULT_STATUS.PUBLISHED) return res.json({ success: true, message: 'Results are already published.', result: resultDoc });
+    await validateResultEntries(resultDoc.entries, resultDoc.tournamentId._id);
     resultDoc.status = RESULT_STATUS.PUBLISHED;
     resultDoc.publishedAt = new Date();
     resultDoc.verifiedBy = req.user._id;
@@ -165,7 +170,7 @@ export const publishMatchResult = async (req, res, next) => {
     const ranked = rankParticipants(resultDoc.entries);
 
     // Auto-create or link prizes for 1st, 2nd, 3rd if prize pool is configured
-    if (tournament.prizeConfig && ranked.length > 0) {
+    if (tournament?.prizeConfig && ranked.length > 0) {
       const prizeTiers = [
         { rank: 1, title: '1st Place Winner (Booyah Champion)', amount: tournament.prizeConfig.firstPlace },
         { rank: 2, title: '2nd Place (Runner-Up)', amount: tournament.prizeConfig.secondPlace },
@@ -175,6 +180,13 @@ export const publishMatchResult = async (req, res, next) => {
       for (const tier of prizeTiers) {
         if (tier.amount > 0 && ranked[tier.rank - 1]) {
           const winnerEntry = ranked[tier.rank - 1];
+          const existingAward = await WalletTransaction.findOne({ referenceId: `PRIZE-${tournament._id}-${tier.rank}` });
+          const existingPrize = await Prize.findOne({ tournamentId: tournament._id, rank: tier.rank });
+          if (existingAward) {
+            if (String(existingPrize?.winnerRegistrationId) !== String(winnerEntry.registrationId) || existingAward.amount !== tier.amount) return res.status(409).json({ success: false, message: 'A credited tournament prize cannot be reassigned by another match result.' });
+            continue;
+          }
+          if (existingPrize?.payoutStatus === 'paid') return res.status(409).json({ success: false, message: 'This prize was already paid offline. Resolve it before publishing wallet credits.' });
           await Prize.findOneAndUpdate(
             { tournamentId: tournament._id, rank: tier.rank },
             {
@@ -193,6 +205,8 @@ export const publishMatchResult = async (req, res, next) => {
             try {
               const reg = await Registration.findById(winnerEntry.registrationId);
               if (reg && reg.captain?.email) {
+                const awardReference = `PRIZE-${tournament._id}-${tier.rank}`;
+                if (await WalletTransaction.exists({ referenceId: awardReference })) continue;
                 const winnerEmail = reg.captain.email.toLowerCase().trim();
                 let wallet = await Wallet.findOne({ userEmail: winnerEmail });
                 if (!wallet) {
@@ -217,12 +231,12 @@ export const publishMatchResult = async (req, res, next) => {
                   balanceBefore: balBefore,
                   balanceAfter: wallet.totalCoins,
                   description: `Prize for ${tier.title} in ${tournament.title}`,
-                  referenceId: generateWalletRef('WIN'),
+                  referenceId: awardReference,
                   tournamentId: tournament._id,
                 });
               }
             } catch (walletErr) {
-              console.warn('Failed to auto-credit wallet prize:', walletErr.message);
+              throw walletErr;
             }
           }
         }
@@ -280,6 +294,7 @@ export const directRecordMatchResult = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Tournament not found' });
     }
 
+    await validateResultEntries(entries, tournament._id);
     // 1. Find or create Match document
     let match = await Match.findOne({ tournamentId, matchNumber });
     if (!match) {
@@ -329,18 +344,19 @@ export const directRecordMatchResult = async (req, res, next) => {
         matchId: match._id,
         tournamentId: tournament._id,
         recordedBy: req.user._id,
-        status: autoPublish ? RESULT_STATUS.PUBLISHED : RESULT_STATUS.PENDING_REVIEW,
+        status: RESULT_STATUS.PENDING_REVIEW,
         entries: computedEntries,
         notes: notes || '',
         evidenceScreenshots: evidenceScreenshots || [],
       });
     } else {
+      if (resultDoc.status === RESULT_STATUS.PUBLISHED) return res.status(409).json({ success: false, message: 'This match is already published. Its credited result cannot be replaced.' });
       resultDoc.entries = computedEntries;
       resultDoc.notes = notes || resultDoc.notes;
       if (evidenceScreenshots && evidenceScreenshots.length > 0) {
         resultDoc.evidenceScreenshots = evidenceScreenshots;
       }
-      resultDoc.status = autoPublish ? RESULT_STATUS.PUBLISHED : RESULT_STATUS.PENDING_REVIEW;
+      resultDoc.status = RESULT_STATUS.PENDING_REVIEW;
       resultDoc.recordedBy = req.user._id;
     }
 
@@ -353,39 +369,7 @@ export const directRecordMatchResult = async (req, res, next) => {
 
     await resultDoc.save();
 
-    // 4. Auto-allocate prizes and clear Redis cache if published
-    if (autoPublish) {
-      const ranked = rankParticipants(resultDoc.entries);
-      if (tournament.prizeConfig && ranked.length > 0) {
-        const prizeTiers = [
-          { rank: 1, title: '1st Place Winner (Booyah Champion)', amount: tournament.prizeConfig.firstPlace },
-          { rank: 2, title: '2nd Place (Runner-Up)', amount: tournament.prizeConfig.secondPlace },
-          { rank: 3, title: '3rd Place', amount: tournament.prizeConfig.thirdPlace },
-        ];
-
-        for (const tier of prizeTiers) {
-          if (tier.amount > 0 && ranked[tier.rank - 1]) {
-            const winnerEntry = ranked[tier.rank - 1];
-            await Prize.findOneAndUpdate(
-              { tournamentId: tournament._id, rank: tier.rank },
-              {
-                tournamentId: tournament._id,
-                rank: tier.rank,
-                title: tier.title,
-                amount: tier.amount,
-                winnerRegistrationId: winnerEntry.registrationId,
-                winnerName: winnerEntry.participantName,
-              },
-              { upsert: true, new: true }
-            );
-          }
-        }
-      }
-
-      await cache.delPattern('leaderboard:*');
-      await cache.delPattern('tournaments:*');
-      await cache.delPattern('winners:*');
-    }
+    if (autoPublish) return publishMatchResult({ ...req, params: { ...req.params, id: resultDoc._id.toString() } }, res, next);
 
     await logAudit({
       action: autoPublish ? 'RESULT_PUBLISHED' : 'MATCH_RESULT_RECORDED',

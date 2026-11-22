@@ -41,14 +41,14 @@ export const syncTournamentSlots = async (tournamentId) => {
 export const checkAvailableCapacity = async (tournamentId) => {
   const tournament = await Tournament.findById(tournamentId);
   if (!tournament) {
-    throw new Error('Tournament not found');
+    throw capacityError('Tournament not found');
   }
   if (new Date(tournament.matchDate).getTime() <= Date.now() || (tournament.registrationEnd && new Date(tournament.registrationEnd).getTime() <= Date.now())) {
-    throw new Error('Tournament registration deadline has passed');
+    throw capacityError('Tournament registration deadline has passed');
   }
-  if (tournament.registrationStart && new Date(tournament.registrationStart).getTime() > Date.now()) throw new Error('Tournament registration has not started');
+  if (tournament.registrationStart && new Date(tournament.registrationStart).getTime() > Date.now()) throw capacityError('Tournament registration has not started');
   if (tournament.status !== TOURNAMENT_STATUS.REGISTRATION_OPEN) {
-    throw new Error(`Tournament registration is ${tournament.status.replace('_', ' ')}`);
+    throw capacityError(`Tournament registration is ${tournament.status.replace('_', ' ')}`);
   }
 
   const verifiedCount = await Registration.countDocuments({
@@ -61,7 +61,7 @@ export const checkAvailableCapacity = async (tournamentId) => {
     tournament.status = TOURNAMENT_STATUS.FULL;
     await tournament.save();
     await cache.delPattern('tournaments:*');
-    throw new Error('Tournament is completely full. No remaining slots.');
+    throw capacityError('Tournament is completely full. No remaining slots.');
   }
 
   return tournament;
@@ -94,18 +94,18 @@ export const reserveSlot = async (tournamentId) => {
   if (!tournament) {
     const existing = await Tournament.findById(tournamentId);
     if (!existing) {
-      throw new Error('Tournament not found');
+      throw capacityError('Tournament not found');
     }
-    if (new Date(existing.matchDate).getTime() <= Date.now() || (existing.registrationEnd && new Date(existing.registrationEnd).getTime() <= Date.now())) throw new Error('Tournament registration deadline has passed');
+    if (new Date(existing.matchDate).getTime() <= Date.now() || (existing.registrationEnd && new Date(existing.registrationEnd).getTime() <= Date.now())) throw capacityError('Tournament registration deadline has passed');
     if (existing.status !== TOURNAMENT_STATUS.REGISTRATION_OPEN) {
-      throw new Error(`Tournament registration is ${existing.status.replace('_', ' ')}`);
+      throw capacityError(`Tournament registration is ${existing.status.replace('_', ' ')}`);
     }
     if (existing.registeredSlots >= existing.maxSlots) {
       existing.status = TOURNAMENT_STATUS.FULL;
       await existing.save();
-      throw new Error('Tournament is completely full. No remaining slots.');
+      throw capacityError('Tournament is completely full. No remaining slots.');
     }
-    throw new Error('Could not reserve slot. Please try again.');
+    throw capacityError('Could not reserve slot. Please try again.');
   }
 
   if (tournament.registeredSlots >= tournament.maxSlots) {
@@ -157,3 +157,5 @@ export const releaseSlot = async (tournamentId) => {
 
   return tournament;
 };
+
+function capacityError(message) { const error = new Error(message); error.status = message === "Tournament not found" ? 404 : 409; return error; }

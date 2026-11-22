@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import ResponsiveImage from '../../components/common/ResponsiveImage.jsx';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { ShieldCheck, UserPlus, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -22,12 +23,10 @@ export default function RegisterPage() {
   const location = useLocation();
 
   const searchParams = new URLSearchParams(location.search);
-  const redirectPath = searchParams.get('redirect') || '/tournaments';
+  const requestedRedirect = searchParams.get('redirect');
+  const redirectPath = requestedRedirect?.startsWith('/') && !requestedRedirect.startsWith('//') && !requestedRedirect.includes('\\') ? requestedRedirect : '/tournaments';
 
-  if (user) {
-    navigate(redirectPath, { replace: true });
-    return null;
-  }
+  useEffect(() => { if (user) navigate(['admin', 'superadmin'].includes(user.role) ? '/admin/dashboard' : (redirectPath || '/tournaments'), { replace: true }); }, [user, navigate, redirectPath]);
 
   const handleRegister = async (event) => {
     event.preventDefault();
@@ -62,7 +61,7 @@ export default function RegisterPage() {
   return (
     <div className="admin-login">
       <div className="admin-login-art">
-        <img src={site.heroImage} alt="Odisha-inspired battle arena" />
+        <ResponsiveImage priority sizes="(max-width: 600px) 100vw, 510px" src={site.soloImage} alt="Odisha community gaming artwork" />
         <div>
           <span className="eyebrow">{site.region.toUpperCase()}’S ARENA</span>
           <h2>Your legacy.<br />Starts here.</h2>

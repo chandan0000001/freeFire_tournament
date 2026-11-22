@@ -1,3 +1,5 @@
+import { dataSync } from './middleware/dataSync.js';
+import { cache } from './config/redis.js';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -8,6 +10,7 @@ import { errorHandler } from './middleware/errorHandler.js';
 import { apiLimiter } from './middleware/rateLimiter.js';
 
 const app = express();
+app.set('trust proxy', Number(process.env.TRUST_PROXY_HOPS) || false);
 
 // Security Headers
 app.use(
@@ -25,7 +28,6 @@ const clientUrls = (process.env.CLIENT_URL || '')
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:3000',
-  'https://rittournament.vercel.app',
   ...clientUrls,
 ];
 
@@ -35,16 +37,15 @@ app.use(
       // Allow requests with no origin (like mobile apps, curl, or Postman)
       if (
         !origin ||
-        allowedOrigins.includes(origin) ||
-        origin.endsWith('.vercel.app') ||
-        process.env.NODE_ENV !== 'production'
+        allowedOrigins.includes(origin)
       ) {
         callback(null, true);
       } else {
-        callback(null, true);
+        callback(null, false);
       }
     },
     credentials: true,
+    exposedHeaders: ['X-Data-Revision'],
   })
 );
 
@@ -105,7 +106,9 @@ app.use((req, res, next) => {
 });
 
 // Mount Main API Routes
-app.use('/api', apiLimiter, routes);
+app.use('/api', apiLimiter, dataSync);
+app.get('/api/sync', async (req, res) => res.json({ success: true, revision: await cache.revision() }));
+app.use('/api', routes);
 
 // 404 Handler
 app.use((req, res) => {

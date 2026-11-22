@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import useLiveRefresh from '../../hooks/useLiveRefresh.js';
+import React, { useState, useEffect, useRef } from 'react';
 import api from '../../services/api.js';
 import { 
   CreditCard, 
@@ -31,6 +32,11 @@ export default function AdminRegistrations() {
   const [selectedStatus, setSelectedStatus] = useState('');
   const [search, setSearch] = useState('');
 
+  const [page, setPage] = useState(1);
+  const [pages, setPages] = useState(1);
+  const [appliedSearch, setAppliedSearch] = useState('');
+  const [loadError, setLoadError] = useState('');
+  const requestSequence = useRef(0);
   // Modal state
   const [selectedReg, setSelectedReg] = useState(null);
   const [utrInput, setUtrInput] = useState('');
@@ -42,7 +48,7 @@ export default function AdminRegistrations() {
 
   const fetchTournamentsList = async () => {
     try {
-      const res = await api.get('/tournaments');
+      const res = await api.get('/admin/tournaments');
       if (res.success) setTournaments(res.tournaments || []);
     } catch (err) {
       console.error(err);
@@ -50,21 +56,26 @@ export default function AdminRegistrations() {
   };
 
   const fetchRegistrations = async () => {
+    const sequence = ++requestSequence.current;
     setLoading(true);
+    setLoadError('');
     try {
       const params = new URLSearchParams();
       if (selectedTournament) params.append('tournamentId', selectedTournament);
       if (selectedStatus) params.append('paymentStatus', selectedStatus);
-      if (search) params.append('search', search);
+      if (appliedSearch) params.append('search', appliedSearch);
+      params.set('page', page); params.set('limit', 25);
 
       const res = await api.get(`/admin/registrations?${params.toString()}`);
+      if (sequence !== requestSequence.current) return;
       if (res.success) {
+        setPages(Math.max(1, res.pages || 1));
         setRegistrations(res.registrations || []);
       }
     } catch (err) {
-      console.error('Failed to fetch registrations', err);
+      if (sequence === requestSequence.current) setLoadError(err.message || 'Unable to load registrations.');
     } finally {
-      setLoading(false);
+      if (sequence === requestSequence.current) setLoading(false);
     }
   };
 
@@ -74,11 +85,14 @@ export default function AdminRegistrations() {
 
   useEffect(() => {
     fetchRegistrations();
-  }, [selectedTournament, selectedStatus]);
+  }, [selectedTournament, selectedStatus, page, appliedSearch]);
+
+  useLiveRefresh(() => { if (!selectedReg) fetchRegistrations(); });
 
   const handleSearchSubmit = (e) => {
     e.preventDefault();
-    fetchRegistrations();
+    setPage(1); setAppliedSearch(search.trim());
+    if (page === 1 && appliedSearch === search.trim()) fetchRegistrations();
   };
 
   const openVerifyModal = (reg) => {
@@ -113,7 +127,7 @@ export default function AdminRegistrations() {
   };
 
   const submitPaymentDecision = async (status) => {
-    if (!selectedReg) return;
+    if (!selectedReg || submittingAction) return;
     setSubmittingAction(true);
     setActionError('');
 
@@ -215,14 +229,14 @@ export default function AdminRegistrations() {
       </div>
 
       {/* Filter and Search Bar */}
-      <div className="p-4 rounded-xl bg-[#24171e] border border-[#49303a] flex flex-col md:flex-row items-center justify-between gap-4">
+      <div className="p-4 rounded-xl bg-[#1c1b1e] border border-[#393236] flex flex-col md:flex-row items-center justify-between gap-4">
         
         <div className="flex flex-wrap items-center gap-3 w-full md:w-auto">
           {/* Tournament Dropdown */}
           <select
             value={selectedTournament}
-            onChange={(e) => setSelectedTournament(e.target.value)}
-            className="px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
+            onChange={(e) => { setPage(1); setSelectedTournament(e.target.value); }}
+            className="px-3 py-2 rounded-lg bg-[#111214] border border-[#393236] text-xs text-white focus:outline-none focus:border-brand-orange"
           >
             <option value="">All Tournaments</option>
             {tournaments.map((t) => (
@@ -235,8 +249,8 @@ export default function AdminRegistrations() {
           {/* Payment Status Dropdown */}
           <select
             value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-            className="px-3 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
+            onChange={(e) => { setPage(1); setSelectedStatus(e.target.value); }}
+            className="px-3 py-2 rounded-lg bg-[#111214] border border-[#393236] text-xs text-white focus:outline-none focus:border-brand-orange"
           >
             <option value="">All Payment Statuses</option>
             <option value="pending">Pending Review</option>
@@ -252,7 +266,7 @@ export default function AdminRegistrations() {
             placeholder="Search Ref ID, Name, Phone, UTR..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-orange"
+            className="w-full pl-9 pr-4 py-2 rounded-lg bg-[#111214] border border-[#393236] text-xs text-white placeholder-slate-500 focus:outline-none focus:border-brand-orange"
           />
           <Search className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" />
         </form>
@@ -260,10 +274,10 @@ export default function AdminRegistrations() {
       </div>
 
       {/* Registrations Table */}
-      <div className="rounded-2xl bg-[#24171e] border border-[#49303a] overflow-hidden shadow-xl">
+      <div className="rounded-2xl bg-[#1c1b1e] border border-[#393236] overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
-            <thead className="bg-[#160e13] text-[10px] uppercase font-bold text-slate-400 border-b border-[#49303a]">
+            <thead className="bg-[#111214] text-[10px] uppercase font-bold text-slate-400 border-b border-[#393236]">
               <tr>
                 <th className="py-3 px-5">Ref ID</th>
                 <th className="py-3 px-5">Tournament</th>
@@ -275,7 +289,7 @@ export default function AdminRegistrations() {
                 <th className="py-3 px-5 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#49303a] text-xs">
+            <tbody className="divide-y divide-[#393236] text-xs">
               {loading ? (
                 <tr>
                   <td colSpan="8" className="py-12 text-center text-slate-500">
@@ -290,7 +304,7 @@ export default function AdminRegistrations() {
                   const waText = `Hello ${leader.name || 'Player'}! Regarding your Rahul Esports registration ${reg.referenceId} for "${reg.tournamentId?.title || 'Tournament'}" (Preferred slot: ${reg.preferredSlot || 'Morning'})...`;
 
                   return (
-                    <tr key={reg._id} className="hover:bg-[#301e27] transition-colors">
+                    <tr key={reg._id} className="hover:bg-[#292428] transition-colors">
                       {/* Ref ID */}
                       <td className="py-3 px-5 font-mono font-bold text-brand-orange whitespace-nowrap">
                         {reg.referenceId}
@@ -347,7 +361,7 @@ export default function AdminRegistrations() {
                           <button
                             type="button"
                             onClick={() => copyToClipboard(utr, reg._id)}
-                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#160e13] hover:bg-[#301e27] border border-[#49303a] font-mono text-[10px] text-slate-300 transition-colors"
+                            className="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-[#111214] hover:bg-[#292428] border border-[#393236] font-mono text-[10px] text-slate-300 transition-colors"
                             title="Click to copy UTR"
                           >
                             <span>UTR: {utr}</span>
@@ -374,7 +388,7 @@ export default function AdminRegistrations() {
                         <div className="flex items-center justify-end gap-2">
                           <button
                             onClick={() => openVerifyModal(reg)}
-                            className="px-3 py-1.5 rounded-lg bg-[#49303a] hover:bg-brand-orange hover:text-white text-slate-300 text-xs font-bold transition-colors"
+                            className="px-3 py-1.5 rounded-lg bg-[#393236] hover:bg-brand-orange hover:text-white text-slate-300 text-xs font-bold transition-colors"
                           >
                             Manage
                           </button>
@@ -403,6 +417,12 @@ export default function AdminRegistrations() {
         </div>
       </div>
 
+      {loadError && <p role="alert" className="login-error">{loadError} <button onClick={fetchRegistrations}>Retry</button></p>}
+      <nav aria-label="Registration pages" className="flex items-center justify-between gap-3">
+        <button disabled={loading || page <= 1} onClick={() => setPage(value => value - 1)} className="bg-slate-800">Previous</button>
+        <span className="text-sm text-slate-300">Page {page} of {pages}</span>
+        <button disabled={loading || page >= pages} onClick={() => setPage(value => value + 1)} className="bg-slate-800">Next</button>
+      </nav>
       {/* Verification / Action Modal */}
       {selectedReg && (() => {
         const leader = getLeader(selectedReg);
@@ -411,9 +431,9 @@ export default function AdminRegistrations() {
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm overflow-y-auto">
-            <div className="w-full max-w-lg rounded-2xl bg-[#24171e] border border-[#49303a] p-6 space-y-5 shadow-2xl my-8">
+            <div className="w-full max-w-lg rounded-2xl bg-[#1c1b1e] border border-[#393236] p-6 space-y-5 shadow-2xl my-8">
               
-              <div className="flex items-center justify-between border-b border-[#49303a] pb-3">
+              <div className="flex items-center justify-between border-b border-[#393236] pb-3">
                 <div>
                   <span className="text-[10px] font-bold uppercase text-brand-orange">Review Registration & Payment</span>
                   <h3 className="font-display text-xl font-bold uppercase text-white">
@@ -435,7 +455,7 @@ export default function AdminRegistrations() {
               )}
 
               {/* Tournament & Slot Summary */}
-              <div className="space-y-2 text-xs text-slate-300 bg-[#160e13] p-4 rounded-xl border border-[#49303a]">
+              <div className="space-y-2 text-xs text-slate-300 bg-[#111214] p-4 rounded-xl border border-[#393236]">
                 <div className="flex justify-between items-center border-b border-[#2d1b26] pb-2">
                   <span className="text-slate-400">Tournament:</span>
                   <span className="text-white font-bold">{selectedReg.tournamentId?.title} (₹{selectedReg.tournamentId?.entryFee})</span>
@@ -479,7 +499,7 @@ export default function AdminRegistrations() {
                           className={`flex items-center justify-between p-2.5 rounded-lg border text-xs transition-colors ${
                             isLeader
                               ? 'bg-amber-950/40 border-amber-500/50 text-white'
-                              : 'bg-[#160e13] border-[#49303a] text-slate-300'
+                              : 'bg-[#111214] border-[#393236] text-slate-300'
                           }`}
                         >
                           <div className="flex items-center gap-2">
@@ -502,7 +522,7 @@ export default function AdminRegistrations() {
                       );
                     })
                   ) : (
-                    <div className="p-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-slate-300">
+                    <div className="p-2.5 rounded-lg bg-[#111214] border border-[#393236] text-xs text-slate-300">
                       {selectedReg.captain?.name} ({selectedReg.captain?.phone})
                     </div>
                   )}
@@ -520,7 +540,7 @@ export default function AdminRegistrations() {
                     placeholder="e.g. 429819283741"
                     value={utrInput}
                     onChange={(e) => setUtrInput(e.target.value)}
-                    className="w-full px-3.5 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange font-mono"
+                    className="w-full px-3.5 py-2 rounded-lg bg-[#111214] border border-[#393236] text-xs text-white focus:outline-none focus:border-brand-orange font-mono"
                   />
                   {utrInput && (
                     <button
@@ -549,7 +569,7 @@ export default function AdminRegistrations() {
                   placeholder="e.g. Verified via WhatsApp screenshot, slot confirmed"
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
+                  className="w-full px-3.5 py-2 rounded-lg bg-[#111214] border border-[#393236] text-xs text-white focus:outline-none focus:border-brand-orange"
                 />
               </div>
 
@@ -563,12 +583,12 @@ export default function AdminRegistrations() {
                   placeholder="e.g. Invalid UTR or duplicate payment screenshot"
                   value={rejectionReason}
                   onChange={(e) => setRejectionReason(e.target.value)}
-                  className="w-full px-3.5 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-rose-500"
+                  className="w-full px-3.5 py-2 rounded-lg bg-[#111214] border border-[#393236] text-xs text-white focus:outline-none focus:border-rose-500"
                 />
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-[#49303a]">
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-3 border-t border-[#393236]">
                 <button
                   type="button"
                   disabled={submittingAction}

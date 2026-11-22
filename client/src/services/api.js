@@ -1,3 +1,4 @@
+import { notifyDataChanged } from './liveData.js';
 import axios from 'axios';
 
 const getApiBaseUrl = () => {
@@ -26,13 +27,28 @@ api.interceptors.request.use((config) => {
 
 // Intercept responses for central error handling
 api.interceptors.response.use(
-  (response) => response.data,
+  (response) => {
+    if (!['get', 'head'].includes(response.config.method) && response.data?.success && !response.config.url?.startsWith('/auth/')) notifyDataChanged();
+    return response.data;
+  },
   (error) => {
     const message = error.response?.data?.message || error.message || 'An unexpected error occurred';
     const apiError = new Error(message);
     apiError.status = error.response?.status;
+    apiError.errors = error.response?.data?.errors;
     return Promise.reject(apiError);
   }
 );
 
+// Coalesce identical reads, but never retain private responses between requests.
+const pendingReads = new Map();
+const get = api.get.bind(api);
+api.get = (url, config = {}) => {
+  if (config.signal) return get(url, config);
+  const key = `${localStorage.getItem('re_token') || localStorage.getItem('rit_token') || ''}:${url}:${JSON.stringify(config.params || {})}`;
+  if (pendingReads.has(key)) return pendingReads.get(key);
+  const task = get(url, config).finally(() => pendingReads.delete(key));
+  pendingReads.set(key, task);
+  return task;
+};
 export default api;

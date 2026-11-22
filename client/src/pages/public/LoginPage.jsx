@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import ResponsiveImage from '../../components/common/ResponsiveImage.jsx';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { ShieldCheck, LockKeyhole, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -20,17 +21,11 @@ export default function LoginPage() {
   const location = useLocation();
 
   const searchParams = new URLSearchParams(location.search);
-  const redirectPath = searchParams.get('redirect');
+  const requestedRedirect = searchParams.get('redirect');
+  const redirectPath = requestedRedirect?.startsWith('/') && !requestedRedirect.startsWith('//') && !requestedRedirect.includes('\\') ? requestedRedirect : null;
 
   // If already logged in, redirect accordingly
-  if (user) {
-    if (['admin', 'superadmin'].includes(user.role)) {
-      navigate('/admin/dashboard', { replace: true });
-    } else {
-      navigate(redirectPath || '/tournaments', { replace: true });
-    }
-    return null;
-  }
+  useEffect(() => { if (user) navigate(['admin', 'superadmin'].includes(user.role) ? '/admin/dashboard' : (redirectPath || '/tournaments'), { replace: true }); }, [user, navigate, redirectPath]);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -66,7 +61,7 @@ export default function LoginPage() {
   return (
     <div className="admin-login">
       <div className="admin-login-art">
-        <img src={site.heroImage} alt="Odisha-inspired Konark arena sunset" />
+        <ResponsiveImage priority sizes="(max-width: 600px) 100vw, 510px" src={site.accountImage} alt="Odisha gaming desk with Sambalpuri textile accents" />
         <div>
           <span className="eyebrow">{site.region.toUpperCase()}’S ARENA</span>
           <h2>Great matches.<br />Start with you.</h2>
@@ -77,7 +72,7 @@ export default function LoginPage() {
       <div className="admin-login-form">
         <Link className="text-link" to="/">Back to the arena</Link>
         <h1>Welcome back.</h1>
-        <p>Sign in to manage your coin wallet, join tournaments, or access operations.</p>
+        <p>Sign in to join tournaments, track your entries, or manage the arena.</p>
 
         {error && <div role="alert" className="login-error">{error}</div>}
 

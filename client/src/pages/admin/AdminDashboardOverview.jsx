@@ -1,3 +1,4 @@
+import useLiveRefresh from '../../hooks/useLiveRefresh.js';
 import { site } from '../../config/site.js';
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
@@ -19,6 +20,8 @@ export default function AdminDashboardOverview() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
+
+  useLiveRefresh(() => setRetry(value => value + 1));
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -54,7 +57,7 @@ export default function AdminDashboardOverview() {
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         
-        <div className="p-5 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-2">
+        <div className="p-5 rounded-2xl bg-[#1c1b1e] border border-[#393236] space-y-2">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-bold uppercase tracking-wider">Total Tournaments</span>
             <Trophy className="w-5 h-5 text-brand-orange" />
@@ -65,7 +68,7 @@ export default function AdminDashboardOverview() {
           <span className="text-[11px] text-slate-500">Squad & Solo competitions</span>
         </div>
 
-        <div className="p-5 rounded-2xl bg-[#24171e] border border-amber-500/30 space-y-2">
+        <div className="p-5 rounded-2xl bg-[#1c1b1e] border border-amber-500/30 space-y-2">
           <div className="flex items-center justify-between text-amber-400">
             <span className="text-xs font-bold uppercase tracking-wider">Pending Payments</span>
             <CreditCard className="w-5 h-5 text-amber-400" />
@@ -78,7 +81,7 @@ export default function AdminDashboardOverview() {
           </Link>
         </div>
 
-        <div className="p-5 rounded-2xl bg-[#24171e] border border-emerald-500/30 space-y-2">
+        <div className="p-5 rounded-2xl bg-[#1c1b1e] border border-emerald-500/30 space-y-2">
           <div className="flex items-center justify-between text-emerald-400">
             <span className="text-xs font-bold uppercase tracking-wider">Confirmed Entries</span>
             <ShieldCheck className="w-5 h-5 text-emerald-400" />
@@ -89,7 +92,7 @@ export default function AdminDashboardOverview() {
           <span className="text-[11px] text-slate-500">Eligible for room details</span>
         </div>
 
-        <div className="p-5 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-2">
+        <div className="p-5 rounded-2xl bg-[#1c1b1e] border border-[#393236] space-y-2">
           <div className="flex items-center justify-between text-slate-400">
             <span className="text-xs font-bold uppercase tracking-wider">Cash Prizes Paid</span>
             <TrendingUp className="w-5 h-5 text-emerald-400" />
@@ -107,7 +110,7 @@ export default function AdminDashboardOverview() {
         
         <Link
           to="/admin/registrations"
-          className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] hover:border-brand-orange/60 transition-all space-y-3 group"
+          className="p-6 rounded-2xl bg-[#1c1b1e] border border-[#393236] hover:border-brand-orange/60 transition-all space-y-3 group"
         >
           <div className="w-10 h-10 rounded-xl bg-brand-orange/10 text-brand-orange flex items-center justify-center border border-brand-orange/30 group-hover:scale-105 transition-transform">
             <CreditCard className="w-5 h-5" />
@@ -122,7 +125,7 @@ export default function AdminDashboardOverview() {
 
         <Link
           to="/admin/rooms"
-          className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] hover:border-brand-cyan/60 transition-all space-y-3 group"
+          className="p-6 rounded-2xl bg-[#1c1b1e] border border-[#393236] hover:border-brand-cyan/60 transition-all space-y-3 group"
         >
           <div className="w-10 h-10 rounded-xl bg-cyan-950/40 text-cyan-400 flex items-center justify-center border border-cyan-500/30 group-hover:scale-105 transition-transform">
             <KeyRound className="w-5 h-5" />
@@ -137,7 +140,7 @@ export default function AdminDashboardOverview() {
 
         <Link
           to="/admin/results"
-          className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] hover:border-purple-500/60 transition-all space-y-3 group"
+          className="p-6 rounded-2xl bg-[#1c1b1e] border border-[#393236] hover:border-purple-500/60 transition-all space-y-3 group"
         >
           <div className="w-10 h-10 rounded-xl bg-purple-950/40 text-purple-400 flex items-center justify-center border border-purple-500/30 group-hover:scale-105 transition-transform">
             <FileCheck className="w-5 h-5" />

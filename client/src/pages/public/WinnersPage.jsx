@@ -1,3 +1,4 @@
+import useLiveRefresh from '../../hooks/useLiveRefresh.js';
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api.js';
 import usePageMeta from '../../hooks/usePageMeta.js';
@@ -10,6 +11,8 @@ export default function WinnersPage() {
 
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
+
+  useLiveRefresh(() => setRetry(value => value + 1));
 
   useEffect(() => {
     let active = true;
@@ -52,16 +55,16 @@ export default function WinnersPage() {
       {loading ? (
         <div className="space-y-8">
           {[1, 2].map((n) => (
-            <div key={n} className="h-64 rounded-2xl bg-[#24171e] border border-[#49303a] animate-pulse"></div>
+            <div key={n} className="h-64 rounded-2xl bg-[#1c1b1e] border border-[#393236] animate-pulse"></div>
           ))}
         </div>
       ) : winnerTournaments.length > 0 ? (
         <div className="space-y-12">
           {winnerTournaments.map((item, idx) => (
-            <div key={idx} className="rounded-2xl bg-[#24171e] border border-[#49303a] p-6 sm:p-8 space-y-6 shadow-xl">
+            <div key={idx} className="rounded-2xl bg-[#1c1b1e] border border-[#393236] p-6 sm:p-8 space-y-6 shadow-xl">
               
               {/* Tournament Title */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#49303a] pb-4 gap-2">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#393236] pb-4 gap-2">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest">
                     {item.tournament?.format?.toUpperCase()} TOURNAMENT
@@ -83,10 +86,10 @@ export default function WinnersPage() {
                     key={podium.rank}
                     className={`p-6 rounded-xl border text-center space-y-3 relative overflow-hidden ${
                       podium.rank === 1
-                        ? 'bg-gradient-to-b from-amber-500/10 to-[#160e13] border-amber-500/50 shadow-glow-orange'
+                        ? 'bg-gradient-to-b from-amber-500/10 to-[#111214] border-amber-500/50 shadow-glow-orange'
                         : podium.rank === 2
-                        ? 'bg-[#160e13] border-slate-600'
-                        : 'bg-[#160e13] border-amber-800/40'
+                        ? 'bg-[#111214] border-slate-600'
+                        : 'bg-[#111214] border-amber-800/40'
                     }`}
                   >
                     <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center font-display font-extrabold text-lg">
@@ -104,7 +107,7 @@ export default function WinnersPage() {
                       </h4>
                     </div>
 
-                    <div className="pt-2 border-t border-[#49303a]">
+                    <div className="pt-2 border-t border-[#393236]">
                       <p className="text-[10px] uppercase font-bold text-slate-400">Cash Prize</p>
                       <p className="font-display text-2xl font-extrabold text-emerald-400">
                         ₹{podium.amount}
@@ -116,11 +119,11 @@ export default function WinnersPage() {
 
                     {/* Consented Player Rosters */}
                     {podium.players && podium.players.length > 0 && (
-                      <div className="pt-2 text-left border-t border-[#49303a] space-y-1">
+                      <div className="pt-2 text-left border-t border-[#393236] space-y-1">
                         <p className="text-[9px] uppercase font-bold text-slate-500">Roster:</p>
                         <div className="flex flex-wrap gap-1">
                           {podium.players.map((pl, pIdx) => (
-                            <span key={pIdx} className="text-[10px] px-2 py-0.5 rounded bg-[#301e27] text-slate-300">
+                            <span key={pIdx} className="text-[10px] px-2 py-0.5 rounded bg-[#292428] text-slate-300">
                               {pl.inGameName} {pl.freeFireUid ? `(${pl.freeFireUid})` : ''}
                             </span>
                           ))}
@@ -136,7 +139,7 @@ export default function WinnersPage() {
         </div>
       ) : (
         <div className="space-y-8">
-          <div className="text-center py-12 bg-[#24171e] rounded-2xl border border-[#49303a] p-8 space-y-3">
+          <div className="text-center py-12 bg-[#1c1b1e] rounded-2xl border border-[#393236] p-8 space-y-3">
             <Trophy className="w-12 h-12 text-brand-amber mx-auto" />
             <h3 className="font-display text-2xl font-bold uppercase text-white">Hall of Fame Awaits Week 01 Champions</h3>
             <p className="text-xs text-slate-400 max-w-lg mx-auto leading-relaxed">
@@ -146,7 +149,7 @@ export default function WinnersPage() {
 
           {/* Rahul Esports Champions Spotlight Showcase */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="rounded-2xl bg-[#24171e] border border-amber-500/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-amber-400 transition-all">
+            <div className="rounded-2xl bg-[#1c1b1e] border border-amber-500/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-amber-400 transition-all">
               <div className="w-28 h-32 rounded-xl mx-auto overflow-hidden border border-white/10 shadow-lg">
                 <img src="/images/ff-character-1.webp" alt="Solo Champion" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>
@@ -157,7 +160,7 @@ export default function WinnersPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-[#24171e] border border-brand-orange/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-brand-orange transition-all">
+            <div className="rounded-2xl bg-[#1c1b1e] border border-brand-orange/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-brand-orange transition-all">
               <div className="w-28 h-32 rounded-xl mx-auto overflow-hidden border border-white/10 shadow-lg">
                 <img src="/images/ff-banner.webp" alt="Squad Champions" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>
@@ -168,7 +171,7 @@ export default function WinnersPage() {
               </div>
             </div>
 
-            <div className="rounded-2xl bg-[#24171e] border border-cyan-500/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-cyan-400 transition-all">
+            <div className="rounded-2xl bg-[#1c1b1e] border border-cyan-500/40 p-6 text-center space-y-4 overflow-hidden relative group hover:border-cyan-400 transition-all">
               <div className="w-28 h-32 rounded-xl mx-auto overflow-hidden border border-white/10 shadow-lg">
                 <img src="/images/ff-character-2.webp" alt="MVP Gunslinger" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
               </div>

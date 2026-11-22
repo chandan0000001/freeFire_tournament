@@ -1,3 +1,4 @@
+import ResponsiveImage from '../../components/common/ResponsiveImage.jsx';
 import React, { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { ShieldCheck, LockKeyhole, Eye, EyeOff } from 'lucide-react';
@@ -65,7 +66,7 @@ export default function ResetPasswordPage() {
   return (
     <div className="admin-login">
       <div className="admin-login-art">
-        <img src={site.heroImage} alt="Odisha-inspired battle arena" />
+        <ResponsiveImage priority sizes="(max-width: 600px) 100vw, 510px" src={site.accountImage} alt="Odisha community gaming artwork" />
         <div>
           <span className="eyebrow">{site.region.toUpperCase()}’S ARENA</span>
           <h2>Account Security.<br />Updated.</h2>

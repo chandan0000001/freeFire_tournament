@@ -1,4 +1,6 @@
-import { site } from '../../config/site.js';
+import ResponsiveImage from '../../components/common/ResponsiveImage.jsx';
+import useLiveRefresh from '../../hooks/useLiveRefresh.js';
+import { site, tournamentArtwork } from '../../config/site.js';
 import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { tournamentAvailability } from '../../utils/tournament.js';
@@ -31,6 +33,8 @@ export default function TournamentDetailPage() {
     tournament ? `Join ${tournament.title} with prize pool of ₹${tournament.prizeConfig?.totalPool ?? 0}. Format: ${tournament.gameMode || 'Battle Royale'}, Entry: ${tournament.entryFee || 0} Coins. Open to all competitive players.` : 'View Free Fire tournament details, schedules, scoring system, and prize breakdown.'
   );
 
+  const [refreshVersion, setRefreshVersion] = useState(0);
+  useLiveRefresh(() => setRefreshVersion(value => value + 1));
   useEffect(() => {
     let active = true;
     setLoading(true);
@@ -49,7 +53,7 @@ export default function TournamentDetailPage() {
     };
     fetchTournament();
     return () => { active = false; };
-  }, [slug]);
+  }, [slug, refreshVersion]);
 
   if (loading) {
     return (
@@ -88,16 +92,16 @@ export default function TournamentDetailPage() {
       </Link>
 
       {/* Hero Header Card */}
-      <div className="relative rounded-2xl bg-[#24171e] border border-[#49303a] overflow-hidden">
+      <div className="relative rounded-2xl bg-[#1c1b1e] border border-[#393236] overflow-hidden">
         
         {/* Background Banner */}
         <div className="relative h-64 sm:h-80 w-full bg-slate-900">
-          <img
-            src={tournament.bannerUrl || '/images/ff-banner-squad.webp'}
+          <ResponsiveImage priority
+            src={tournamentArtwork(tournament)}
             alt={tournament.title}
             className="w-full h-full object-cover object-center opacity-75"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#24171e] via-[#24171e]/60 to-transparent"></div>
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1c1b1e] via-[#1c1b1e]/60 to-transparent"></div>
           
           {/* Status & Format Floating Badges */}
           <div className="absolute top-4 left-4 right-4 flex items-center justify-between">
@@ -135,7 +139,7 @@ export default function TournamentDetailPage() {
         </div>
 
         {/* Action & Metric Bar */}
-        <div className="p-6 bg-[#160e13] border-t border-[#49303a] flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="p-6 bg-[#111214] border-t border-[#393236] flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="grid grid-cols-3 gap-4 sm:gap-8 w-full md:w-auto">
             <div>
               <p className="text-[10px] uppercase font-bold text-slate-400">Entry Fee</p>
@@ -192,7 +196,7 @@ export default function TournamentDetailPage() {
       </div>
 
       {/* Tab Navigation */}
-      <div className="border-b border-[#49303a] flex items-center gap-6 text-sm font-display uppercase tracking-wider">
+      <div className="border-b border-[#393236] flex items-center gap-6 text-sm font-display uppercase tracking-wider">
         {[
           { id: 'overview', label: 'Overview & Prizes' },
           { id: 'rules', label: 'Scoring & Rules' },
@@ -218,7 +222,7 @@ export default function TournamentDetailPage() {
           
           {/* Main Info */}
           <div className="lg:col-span-2 space-y-6">
-            <div className="p-6 rounded-xl bg-[#24171e] border border-[#49303a] space-y-4">
+            <div className="p-6 rounded-xl bg-[#1c1b1e] border border-[#393236] space-y-4">
               <h3 className="font-display text-xl font-bold uppercase text-white">About the Tournament</h3>
               <p className="text-sm text-slate-300 leading-relaxed">
                 {tournament.description || 'Welcome to this week’s official Free Fire tournament! Bring your best gameplay and battle for the Booyah.'}
@@ -226,28 +230,28 @@ export default function TournamentDetailPage() {
             </div>
 
             {/* Prize Breakdown */}
-            <div className="p-6 rounded-xl bg-[#24171e] border border-[#49303a] space-y-4">
+            <div className="p-6 rounded-xl bg-[#1c1b1e] border border-[#393236] space-y-4">
               <h3 className="font-display text-xl font-bold uppercase text-white flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-brand-amber" /> Prize Pool Distribution
               </h3>
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-                <div className="p-4 rounded-lg bg-[#160e13] border border-brand-amber/30 text-center">
+                <div className="p-4 rounded-lg bg-[#111214] border border-brand-amber/30 text-center">
                   <p className="text-xs uppercase font-bold text-brand-amber">1st Place (Booyah)</p>
                   <p className="text-2xl font-display font-extrabold text-white mt-1">₹{tournament.prizeConfig?.firstPlace || 0}</p>
                 </div>
-                <div className="p-4 rounded-lg bg-[#160e13] border border-[#49303a] text-center">
+                <div className="p-4 rounded-lg bg-[#111214] border border-[#393236] text-center">
                   <p className="text-xs uppercase font-bold text-slate-400">2nd Place</p>
                   <p className="text-2xl font-display font-extrabold text-white mt-1">₹{tournament.prizeConfig?.secondPlace || 0}</p>
                 </div>
-                <div className="p-4 rounded-lg bg-[#160e13] border border-[#49303a] text-center">
+                <div className="p-4 rounded-lg bg-[#111214] border border-[#393236] text-center">
                   <p className="text-xs uppercase font-bold text-slate-400">3rd Place</p>
                   <p className="text-2xl font-display font-extrabold text-white mt-1">₹{tournament.prizeConfig?.thirdPlace || 0}</p>
                 </div>
               </div>
 
               {tournament.prizeConfig?.terms && (
-                <p className="text-xs text-slate-400 pt-2 border-t border-[#49303a]">
+                <p className="text-xs text-slate-400 pt-2 border-t border-[#393236]">
                   <strong>Prize Terms:</strong> {tournament.prizeConfig.terms}
                 </p>
               )}
@@ -256,7 +260,7 @@ export default function TournamentDetailPage() {
 
           {/* Right Sidebar: Slot Capacity & Match Details */}
           <div className="space-y-6">
-            <div className="p-6 rounded-xl bg-[#24171e] border border-[#49303a] space-y-4">
+            <div className="p-6 rounded-xl bg-[#1c1b1e] border border-[#393236] space-y-4">
               <h4 className="font-display text-lg font-bold uppercase text-white">Slot Availability</h4>
               
               <div className="space-y-2">
@@ -264,7 +268,7 @@ export default function TournamentDetailPage() {
                   <span>Registered: <strong>{displayRegisteredSlots}</strong></span>
                   <span>Max: <strong>{tournament.maxSlots}</strong></span>
                 </div>
-                <div className="w-full h-3 bg-[#160e13] rounded-full overflow-hidden border border-[#49303a]">
+                <div className="w-full h-3 bg-[#111214] rounded-full overflow-hidden border border-[#393236]">
                   <div
                     className={`h-full transition-all duration-500 ${
                       fillPercentage >= 90
@@ -298,7 +302,7 @@ export default function TournamentDetailPage() {
                 </p>
               </div>
 
-              <div className="pt-4 border-t border-[#49303a] space-y-3 text-xs text-slate-300">
+              <div className="pt-4 border-t border-[#393236] space-y-3 text-xs text-slate-300">
                 <div className="flex items-center gap-2">
                   <CheckCircle className="w-4 h-4 text-emerald-400 shrink-0" />
                   <span>Open to all verified mobile players</span>
@@ -323,27 +327,27 @@ export default function TournamentDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           
           {/* Scoring Engine Config */}
-          <div className="p-6 rounded-xl bg-[#24171e] border border-[#49303a] space-y-4">
+          <div className="p-6 rounded-xl bg-[#1c1b1e] border border-[#393236] space-y-4">
             <h3 className="font-display text-xl font-bold uppercase text-white flex items-center gap-2">
               <Flame className="w-5 h-5 text-brand-orange" /> Configured Scoring Formula
             </h3>
 
-            <div className="p-4 rounded-lg bg-[#160e13] border border-brand-orange/30">
+            <div className="p-4 rounded-lg bg-[#111214] border border-brand-orange/30">
               <p className="text-xs font-mono text-brand-amber uppercase">
                 Total Match Points = (Kills × {tournament.scoringConfig?.killPointValue ?? '—'}) + Booyah Bonus ({tournament.scoringConfig?.booyahBonus ?? '—'})
               </p>
             </div>
 
             <ul className="space-y-3 text-xs text-slate-300 pt-2">
-              <li className="flex justify-between border-b border-[#49303a] pb-2">
+              <li className="flex justify-between border-b border-[#393236] pb-2">
                 <span>Kill Point Value</span>
                 <strong className="text-white font-mono">{tournament.scoringConfig?.killPointValue ?? '—'} Point per Kill</strong>
               </li>
-              <li className="flex justify-between border-b border-[#49303a] pb-2">
+              <li className="flex justify-between border-b border-[#393236] pb-2">
                 <span>Booyah Bonus (1st Place)</span>
                 <strong className="text-brand-amber font-mono">+{tournament.scoringConfig?.booyahBonus ?? '—'} Points</strong>
               </li>
-              <li className="flex justify-between border-b border-[#49303a] pb-2">
+              <li className="flex justify-between border-b border-[#393236] pb-2">
                 <span>Tie-Breaker Hierarchy</span>
                 <strong className="text-white">Booyahs &gt; Kills &gt; Best Placement</strong>
               </li>
@@ -351,11 +355,11 @@ export default function TournamentDetailPage() {
           </div>
 
           {/* Official Rules */}
-          <div className="p-6 rounded-xl bg-[#24171e] border border-[#49303a] space-y-4">
+          <div className="p-6 rounded-xl bg-[#1c1b1e] border border-[#393236] space-y-4">
             <h3 className="font-display text-xl font-bold uppercase text-white flex items-center gap-2">
               <ShieldCheck className="w-5 h-5 text-cyan-400" /> Competition Guidelines
             </h3>
-            <div className="text-xs text-slate-300 leading-relaxed whitespace-pre-line bg-[#160e13] p-4 rounded-lg border border-[#49303a]">
+            <div className="text-xs text-slate-300 leading-relaxed whitespace-pre-line bg-[#111214] p-4 rounded-lg border border-[#393236]">
               {tournament.rules || 'Standard Free Fire rules apply.'}
             </div>
           </div>

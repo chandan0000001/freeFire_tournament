@@ -21,9 +21,10 @@ export const getTournaments = async (req, res, next) => {
       });
     }
 
-    const query = { isPublic: true };
+    const query = { isPublic: true, status: { $ne: 'draft' } };
 
     if (status) {
+      if (status.split(',').includes('draft')) return res.json({ success: true, tournaments: [], count: 0 });
       // Support comma-separated statuses e.g. status=registration_open,upcoming
       if (status.includes(',')) {
         query.status = { $in: status.split(',') };
@@ -40,7 +41,7 @@ export const getTournaments = async (req, res, next) => {
 
     let tournamentQuery = Tournament.find(query).sort({ matchDate: 1 });
     if (limit) {
-      tournamentQuery = tournamentQuery.limit(parseInt(limit, 10));
+      tournamentQuery = tournamentQuery.limit(Math.max(1, Math.min(100, Number(limit) || 100)));
     }
 
     const tournaments = await tournamentQuery.lean();
@@ -79,7 +80,7 @@ export const getTournamentBySlug = async (req, res, next) => {
       return res.json({ success: true, tournament: cached, cached: true });
     }
 
-    const tournament = await Tournament.findOne({ slug: slug.toLowerCase(), isPublic: true }).lean();
+    const tournament = await Tournament.findOne({ slug: slug.toLowerCase(), isPublic: true, status: { $ne: 'draft' } }).lean();
     if (!tournament) {
       return res.status(404).json({ success: false, message: 'Tournament not found' });
     }
@@ -100,51 +101,12 @@ export const getTournamentBySlug = async (req, res, next) => {
 
 export const createTournament = async (req, res, next) => {
   try {
-    const data = req.body;
+    const data = editableTournament(req.body);
     if (!data.slug && data.title) {
       data.slug = data.title
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)+/g, '') + `-${Date.now().toString().slice(-4)}`;
-    }
-
-    // Curated high-res 16:9 Free Fire tournament banners pool
-    const RANDOM_BANNERS = [
-      '/images/ff-banner-squad.webp',
-      '/images/ff-banner-solo.webp',
-      '/images/ff-banner-rampage.webp',
-      '/images/ff-banner-hayato.webp',
-      '/images/ff-banner-kelly.webp',
-      '/images/ff-banner-chrono.webp',
-      '/images/ff-banner-paradox.webp',
-      '/images/ff-banner-battle.webp',
-      '/images/ff-banner-flame.webp',
-      '/images/ff-banner-naruto.webp',
-      '/images/ff-banner-squidgame.webp',
-      '/images/ff-banner-evo8.webp',
-      '/images/ff-banner-cyberbiker.webp',
-      '/images/ff-banner-heat.webp',
-      '/images/ff-banner-rampage-2.webp',
-      '/images/ff-banner-rampage-finale.webp',
-      '/images/ff-banner-intense.webp',
-      '/images/ff-banner-together.webp',
-      '/images/ff-banner-assemble.webp',
-      '/images/ff-banner-max-vc.webp',
-      '/images/ff-banner-max-fk.webp',
-      '/images/ff-banner-max-0x.webp',
-      '/images/ff-banner-team-2023.webp',
-      '/images/ff-banner-game-mc.webp',
-      '/images/ff-banner-game-4y.webp',
-      '/images/ff-banner-cw-2024.webp',
-      '/images/ff-banner-ne-2024.webp',
-      '/images/ff-banner-game-7x.webp',
-      '/images/ff-banner-2025.webp',
-      '/images/arena-stage.webp',
-    ];
-
-    // If no banner or placeholder is provided, assign a random local banner
-    if (!data.bannerUrl || data.bannerUrl.trim() === '' || data.bannerUrl.includes('unsplash')) {
-      data.bannerUrl = RANDOM_BANNERS[Math.floor(Math.random() * RANDOM_BANNERS.length)];
     }
 
     const tournament = await Tournament.create(data);
@@ -177,10 +139,11 @@ export const updateTournament = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Tournament not found' });
     }
 
-    const updated = await Tournament.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const data = editableTournament(req.body);
+    if (data.maxSlots !== undefined && data.maxSlots < existing.registeredSlots) return res.status(400).json({ success: false, message: 'Capacity cannot be smaller than confirmed registrations.' });
+    if (data.format && data.format !== existing.format && await Registration.exists({ tournamentId: id })) return res.status(409).json({ success: false, message: 'Format cannot change after players register.' });
+    Object.assign(existing, data);
+    const updated = await existing.save();
 
     await cache.delPattern('tournaments:*');
     await cache.del(`tournament:slug:${existing.slug}`);
@@ -256,18 +219,13 @@ export const deleteTournament = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Tournament not found' });
     }
 
-    // Clean up related registrations, matches, and prizes
-    await Promise.all([
-      Registration.deleteMany({ tournamentId: id }),
-      Match.deleteMany({ tournamentId: id }),
-      MatchResult.deleteMany({ tournamentId: id }),
-      Prize.deleteMany({ tournamentId: id }),
-      Tournament.findByIdAndDelete(id),
-    ]);
+    if (await Registration.exists({ tournamentId: id }) || await MatchResult.exists({ tournamentId: id }) || await Prize.exists({ tournamentId: id })) return res.status(409).json({ success: false, message: 'This tournament has registration or financial records. Cancel it instead of deleting it.' });
+    await Match.deleteMany({ tournamentId: id });
+    await Tournament.findByIdAndDelete(id);
 
     await cache.delPattern('tournaments:*');
     await cache.del(`tournament:slug:${tournament.slug}`);
-    await cache.flush();
+
 
     await logAudit({
       action: 'TOURNAMENT_DELETED',
@@ -286,3 +244,15 @@ export const deleteTournament = async (req, res, next) => {
     next(error);
   }
 };
+
+export const getAdminTournaments = async (req, res, next) => {
+  try {
+    const tournaments = await Tournament.find().sort({ matchDate: -1 }).lean();
+    res.json({ success: true, tournaments, count: tournaments.length });
+  } catch (error) { next(error); }
+};
+
+function editableTournament(body) {
+  const fields = ['title', 'slug', 'description', 'format', 'entryFee', 'maxSlots', 'registrationStart', 'registrationEnd', 'matchDate', 'status', 'scoringConfig', 'prizeConfig', 'rules', 'map', 'bannerUrl', 'isPublic'];
+  return Object.fromEntries(fields.filter(key => Object.hasOwn(body, key)).map(key => [key, body[key]]));
+}

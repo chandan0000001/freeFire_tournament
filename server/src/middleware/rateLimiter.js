@@ -1,56 +1,17 @@
 import rateLimit from 'express-rate-limit';
-import { RedisStore } from 'rate-limit-redis';
-import redisClient from '../config/redis.js';
-
-/**
- * Creates a Redis-backed store for distributed rate limiting across server restarts.
- * Falls back safely to in-memory store if Redis is unavailable.
- */
-function createStore(prefix) {
-  if (redisClient && process.env.REDIS_URL && redisClient.status === 'ready') {
-    try {
-      return new RedisStore({
-        sendCommand: (...args) => redisClient.call(...args),
-        prefix: `rl:${prefix}:`,
-      });
-    } catch (e) {
-      console.warn(`[RateLimiter] Using in-memory store for ${prefix}: ${e.message}`);
-    }
-  }
-  return undefined;
+import { cache } from '../config/redis.js';
+class AdaptiveStore {
+  constructor(prefix) { this.prefix = prefix; this.localKeys = false; }
+  init(options) { this.windowMs = options.windowMs; }
+  increment(key) { return cache.counter(`rl:${this.prefix}:${key}`, this.windowMs); }
+  async decrement() { /* Requests count for the entire fixed window. */ }
+  resetKey(key) { return cache.del(`rl:${this.prefix}:${key}`); }
 }
-
-export const authLimiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 20, // Limit each IP to 20 login attempts per window
-  standardHeaders: true,
-  legacyHeaders: false,
-  passOnStoreError: true,
-  store: createStore('auth'),
-  message: {
-    success: false,
-    message: 'Too many login attempts from this IP. Please try again after 15 minutes.',
-  },
+const limiter = (prefix, windowMs, max) => rateLimit({
+  windowMs, max, standardHeaders: true, legacyHeaders: false,
+  store: new AdaptiveStore(prefix),
+  message: { success: false, message: 'Too many requests. Please try again after the rate-limit window resets.' },
 });
-
-export const registrationLimiter = rateLimit({
-  windowMs: 10 * 60 * 1000, // 10 minutes
-  max: 30, // Limit registration submissions to 30 per 10 mins
-  standardHeaders: true,
-  legacyHeaders: false,
-  passOnStoreError: true,
-  store: createStore('reg'),
-  message: {
-    success: false,
-    message: 'Too many registration requests. Please wait a few minutes before trying again.',
-  },
-});
-
-export const apiLimiter = rateLimit({
-  windowMs: 1 * 60 * 1000, // 1 minute
-  max: 200, // 200 requests per minute
-  standardHeaders: true,
-  legacyHeaders: false,
-  passOnStoreError: true,
-  store: createStore('api'),
-});
+export const authLimiter = limiter('auth', 15 * 60 * 1000, 20);
+export const registrationLimiter = limiter('reg', 10 * 60 * 1000, 30);
+export const apiLimiter = limiter('api', 60 * 1000, 200);

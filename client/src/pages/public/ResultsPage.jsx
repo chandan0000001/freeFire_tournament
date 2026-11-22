@@ -1,3 +1,4 @@
+import useLiveRefresh from '../../hooks/useLiveRefresh.js';
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api.js';
 import usePageMeta from '../../hooks/usePageMeta.js';
@@ -10,6 +11,8 @@ export default function ResultsPage() {
 
   const [error, setError] = useState('');
   const [retry, setRetry] = useState(0);
+
+  useLiveRefresh(() => setRetry(value => value + 1));
 
   useEffect(() => {
     let active = true;
@@ -52,16 +55,16 @@ export default function ResultsPage() {
       {loading ? (
         <div className="space-y-6">
           {[1, 2].map((n) => (
-            <div key={n} className="h-64 rounded-2xl bg-[#24171e] border border-[#49303a] animate-pulse"></div>
+            <div key={n} className="h-64 rounded-2xl bg-[#1c1b1e] border border-[#393236] animate-pulse"></div>
           ))}
         </div>
       ) : results.length > 0 ? (
         <div className="space-y-8">
           {results.map((r) => (
-            <div key={r.id} className="rounded-2xl bg-[#24171e] border border-[#49303a] overflow-hidden shadow-xl">
+            <div key={r.id} className="rounded-2xl bg-[#1c1b1e] border border-[#393236] overflow-hidden shadow-xl">
               
               {/* Match Header Bar */}
-              <div className="p-5 bg-[#160e13] border-b border-[#49303a] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="p-5 bg-[#111214] border-b border-[#393236] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <span className="text-[10px] uppercase font-bold text-brand-orange tracking-widest">
                     Match #{r.match?.matchNumber || 1} • {r.tournament?.format?.toUpperCase()}
@@ -91,7 +94,7 @@ export default function ResultsPage() {
               {/* Match Scorecard Table */}
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
-                  <thead className="bg-[#301e27] text-[10px] uppercase font-bold text-slate-400 border-b border-[#49303a]">
+                  <thead className="bg-[#292428] text-[10px] uppercase font-bold text-slate-400 border-b border-[#393236]">
                     <tr>
                       <th className="py-3 px-6">Placement</th>
                       <th className="py-3 px-6">Participant / Team</th>
@@ -100,11 +103,11 @@ export default function ResultsPage() {
                       <th className="py-3 px-6 text-right">Points</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#49303a]">
+                  <tbody className="divide-y divide-[#393236]">
                     {r.entries.map((entry, idx) => (
                       <tr
                         key={idx}
-                        className={entry.placement === 1 ? 'bg-amber-500/5' : 'hover:bg-[#301e27]/50'}
+                        className={entry.placement === 1 ? 'bg-amber-500/5' : 'hover:bg-[#292428]/50'}
                       >
                         <td className="py-3 px-6 font-display font-bold">
                           {entry.placement === 1 ? (
@@ -141,7 +144,7 @@ export default function ResultsPage() {
           ))}
         </div>
       ) : (
-        <div className="text-center py-20 bg-[#24171e] rounded-2xl border border-[#49303a] p-8">
+        <div className="text-center py-20 bg-[#1c1b1e] rounded-2xl border border-[#393236] p-8">
           <Flame className="w-12 h-12 text-slate-600 mx-auto mb-3" />
           <h3 className="text-lg font-bold text-white">No Match Results Published Yet</h3>
           <p className="text-xs text-slate-400 max-w-md mx-auto mt-1">

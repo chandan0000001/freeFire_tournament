@@ -37,7 +37,7 @@ export default function AdminRooms() {
   useEffect(() => {
     const fetchTournaments = async () => {
       try {
-        const res = await api.get('/tournaments');
+        const res = await api.get('/admin/tournaments');
         if (res.success && res.tournaments.length > 0) {
           setTournaments(res.tournaments);
           setSelectedTournamentId(res.tournaments[0]._id);
@@ -51,16 +51,19 @@ export default function AdminRooms() {
 
   useEffect(() => {
     if (!selectedTournamentId) return;
-
+    let active = true;
+    setRoomId(''); setRoomPassword(''); setSelectedRegIds([]);
+    setVerifiedRegistrations([]); setDeliveryLogs([]);
     const loadTournamentData = async () => {
       setLoading(true);
       setStatusMessage({ type: '', text: '' });
       try {
         const [regRes, logsRes] = await Promise.all([
-          api.get(`/admin/registrations?tournamentId=${selectedTournamentId}&paymentStatus=verified`),
+          api.get(`/admin/registrations?tournamentId=${selectedTournamentId}&paymentStatus=verified&limit=200`),
           api.get(`/admin/rooms/${selectedTournamentId}/logs`),
         ]);
 
+        if (!active) return;
         if (regRes.success) {
           setVerifiedRegistrations(regRes.registrations || []);
           // Pre-select all verified registrations by default
@@ -70,17 +73,19 @@ export default function AdminRooms() {
           setDeliveryLogs(logsRes.logs || []);
         }
       } catch (err) {
-        console.error(err);
+        if (active) setStatusMessage({ type: 'error', text: err.message || 'Unable to load room recipients.' });
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     };
 
     loadTournamentData();
+    return () => { active = false; };
   }, [selectedTournamentId]);
 
   const handleSaveCredentials = async (e) => {
     e.preventDefault();
+    if (savingCredentials || !selectedTournamentId) return;
     if (!roomId.trim() || !roomPassword.trim()) {
       setStatusMessage({ type: 'error', text: 'Room ID and Password are both required' });
       return;
@@ -103,6 +108,7 @@ export default function AdminRooms() {
   };
 
   const handleSendEmails = async () => {
+    if (sendingEmails || savingCredentials || !selectedTournamentId) return;
     if (selectedRegIds.length === 0) {
       setStatusMessage({ type: 'error', text: 'Please select at least one verified registration.' });
       return;
@@ -131,6 +137,7 @@ export default function AdminRooms() {
   };
 
   const handleRetryLog = async (logId) => {
+    if (retryingId) return;
     setRetryingId(logId);
     setStatusMessage({ type: '', text: '' });
     try {
@@ -217,12 +224,12 @@ export default function AdminRooms() {
       )}
 
       {/* Tournament Selector Bar */}
-      <div className="p-4 rounded-xl bg-[#24171e] border border-[#49303a] flex items-center gap-3">
+      <div className="p-4 rounded-xl bg-[#1c1b1e] border border-[#393236] flex items-center gap-3">
         <label className="text-xs font-bold uppercase text-slate-400">Select Tournament:</label>
         <select
-          value={selectedTournamentId}
+          disabled={savingCredentials || sendingEmails || !!retryingId} value={selectedTournamentId}
           onChange={(e) => setSelectedTournamentId(e.target.value)}
-          className="px-3.5 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
+          className="px-3.5 py-2 rounded-lg bg-[#111214] border border-[#393236] text-xs text-white focus:outline-none focus:border-brand-orange"
         >
           {tournaments.map((t) => (
             <option key={t._id} value={t._id}>
@@ -236,8 +243,8 @@ export default function AdminRooms() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
         
         {/* Step 1: Set Credentials Form */}
-        <form onSubmit={handleSaveCredentials} className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-4">
-          <div className="flex items-center gap-2 border-b border-[#49303a] pb-3">
+        <form onSubmit={handleSaveCredentials} className="p-6 rounded-2xl bg-[#1c1b1e] border border-[#393236] space-y-4">
+          <div className="flex items-center gap-2 border-b border-[#393236] pb-3">
             <KeyRound className="w-5 h-5 text-brand-orange" />
             <h3 className="font-display text-lg font-bold uppercase text-white">
               Step 1: Enter Room Credentials
@@ -255,7 +262,7 @@ export default function AdminRooms() {
                 placeholder="e.g. 5829104"
                 value={roomId}
                 onChange={(e) => setRoomId(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#111214] border border-[#393236] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
               />
             </div>
 
@@ -269,7 +276,7 @@ export default function AdminRooms() {
                 placeholder="e.g. 1234"
                 value={roomPassword}
                 onChange={(e) => setRoomPassword(e.target.value)}
-                className="w-full px-3.5 py-2.5 rounded-lg bg-[#160e13] border border-[#49303a] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
+                className="w-full px-3.5 py-2.5 rounded-lg bg-[#111214] border border-[#393236] text-sm text-white font-mono focus:outline-none focus:border-brand-orange"
               />
             </div>
           </div>
@@ -282,23 +289,23 @@ export default function AdminRooms() {
               rows="2"
               value={customNote}
               onChange={(e) => setCustomNote(e.target.value)}
-              className="w-full px-3.5 py-2 rounded-lg bg-[#160e13] border border-[#49303a] text-xs text-white focus:outline-none focus:border-brand-orange"
+              className="w-full px-3.5 py-2 rounded-lg bg-[#111214] border border-[#393236] text-xs text-white focus:outline-none focus:border-brand-orange"
             />
           </div>
 
           <button
             type="submit"
             disabled={savingCredentials}
-            className="w-full py-2.5 rounded-xl bg-[#301e27] hover:bg-brand-orange hover:text-white text-slate-200 border border-[#49303a] text-xs font-bold uppercase tracking-wider transition-colors"
+            className="w-full py-2.5 rounded-xl bg-[#292428] hover:bg-brand-orange hover:text-white text-slate-200 border border-[#393236] text-xs font-bold uppercase tracking-wider transition-colors"
           >
             {savingCredentials ? 'Saving...' : 'Save Room Credentials'}
           </button>
         </form>
 
         {/* Step 2: Recipient Selection & Dispatch */}
-        <div className="p-6 rounded-2xl bg-[#24171e] border border-[#49303a] space-y-4 flex flex-col justify-between">
+        <div className="p-6 rounded-2xl bg-[#1c1b1e] border border-[#393236] space-y-4 flex flex-col justify-between">
           <div className="space-y-3">
-            <div className="flex items-center justify-between border-b border-[#49303a] pb-3">
+            <div className="flex items-center justify-between border-b border-[#393236] pb-3">
               <div className="flex items-center gap-2">
                 <Mail className="w-5 h-5 text-cyan-400" />
                 <h3 className="font-display text-lg font-bold uppercase text-white">
@@ -339,7 +346,7 @@ export default function AdminRooms() {
                       className={`flex items-center justify-between p-2.5 rounded-lg border text-xs transition-colors ${
                         selectedRegIds.includes(reg._id)
                           ? 'bg-purple-950/40 border-purple-500/40 text-white'
-                          : 'bg-[#160e13] border-[#49303a] text-slate-400'
+                          : 'bg-[#111214] border-[#393236] text-slate-400'
                       }`}
                     >
                       <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
@@ -407,14 +414,14 @@ export default function AdminRooms() {
       </div>
 
       {/* Delivery Logs Table */}
-      <div className="rounded-2xl bg-[#24171e] border border-[#49303a] overflow-hidden shadow-xl space-y-4 p-6">
+      <div className="rounded-2xl bg-[#1c1b1e] border border-[#393236] overflow-hidden shadow-xl space-y-4 p-6">
         <h3 className="font-display text-lg font-bold uppercase text-white">
           Email Delivery Reports ({deliveryLogs.length})
         </h3>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#160e13] text-[10px] uppercase font-bold text-slate-400 border-b border-[#49303a]">
+            <thead className="bg-[#111214] text-[10px] uppercase font-bold text-slate-400 border-b border-[#393236]">
               <tr>
                 <th className="py-2.5 px-4">Recipient</th>
                 <th className="py-2.5 px-4">Team / Ref</th>
@@ -424,10 +431,10 @@ export default function AdminRooms() {
                 <th className="py-2.5 px-4 text-right">Action</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#49303a]">
+            <tbody className="divide-y divide-[#393236]">
               {deliveryLogs.length > 0 ? (
                 deliveryLogs.map((log) => (
-                  <tr key={log._id} className="hover:bg-[#301e27]">
+                  <tr key={log._id} className="hover:bg-[#292428]">
                     <td className="py-2.5 px-4 text-white font-medium">{log.recipientEmail}</td>
                     <td className="py-2.5 px-4 text-slate-300">
                       {log.registrationId?.referenceId} ({log.registrationId?.teamName || 'Solo'})

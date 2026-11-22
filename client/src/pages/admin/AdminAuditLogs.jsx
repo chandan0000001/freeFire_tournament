@@ -1,3 +1,4 @@
+import useLiveRefresh from '../../hooks/useLiveRefresh.js';
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api.js';
 import { ScrollText, Shield, Clock } from 'lucide-react';
@@ -6,6 +7,8 @@ export default function AdminAuditLogs() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
 
+  const [refreshVersion, setRefreshVersion] = useState(0);
+  useLiveRefresh(() => setRefreshVersion(value => value + 1));
   useEffect(() => {
     const fetchLogs = async () => {
       try {
@@ -20,7 +23,7 @@ export default function AdminAuditLogs() {
       }
     };
     fetchLogs();
-  }, []);
+  }, [refreshVersion]);
 
   return (
     <div className="space-y-6">
@@ -31,15 +34,15 @@ export default function AdminAuditLogs() {
           Operational Audit Trail
         </h1>
         <p className="text-xs text-slate-400 mt-1">
-          Cryptographically logged administrative actions, payment approvals, room dispatches, and score modifications.
+          Recorded administrative actions, payment approvals, room dispatches, and score modifications.
         </p>
       </div>
 
       {/* Logs Table */}
-      <div className="rounded-2xl bg-[#24171e] border border-[#49303a] overflow-hidden shadow-xl">
+      <div className="rounded-2xl bg-[#1c1b1e] border border-[#393236] overflow-hidden shadow-xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
-            <thead className="bg-[#160e13] text-[10px] uppercase font-bold text-slate-400 border-b border-[#49303a]">
+            <thead className="bg-[#111214] text-[10px] uppercase font-bold text-slate-400 border-b border-[#393236]">
               <tr>
                 <th className="py-3 px-5">Timestamp</th>
                 <th className="py-3 px-5">Action</th>
@@ -48,7 +51,7 @@ export default function AdminAuditLogs() {
                 <th className="py-3 px-5">Details</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#49303a]">
+            <tbody className="divide-y divide-[#393236]">
               {loading ? (
                 <tr>
                   <td colSpan="5" className="py-12 text-center text-slate-500">
@@ -57,7 +60,7 @@ export default function AdminAuditLogs() {
                 </tr>
               ) : logs.length > 0 ? (
                 logs.map((log) => (
-                  <tr key={log._id} className="hover:bg-[#301e27]">
+                  <tr key={log._id} className="hover:bg-[#292428]">
                     <td className="py-3 px-5 text-slate-400 whitespace-nowrap">
                       {new Date(log.createdAt).toLocaleString('en-IN')}
                     </td>

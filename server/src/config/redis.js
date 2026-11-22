@@ -1,201 +1,145 @@
 import Redis from 'ioredis';
+import { AsyncLocalStorage } from 'node:async_hooks';
 
+const prefix = process.env.REDIS_KEY_PREFIX || 'thff:';
+const memory = new Map();
+const pending = new Map();
+const requestContext = new AsyncLocalStorage();
+const maxEntries = Number(process.env.CACHE_MAX_ENTRIES) || 1000;
+let fallbackRevision = `local-${Date.now()}`;
 let redisClient = null;
-const memoryCache = new Map();
+const metrics = { hits: 0, misses: 0, errors: 0, coalesced: 0 };
 
 if (process.env.REDIS_URL) {
-  try {
-    redisClient = new Redis(process.env.REDIS_URL, {
-      maxRetriesPerRequest: null,
-      enableOfflineQueue: true,
-      connectTimeout: 5000,
-      lazyConnect: true,
-      retryStrategy(times) {
-        if (times > 3) {
-          console.warn('[Redis] Max reconnect attempts reached. Switching to in-memory fallback.');
-          return null;
-        }
-        return Math.min(times * 500, 2000);
-      },
-    });
-
-    redisClient.on('connect', () => {
-      console.log('[Redis] Connected successfully to Redis Cloud');
-    });
-
-    redisClient.on('error', (err) => {
-      console.warn(`[Redis Notice] Redis connection issue (${err.message}). Using in-memory fallback.`);
-    });
-
-    // Attempt initial connection asynchronously
-    redisClient.connect().catch((err) => {
-      console.warn(`[Redis Notice] Initial connect failed (${err.message}). In-memory cache active.`);
-    });
-  } catch (err) {
-    console.warn(`[Redis Notice] Failed to initialize Redis client: ${err.message}. Using in-memory fallback.`);
-  }
-} else {
-  console.log('[Redis] No REDIS_URL provided. Operating with in-memory caching.');
+  redisClient = new Redis(process.env.REDIS_URL, {
+    lazyConnect: true, enableOfflineQueue: false, maxRetriesPerRequest: 1,
+    connectTimeout: 3000, commandTimeout: 1000,
+    retryStrategy: attempt => Math.min(attempt * 500, 10000),
+  });
+  redisClient.on('error', () => { metrics.errors += 1; });
+  redisClient.on('ready', () => {
+    // Discard pre-outage data, including writes made while operating on memory.
+    memory.clear();
+    redisClient.incr(`${prefix}revision`).catch(() => {});
+  });
+  redisClient.connect().catch(() => {});
 }
+const clone = value => value == null ? value : JSON.parse(JSON.stringify(value));
+const readMemory = key => {
+  const item = memory.get(key);
+  if (!item) return null;
+  if (item.expires <= Date.now()) { memory.delete(key); return null; }
+  return item;
+};
+const putMemory = (key, value, expires) => {
+  if (memory.size >= maxEntries && !memory.has(key)) memory.delete(memory.keys().next().value);
+  memory.set(key, { value: clone(value), expires });
+};
+const dataKey = key => /^(tournaments?:|leaderboard:|winners:|results:|settings:|wallet:|dashboard:)/.test(key);
+const physicalKey = key => `${prefix}${dataKey(key) ? `data:${requestContext.getStore()?.revision || fallbackRevision}:` : ''}${key}`;
+const fixedWindowScript = `local count = redis.call('INCR', KEYS[1]); if count == 1 then redis.call('PEXPIRE', KEYS[1], ARGV[1]) end; return {count, redis.call('PTTL', KEYS[1])}`;
 
-/**
- * Universal Cache Helper (Redis with In-Memory Fallback)
- */
 export const cache = {
+  metrics,
+  async revision() {
+    if (redisClient?.status === 'ready') {
+      try { return String(await redisClient.get(`${prefix}revision`) || '0'); } catch { metrics.errors++; }
+    }
+    return fallbackRevision;
+  },
+  async bumpRevision() {
+    fallbackRevision = `local-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+    for (const key of memory.keys()) if (key.startsWith(`${prefix}data:`)) memory.delete(key);
+    if (redisClient?.status === 'ready') {
+      try { return String(await redisClient.incr(`${prefix}revision`)); } catch { metrics.errors++; }
+    }
+    return fallbackRevision;
+  },
+  async scope(work) { return requestContext.run({ revision: await cache.revision() }, work); },
   async get(key) {
-    if (redisClient && redisClient.status === 'ready') {
-      try {
-        const val = await redisClient.get(key);
-        return val ? JSON.parse(val) : null;
-      } catch (e) {
-        // Fallback to memory
-      }
-    }
-    const item = memoryCache.get(key);
-    if (!item) return null;
-    if (item.expires && item.expires < Date.now()) {
-      memoryCache.delete(key);
-      return null;
-    }
-    return item.value;
+    const actual = physicalKey(key);
+    let value = null;
+    if (redisClient?.status === 'ready') {
+      try { const raw = await redisClient.get(actual); value = raw == null ? null : JSON.parse(raw); }
+      catch { metrics.errors++; value = readMemory(actual)?.value ?? null; }
+    } else value = readMemory(actual)?.value ?? null;
+    metrics[value == null ? 'misses' : 'hits']++;
+    return clone(value);
   },
-
   async set(key, value, ttlSeconds = 60) {
-    const serialized = JSON.stringify(value);
-    if (redisClient && redisClient.status === 'ready') {
-      try {
-        await redisClient.set(key, serialized, 'EX', ttlSeconds);
-        return;
-      } catch (e) {
-        // Fallback to memory
-      }
+    const actual = physicalKey(key);
+    const ttl = Math.max(1, Math.floor(ttlSeconds));
+    if (redisClient?.status === 'ready') {
+      try { await redisClient.set(actual, JSON.stringify(value), 'EX', ttl); memory.delete(actual); return; }
+      catch { metrics.errors++; }
     }
-    memoryCache.set(key, {
-      value,
-      expires: Date.now() + ttlSeconds * 1000,
-    });
+    putMemory(actual, value, Date.now() + ttl * 1000);
   },
-
-  async incr(key, ttlSeconds = 60) {
-    if (redisClient && redisClient.status === 'ready') {
+  async remember(key, ttl, load) {
+    const cached = await cache.get(key);
+    if (cached !== null) return cached;
+    const actual = physicalKey(key);
+    if (pending.has(actual)) { metrics.coalesced++; return clone(await pending.get(actual)); }
+    const task = (async () => { const value = await load(); await cache.set(key, value, ttl); return value; })();
+    pending.set(actual, task);
+    try { return clone(await task); } finally { pending.delete(actual); }
+  },
+  async counter(key, windowMs) {
+    const actual = `${prefix}${key}`;
+    if (redisClient?.status === 'ready') {
       try {
-        const multi = redisClient.multi();
-        multi.incr(key);
-        multi.expire(key, ttlSeconds);
-        const results = await multi.exec();
-        return results?.[0]?.[1] || 1;
-      } catch (e) {
-        // Fallback
-      }
+        const [count, ttl] = await redisClient.eval(fixedWindowScript, 1, actual, windowMs);
+        return { totalHits: Number(count), resetTime: new Date(Date.now() + Math.max(0, Number(ttl))) };
+      } catch { metrics.errors++; }
     }
-    const current = memoryCache.get(key);
-    const count = current ? (current.value || 0) + 1 : 1;
-    memoryCache.set(key, {
-      value: count,
-      expires: current?.expires || (Date.now() + ttlSeconds * 1000),
-    });
-    return count;
+    const current = readMemory(actual);
+    const count = (current?.value || 0) + 1;
+    const expires = current?.expires || Date.now() + windowMs;
+    putMemory(actual, count, expires);
+    return { totalHits: count, resetTime: new Date(expires) };
   },
-
+  async incr(key, ttlSeconds = 60) { return (await cache.counter(key, ttlSeconds * 1000)).totalHits; },
   async del(key) {
-    if (redisClient && redisClient.status === 'ready') {
-      try {
-        await redisClient.del(key);
-      } catch (e) {}
-    }
-    memoryCache.delete(key);
+    const actual = physicalKey(key);
+    memory.delete(actual);
+    if (redisClient?.status === 'ready') { try { await redisClient.del(actual); } catch { metrics.errors++; } }
   },
-
   async delPattern(pattern) {
-    if (redisClient && redisClient.status === 'ready') {
-      try {
-        const stream = redisClient.scanStream({ match: pattern, count: 100 });
-        stream.on('data', async (keys) => {
-          if (keys && keys.length > 0) {
-            const pipeline = redisClient.pipeline();
-            keys.forEach((k) => pipeline.del(k));
-            await pipeline.exec();
-          }
-        });
-      } catch (e) {
-        console.warn(`[Redis Notice] delPattern error for ${pattern}:`, e.message);
-      }
-    }
-    const regex = new RegExp('^' + pattern.replace(/\*/g, '.*') + '$');
-    for (const k of memoryCache.keys()) {
-      if (regex.test(k)) {
-        memoryCache.delete(k);
-      }
-    }
+    const actual = physicalKey(pattern);
+    const regex = new RegExp('^' + actual.split('*').map(part => part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('.*') + '$');
+    for (const key of memory.keys()) if (regex.test(key)) memory.delete(key);
+    if (redisClient?.status !== 'ready') return;
+    try {
+      let cursor = '0';
+      do {
+        const [next, keys] = await redisClient.scan(cursor, 'MATCH', actual, 'COUNT', 100);
+        cursor = next;
+        if (keys.length) await redisClient.unlink(...keys);
+      } while (cursor !== '0');
+    } catch { metrics.errors++; }
   },
-
-  async flush() {
-    if (redisClient && redisClient.status === 'ready') {
-      try {
-        await redisClient.flushdb();
-      } catch (e) {}
-    }
-    memoryCache.clear();
-  },
+  // Never flush a shared Redis database or erase login/reset state.
+  async flush() { return cache.bumpRevision(); },
 };
 
-/**
- * High-performance Redis helpers for Auth, Wallet, and Password Reset
- */
 export const redisAuth = {
-  // Store user profile cache (TTL: 1 hour)
-  async cacheUser(user, ttl = 3600) {
+  async cacheUser(user, ttl = 60) {
     if (!user?._id && !user?.id) return;
-    const uid = user._id || user.id;
-    await cache.set(`user:${uid}`, user, ttl);
+    const { password, resetPasswordToken, resetPasswordExpires, ...safe } = user;
+    await cache.set(`user:${user._id || user.id}`, safe, ttl);
   },
-
-  async getCachedUser(userId) {
-    return cache.get(`user:${userId}`);
-  },
-
-  async invalidateUser(userId) {
-    await cache.del(`user:${userId}`);
-  },
-
-  // Store password reset token with 15-minute expiration (900 seconds)
-  async storeResetToken(token, data, ttlSeconds = 900) {
-    await cache.set(`pwd_reset:${token}`, data, ttlSeconds);
-  },
-
-  async getResetToken(token) {
-    return cache.get(`pwd_reset:${token}`);
-  },
-
-  async clearResetToken(token) {
-    await cache.del(`pwd_reset:${token}`);
-  },
-
-  // Wallet caching (TTL: 5 minutes, invalidated immediately on coin update)
-  async cacheWallet(key, wallet, ttl = 300) {
-    await cache.set(`wallet:${key}`, wallet, ttl);
-  },
-
-  async getCachedWallet(key) {
-    return cache.get(`wallet:${key}`);
-  },
-
-  async invalidateWallet(keys = []) {
-    for (const k of keys) {
-      if (k) await cache.del(`wallet:${k}`);
-    }
-  },
-
-  // Rate Limiting via Redis (e.g., max 5 login attempts per 15 minutes)
+  getCachedUser: id => cache.get(`user:${id}`),
+  invalidateUser: id => cache.del(`user:${id}`),
+  storeResetToken: (token, data, ttl = 900) => cache.set(`pwd_reset:${token}`, data, ttl),
+  getResetToken: token => cache.get(`pwd_reset:${token}`),
+  clearResetToken: token => cache.del(`pwd_reset:${token}`),
+  cacheWallet: (key, wallet, ttl = 60) => cache.set(`wallet:${key}`, wallet, ttl),
+  getCachedWallet: key => cache.get(`wallet:${key}`),
+  async invalidateWallet(keys = []) { for (const key of keys.filter(Boolean)) await cache.del(`wallet:${key}`); },
   async rateLimit(key, maxAttempts = 5, windowSeconds = 900) {
-    const attempts = await cache.incr(`ratelimit:${key}`, windowSeconds);
-    return {
-      allowed: attempts <= maxAttempts,
-      current: attempts,
-      max: maxAttempts,
-    };
+    const current = await cache.incr(`ratelimit:${key}`, windowSeconds);
+    return { allowed: current <= maxAttempts, current, max: maxAttempts };
   },
 };
-
 export { redisClient };
 export default redisClient;
