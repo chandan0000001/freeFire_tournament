@@ -31,6 +31,19 @@ export default function AdminTournaments() {
 
   // Curated photorealistic 16:9 widescreen Free Fire tournament banners
   const BANNER_OPTIONS = [
+    { label: 'Puri Drop', value: '/images/puri-drop.webp' },
+    { label: 'Chilika Recon', value: '/images/chilika-recon.webp' },
+    { label: 'Sambalpur Night', value: '/images/sambalpur-night.webp' },
+    { label: 'Berhampur Squad', value: '/images/berhampur-squad.webp' },
+    { label: 'Similipal Squad', value: '/images/similipal-squad.webp' },
+    { label: 'Paradip Solo', value: '/images/paradip-solo.webp' },
+    { label: 'Konark Victory', value: '/images/konark-victory.webp' },
+    { label: 'Odisha Mvp Spotlight', value: '/images/odisha-mvp-spotlight.webp' },
+    { label: 'Fair Play Guardian', value: '/images/fair-play-guardian.webp' },
+    { label: 'Odisha Community', value: '/images/odisha-community.webp' },
+    { label: 'Championship Stage', value: '/images/championship-stage.webp' },
+    { label: 'Room Command', value: '/images/room-command.webp' },
+
     { label: 'Odisha squad champions (site default)', value: '' },
     { label: 'Cliffside Squad · Konark Sunset (16:9)', value: site.heroImage },
     { label: 'Konark Temple · Squad Steps (16:9)', value: site.tournamentImage },

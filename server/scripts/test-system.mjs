@@ -219,6 +219,13 @@ try {
         await publicPage.getByRole('heading', { name: 'Live Odisha Cup' }).waitFor({ timeout: 18000 });
         await publicPage.goto(origin); await publicPage.waitForTimeout(500);
         await publicPage.screenshot({ path: '/tmp/arena-home-desktop.png', fullPage: true });
+        await publicPage.locator('.mode-card[href="/tournaments?format=solo"]').click();
+        await publicPage.waitForURL('**/tournaments?format=solo');
+        await publicPage.waitForTimeout(600);
+        assert.ok(await publicPage.getByRole('button', { name: 'SOLO', exact: true }).evaluate(el => el.className.includes('bg-brand-orange')));
+        await publicPage.goto(origin + '/privacy');
+        await publicPage.getByRole('heading', { name: 'Privacy & friendly play.' }).waitFor();
+
         const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 1, isMobile: true, hasTouch: true });
         const phone = await mobile.newPage(); phone.on('pageerror', error => errors.push(error.message));
         for (const path of ['/', '/tournaments', '/leaderboard', '/results', '/winners', '/login', '/register', '/forgot-password']) {

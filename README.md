@@ -137,3 +137,9 @@ Checks include role boundaries, duplicate submissions, concurrent approvals, cap
 ## Deployment
 
 Build `client/` with `npm run build`, serve `client/dist`, and retain the SPA fallback. Deploy `server/` separately with `npm start`; `render.yaml` describes its environment configuration. Supply production environment values in the hosting dashboard and keep MongoDB transaction support enabled. A Git push does not configure hosting secrets or prove that a deployment is healthy.
+
+## Community match experience
+
+The home page uses visual Solo/Squad shortcuts, three featured matches and concise community links. Format shortcuts persist in the tournament URL; cards retain entry fees, prize pools, dates and availability. New home artwork supports `VITE_ART_BERHAMPUR_SQUAD`, `VITE_ART_PARADIP_SOLO` and `VITE_ART_ODISHA_COMMUNITY` overrides. Local variants use responsive WebP sources.
+
+The privacy page describes independent friendly custom-room matches and actual data handling. This wording is not legal certification: entry fees, prizes and operation remain subject to Indian law and publisher terms. Review the event model before operating paid matches.

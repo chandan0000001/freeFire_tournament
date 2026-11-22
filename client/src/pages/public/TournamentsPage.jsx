@@ -1,20 +1,24 @@
+import { useSearchParams } from 'react-router-dom';
 import useLiveRefresh from '../../hooks/useLiveRefresh.js';
 import { site } from '../../config/site.js';
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import api from '../../services/api.js';
 import TournamentCard from '../../components/tournament/TournamentCard.jsx';
 import usePageMeta from '../../hooks/usePageMeta.js';
-import { Trophy, Search, Users, User, Flame, Sparkles } from 'lucide-react';
+import { Trophy, Search, Users, User } from 'lucide-react';
 
 export default function TournamentsPage() {
   usePageMeta(
-    'Free Fire Tournaments | Rahul Esports Arena',
-    'Browse weekly verified Free Fire tournaments. Check slot availability, prize pools, and register your squad or solo entry.'
+    'Friendly Free Fire matches',
+    'Find community Free Fire rooms, check entry details and join solo or with your squad.'
   );
 
   const [tournaments, setTournaments] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [formatFilter, setFormatFilter] = useState('');
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedFormat = searchParams.get('format');
+  const formatFilter = ['solo', 'squad'].includes(requestedFormat) ? requestedFormat : '';
+  const setFormatFilter = value => setSearchParams(current => { const next = new URLSearchParams(current); if (value) next.set('format', value); else next.delete('format'); return next; });
   const [statusFilter, setStatusFilter] = useState('');
   const [search, setSearch] = useState('');
   const [error, setError] = useState('');
@@ -32,6 +36,7 @@ export default function TournamentsPage() {
 
       const res = await api.get(`/tournaments?${params.toString()}`);
       if (id !== requestId.current) return;
+      if (!res.success) throw new Error(res.message || 'Unable to load matches');
       if (res.success) {
         const statusRank = { registration_open: 1, upcoming: 2, live: 3, room_ready: 4, full: 5, registration_closed: 6, completed: 7 };
         const sorted = [...(res.tournaments || [])].sort((a, b) => {
@@ -61,48 +66,26 @@ export default function TournamentsPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20 space-y-8">
+    <div className="match-browser max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-20 space-y-8">
       {/* Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 pb-4 border-b border-[#412a34]">
         <div>
           <div className="flex items-center gap-2 text-brand-orange text-xs font-bold uppercase tracking-wider mb-1">
             <Trophy className="w-4 h-4" />
-            <span>{site.region} · Free Fire tournaments</span>
+            <span>{site.region} · friendly Free Fire matches</span>
           </div>
           <h1 className="font-display text-3xl sm:text-4xl font-extrabold uppercase text-white tracking-wide">
-            Tournaments
+            Find your next match.
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Browse upcoming Free Fire custom room battles, track live slots, and secure your place.
+            Pick a room. Bring your best game.
           </p>
         </div>
 
         <div className="flex items-center gap-2 text-xs text-slate-400">
           <span className="px-3 py-1.5 rounded-lg bg-[#1c1b1e] border border-[#412a34] font-semibold">
-            {tournaments.length} {tournaments.length === 1 ? 'Tournament' : 'Tournaments'} Available
+            {tournaments.length} {tournaments.length === 1 ? 'match' : 'matches'}
           </span>
-        </div>
-      </div>
-
-      {/* Daily Match Sessions & WhatsApp Notice Strip */}
-      <div className="p-4 rounded-2xl bg-[#1c1b1e] border border-brand-orange/30 flex flex-col md:flex-row items-start md:items-center justify-between gap-3 shadow-lg">
-        <div className="flex items-center gap-2.5">
-          <div className="w-8 h-8 rounded-xl bg-brand-orange/20 text-brand-orange flex items-center justify-center shrink-0">
-            <Flame className="w-4 h-4" />
-          </div>
-          <div>
-            <span className="text-[10px] uppercase font-bold text-brand-orange block tracking-wider">
-              Daily Match Sessions (4–5 Matches Per Section)
-            </span>
-            <p className="text-xs text-slate-200 font-medium">
-              Morning: <strong>10:00 AM – 12:30 PM</strong> · Afternoon: <strong>2:00 PM – 4:30 PM</strong> · Evening: <strong>6:00 PM – 8:30 PM</strong>
-            </p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-emerald-950/70 border border-emerald-500/30 text-emerald-300 text-xs shrink-0">
-          <Sparkles className="w-3.5 h-3.5 text-emerald-400" />
-          <span>Room ID & Pass delivered to Leader WhatsApp</span>
         </div>
       </div>
 
@@ -113,7 +96,7 @@ export default function TournamentsPage() {
           {[
             { label: 'ALL', val: '' },
             { label: 'UPCOMING', val: 'upcoming' },
-            { label: 'REGISTRATION OPEN', val: 'registration_open' },
+            { label: 'OPEN', val: 'registration_open' },
             { label: 'LIVE', val: 'live' },
             { label: 'FINISHED', val: 'completed' },
           ].map((st) => (
@@ -192,7 +175,7 @@ export default function TournamentsPage() {
           <Trophy className="w-12 h-12 text-slate-600 mx-auto" />
           <h3 className="text-lg font-bold text-white">No Tournaments Found</h3>
           <p className="text-xs text-slate-400 leading-relaxed">
-            There are currently no tournaments matching your active filters. Try resetting the filters or check back soon for next week's schedule.
+            Try another format or clear your filters.
           </p>
           <button
             onClick={() => {
